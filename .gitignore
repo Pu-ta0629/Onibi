@@ -49,6 +49,12 @@ ExportedObj/
 *.opendb
 *.VC.db
 
+# Font files
+*.ttf
+*.otf
+*.woff
+*.woff2
+
 # Unity3D generated meta files
 *.pidb.meta
 *.pdb.meta
