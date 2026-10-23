@@ -7,6 +7,7 @@ using UnityEngine.UI;
 /// <summary>
 /// 次すること　　　　　Hold中の項目選択方式をDeadSpace且つ角度にする・他の項目が選択されるまでという物をなくす
 /// </summary>
+[RequireComponent(typeof(SectorGraphic))]
 public class RadialMenu : MonoBehaviour
 {
     public enum LabelType
@@ -57,6 +58,8 @@ public class RadialMenu : MonoBehaviour
     private TextMeshProUGUI _activeText;
     private Image _activeIcon;
     private bool _isOpen;
+    /// <summary><summart>開閉したときに通知する(trueで開いた、falseで閉じた)</summart>summary></summary>
+    public event System.Action<bool> OnOpenChanged;
     private bool _isInitialized;
 
     public bool isOpen => _isOpen;
@@ -128,6 +131,12 @@ public class RadialMenu : MonoBehaviour
 #endif
 
         if (_isInitialized) RebuildItems();
+    }
+    /// <summary>中心に表示する項目を外から指定する。-1で表示なし</summary>
+    public void SetActiveItem(int index)
+    {
+        _activeIndex = (index >= 0 && index < _items.Count) ? index : -1;
+        RefreshActiveMenu();
     }
     #endregion
 
@@ -335,6 +344,7 @@ public class RadialMenu : MonoBehaviour
 
         _isOpen = true;
         _selectedIndex = -1;   // 開いた直後は未選択
+        OnOpenChanged?.Invoke(true);
 
         // 画面端で欠けないように中心を補正（Canvas単位 → 画面ピクセル）
         //float margin = _outerRadius * _rootCanvas.scaleFactor;
@@ -357,6 +367,8 @@ public class RadialMenu : MonoBehaviour
 
     private void Close(bool execute)
     {
+        bool wasOpen = _isOpen;
+
         if (execute && _selectedIndex >= 0 && _selectedIndex < _items.Count)
         {
             // 登録済みの項目をもう一度選ぶと解除、別の項目を選ぶと切り替え
@@ -372,6 +384,7 @@ public class RadialMenu : MonoBehaviour
         _selectedIndex = -1;
         SetActiveAll(false);
         RefreshActiveMenu();
+        if (wasOpen) OnOpenChanged?.Invoke(false);
     }
 
     private void SetActiveAll(bool active)
