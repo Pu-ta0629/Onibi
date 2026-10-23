@@ -1,26 +1,23 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using TMPro;
-using Unity.Android.Gradle;
 using UnityEditor;
-using UnityEditor.Search;
 using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UIElements;
 
 public class Stageeditorwindow : EditorWindow
 {
-    const string StageFolder = "Assets/Stages";
+    private const string StageFolder = "Assets/Stages";
 
-    readonly List<StageData> _stages = new();
-    ListView _list;
-    ScrollView _detail;
-    Label _message;
-    StageGridPanel _gridPanel;
+    private readonly List<StageData> _stages = new();
+    private ListView _list;
+    private ScrollView _detail;
+    private Label _message;
+    private StageGridPanel _gridPanel;
 
     [MenuItem("Tools/Stage Editor")]
-    static void Open() => GetWindow<Stageeditorwindow>("Stage Editor");
+    private static void Open() => GetWindow<Stageeditorwindow>("Stage Editor");
 
     private void OnDisable()
     {
@@ -82,7 +79,7 @@ public class Stageeditorwindow : EditorWindow
         Reload();
     }
 
-    void Reload()
+    private void Reload()
     {
         var selected = _list.selectedItem as StageData;
 
@@ -102,14 +99,14 @@ public class Stageeditorwindow : EditorWindow
             ShowDetail(null);
     }
 
-    void Select(StageData stage)
+    private void Select(StageData stage)
     {
         var index = _stages.IndexOf(stage);
         if (index >= 0) _list.SetSelection(index);
         ShowDetail(stage);
     }
 
-    void ShowDetail(StageData stage)
+    private void ShowDetail(StageData stage)
     {
         StageSceneEditor.Target = stage;
 
@@ -124,7 +121,7 @@ public class Stageeditorwindow : EditorWindow
         _detail.Add(new InspectorElement(stage));
     }
 
-    void CreateStage()
+    private void CreateStage()
     {
         EnsureFolder(StageFolder);
         Reload();
@@ -139,7 +136,7 @@ public class Stageeditorwindow : EditorWindow
         Select(stage);
     }
 
-    void DeleteSelected()
+    private void DeleteSelected()
     {
         var stage = _list.selectedItem as StageData;
         if (stage == null) return;
@@ -158,7 +155,7 @@ public class Stageeditorwindow : EditorWindow
         Reload();
     }
 
-    void DuplicateSelected()
+    private void DuplicateSelected()
     {
         var source = _list.selectedItem as StageData;
         if (source == null) return;
@@ -177,7 +174,7 @@ public class Stageeditorwindow : EditorWindow
         Select(copy);
     }
 
-    void Validate()
+    private void Validate()
     {
         Reload();
         var issues = new List<string>();
@@ -191,6 +188,8 @@ public class Stageeditorwindow : EditorWindow
                 issues.Add($"{stage.name}: stageName が空です");
             if (stage.Goals.Count == 0)
                 issues.Add($"{stage.name}: goals が0件です");
+
+            issues.AddRange(StageValidator.Validate(stage));
         }
 
         _message.text = issues.Count == 0 ? "問題なし" : string.Join("\n", issues);
@@ -198,9 +197,9 @@ public class Stageeditorwindow : EditorWindow
             Debug.LogWarning($"[StageEditor] {issue}");
     }
 
-    int NextId() => StageIdCounter.Take(id => _stages.Any(s => s.StageId == id));
+    private int NextId() => StageIdCounter.Take(id => _stages.Any(s => s.StageId == id));
 
-    static void SetStageId(StageData stage,int id)
+    private static void SetStageId(StageData stage,int id)
     {
         var so = new SerializedObject(stage);
         so.FindProperty(StageData.StageIdField).intValue = id;
@@ -209,7 +208,7 @@ public class Stageeditorwindow : EditorWindow
         AssetDatabase.SaveAssets();
     }
 
-    static void EnsureFolder(string path)
+    private static void EnsureFolder(string path)
     {
         if (AssetDatabase.IsValidFolder(path)) return;
         var parent = Path.GetDirectoryName(path).Replace('\\', '/');

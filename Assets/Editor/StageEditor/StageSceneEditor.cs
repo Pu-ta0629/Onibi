@@ -1,12 +1,11 @@
 using System;
 using UnityEditor;
-using UnityEditor.TerrainTools;
 using UnityEngine;
 
 [InitializeOnLoad]
 public class StageSceneEditor
 {
-    const float MarkerSize = 0.4f;
+    private const float MarkerSize = 0.4f;
 
     private static StageData _target;
     private static string _selectedPath;

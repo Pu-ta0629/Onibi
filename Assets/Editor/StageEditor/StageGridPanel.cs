@@ -1,16 +1,17 @@
 using UnityEditor;
+using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UIElements;
 
 public class StageGridPanel : VisualElement 
 {
 
-    readonly IntegerField _width;
-    readonly IntegerField _depth;
-    readonly FloatField _cellSize;
-    readonly Vector3Field _origin;
+    private readonly IntegerField _width;
+    private readonly IntegerField _depth;
+    private readonly FloatField _cellSize;
+    private readonly Vector3Field _origin;
 
-    StageData _stage;
+    private StageData _stage;
     
     public StageGridPanel()
     {
@@ -31,6 +32,37 @@ public class StageGridPanel : VisualElement
             SceneView.RepaintAll();
         });
         Add(tool);
+
+        var layer = new EnumField("Layer", StageGridEditor.CurrentLayer);
+        var terrain = new EnumField("Terrain", StageGridEditor.PaintTerrain);
+        var factions = new EnumFlagsField("Block Factions",StageGridEditor.PaintFactions);
+
+        void RefreshLayerUi()
+        {
+            var isTerrain = StageGridEditor.CurrentLayer == StageGridEditor.PaintLayer.Terrain;
+            terrain.style.display = isTerrain ? DisplayStyle.Flex : DisplayStyle.None;
+            factions.style.display = isTerrain ? DisplayStyle.None : DisplayStyle.Flex;
+            SceneView.RepaintAll();
+        }
+
+        layer.RegisterValueChangedCallback(e =>
+        {
+            StageGridEditor.CurrentLayer = (StageGridEditor.PaintLayer)e.newValue;
+            RefreshLayerUi();
+        });
+        terrain.RegisterValueChangedCallback(e => StageGridEditor.PaintTerrain = (TerrainType)e.newValue);
+        factions.RegisterValueChangedCallback(e =>
+        {
+            StageGridEditor.PaintFactions = (Faction)e.newValue;
+            SceneView.RepaintAll();
+        });
+
+        Add(layer);
+        Add(terrain);
+        Add(factions);
+        RefreshLayerUi();
+
+        Add(new Label("赤：壁／青：川／紫：崖・穴／黄：陣営の制限(factionの層)"));
 
         var brush = new SliderInt("Brush Size", 1, 5) { value = StageGridEditor.BrushSize, showInputField = true };
         brush.RegisterValueChangedCallback(e => StageGridEditor.BrushSize = e.newValue);

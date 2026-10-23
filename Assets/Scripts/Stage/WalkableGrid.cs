@@ -7,7 +7,10 @@ public class WalkableGrid
     [SerializeField,HideInInspector] private int _depth = 32;
     [SerializeField] private float _cellsize = 1f;
     [SerializeField] private Vector3 _origin;
+    //地形の種類(TerrainTypeの値。0 地面、1 壁、2 川、3 崖や穴)
     [SerializeField,HideInInspector] private byte[] _cells = new byte[32 * 32];
+    // 陣営ごとの、通れないマス(Factionのビットを、マスごとに持つ。0は誰も制限しない)
+    [SerializeField,HideInInspector] private byte[] _factionBlocks = new byte[32 * 32];
 
     public int Width => _width;
     public int Depth => _depth;
@@ -21,6 +24,25 @@ public class WalkableGrid
     public const string CellSizeField = nameof(_cellsize);
     public const string OriginField = nameof(_origin);
     public const string CellsField = nameof(_cells);
+    public const string FactionBlocksField = nameof(_factionBlocks);
+
+    public TerrainType GetTerrain(int x,int z)
+    {
+        if (x < 0 || z < 0 || x >= _width || z >= _depth) return TerrainType.Wall;
+
+        var index = z * Width + x;
+
+        return index < _cells.Length ? (TerrainType)_cells[index] : TerrainType.Wall;
+    }
+
+    public Faction GetBlockedFactions(int x,int z)
+    {
+        if (x < 0 || z < 0 || x >= Width || z >= _depth) return Faction.None;
+
+        var index = z * Width + x;
+        return index < _factionBlocks.Length ? (Faction)_factionBlocks[index] : Faction.None;
+    }
+
 
     //マス単位の判定
     public bool IsBlocked(int x,int z)
@@ -29,6 +51,19 @@ public class WalkableGrid
 
         var index = z * _width + x;
         return index >= _cells.Length || _cells[index] != 0;
+    }
+
+    public bool CanEnter(int x,int z,MovementProfile profile)
+    {
+        if (!TerrainRules.CanEnter(profile.Move, GetTerrain(x, z))) return false;
+        return (GetBlockedFactions(x, z) & profile.Side) == 0;
+    }
+
+    public bool CanEnter(Vector3 worldPosition,MovementProfile profile)
+    {
+        var x = Mathf.FloorToInt((worldPosition.x - Origin.x) / CellSize);
+        var z = Mathf.FloorToInt((worldPosition.z - Origin.z) / CellSize);
+        return CanEnter(x,z,profile);
     }
     
     //座標での判定

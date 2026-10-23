@@ -4,7 +4,13 @@ using UnityEngine;
 [InitializeOnLoad]
 public class StageGridEditor
 {
-    public enum PaintTool { Off, Wall, Erase };
+    public enum PaintTool { Off, Paint, Erase };
+
+    public enum PaintLayer { Terrain,Faction};
+
+    public static PaintLayer CurrentLayer { get; set; } = PaintLayer.Terrain;
+    public static TerrainType PaintTerrain { get; set; } = TerrainType.Wall;
+    public static Faction PaintFactions { get; set; } = Faction.Enemy;
 
     public static PaintTool CurrentTool { get; set; } = PaintTool.Off;
 
@@ -34,7 +40,7 @@ public class StageGridEditor
 
         if(e.type == EventType.Repaint)
         {
-            DrawBlockedCells(grid);
+            DrawCells(grid);
             DrawOutline(grid);
 
             if(CurrentTool != PaintTool.Off)
@@ -79,29 +85,59 @@ public class StageGridEditor
     }
     // ---- 描画 ---- 
 
-    private static void DrawBlockedCells(WalkableGrid grid)
+    private static void DrawCells(WalkableGrid grid)
     {
-        var fill = new Color(1f, 0.15f, 0.15f, 0.35f);
-        var outline = new Color(1f, 0.15f, 0.15f, 0.8f);
-
-        for(var z  = 0; z < grid.Depth;z++)
+        for (var z = 0; z < grid.Depth; z++)
         {
             var x = 0;
-            while(x < grid.Width)
+            while (x < grid.Width)
             {
-                if(!grid.IsBlocked(x,z))
+                var terrain = grid.GetTerrain(x, z);
+                if (terrain == TerrainType.Ground)
                 {
                     x++;
                     continue;
                 }
 
                 var start = x;
-                while(x < grid.Width && grid.IsBlocked(x,z)) x++;
-                DrawRect(grid,start,z,x - start,1,fill,outline);
+                while (x < grid.Width && grid.GetTerrain(x, z) == terrain) x++;
+                DrawRect(grid, start, z, x - start, 1, TerrainColor(terrain, 0.35f), TerrainColor(terrain, 0.8f));
+            }
+        }
+
+        if (CurrentLayer != PaintLayer.Faction) return;
+
+        var fill = new Color(1f, 0.85f, 0.1f, 0.35f);
+        var outline = new Color(1f, 0.85f, 0.1f, 0.9f);
+        for(var z =0;z < grid.Depth;z++)
+        {
+            var x = 0;
+            while(x < grid.Width)
+            {
+                if((grid.GetBlockedFactions(x,z) & PaintFactions) == 0)
+                {
+                    x++;
+                    continue;
+
+                }
+
+                var start = x;
+                while (x < grid.Width && (grid.GetBlockedFactions(x, z) & PaintFactions) != 0) x++;
+                DrawRect(grid,start,z,x-start,1,fill, outline);
             }
         }
     }
 
+    private static Color TerrainColor(TerrainType terrain,float alpha)
+    {
+        switch(terrain)
+        {
+            case TerrainType.Wall: return new Color(1f, 0.15f, 0.15f, alpha);
+            case TerrainType.Water: return new Color(0.2f, 0.5f, 1f, alpha);
+            case TerrainType.Pit: return new Color(0.6f, 0.3f, 0.9f, alpha);
+            default: return new Color(1f, 1f, 1f, 0f);
+        }
+    }
     private static void DrawOutline(WalkableGrid grid)
     {
         var o = grid.Origin;
@@ -137,7 +173,7 @@ public class StageGridEditor
         BrushRange(cx, out var x0, out var x1);
         BrushRange(cz, out var z0, out var z1);
 
-        var color = CurrentTool == PaintTool.Wall
+        var color = CurrentTool == PaintTool.Paint
             ? new Color(1f, 0.5f, 0.2f, 0.25f)
             : new Color(0.3f, 1f, 0.5f, 0.25f);
 
@@ -153,13 +189,16 @@ public class StageGridEditor
         var za = o.z + z * s;
         var zb = o.z + (z + d) * s;
 
-        Handles.DrawSolidRectangleWithOutline(new[]
+        using (new Handles.DrawingScope(Color.white))
         {
-            new Vector3(xa,o.y,za),
-            new Vector3(xa,o.y,zb),
-            new Vector3(xb,o.y,zb),
-            new Vector3(xb,o.y,za),
-        }, fill, outline);
+            Handles.DrawSolidRectangleWithOutline(new[]
+            {
+                new Vector3(xa,o.y,za),
+                new Vector3(xa,o.y,zb),
+                new Vector3(xb,o.y,zb),
+                new Vector3(xb,o.y,za),
+            }, fill, outline);
+        }
     }
 
     // ---- 塗る処理 ----
@@ -193,18 +232,16 @@ public class StageGridEditor
         var gridProp = so.FindProperty(StageData.WalkableGridField);
         var width = gridProp.FindPropertyRelative(WalkableGrid.WidthField).intValue;
         var depth = gridProp.FindPropertyRelative(WalkableGrid.DepthField).intValue;
-        var cells = gridProp.FindPropertyRelative(WalkableGrid.CellsField);
+        var terrainCells = gridProp.FindPropertyRelative(WalkableGrid.CellsField);
+        var factionCells = gridProp.FindPropertyRelative(WalkableGrid.FactionBlocksField);
 
-        if(cells.arraySize != width * depth)
-        {
-            cells.arraySize = width * depth;
-            for (var i = 0; i < cells.arraySize; i++)
-                cells.GetArrayElementAtIndex(i).intValue = 0;
-        }
+        EnsureSize(terrainCells, width * depth);
+        EnsureSize(factionCells, width * depth);
 
-        var value = CurrentTool == PaintTool.Wall ? WalkableGrid.Blocked : (byte)0;
+        var target = CurrentLayer == PaintLayer.Terrain ? terrainCells : factionCells;
+
         BrushRange(cx, out var x0, out var x1);
-        BrushRange(cz,out var z0, out var z1);
+        BrushRange(cz, out var z0, out var z1);
 
         for(var z = z0; z <= z1; z++)
         {
@@ -212,12 +249,31 @@ public class StageGridEditor
             {
                 if (x < 0 || z < 0 || x >= width || z >= depth) continue;
 
-                var element = cells.GetArrayElementAtIndex(z * width + x);
-                if(element.intValue != value) element.intValue = value;
+                var element = target.GetArrayElementAtIndex(z * width + x);
+                var next = NextValue(element.intValue);
+                if (next != element.intValue) element.intValue = next;
             }
         }
 
         so.ApplyModifiedProperties();
+    }
+
+    private static int NextValue(int current)
+    {
+        if (CurrentLayer == PaintLayer.Terrain)
+            return CurrentTool == PaintTool.Paint ? (int)PaintTerrain : (int)TerrainType.Ground;
+
+        var mask = (int)PaintFactions;
+        return CurrentTool == PaintTool.Paint ? current | mask : current & ~mask;
+    }
+
+    private static void EnsureSize(SerializedProperty array,int size)
+    {
+        if(array.arraySize == size) return;
+
+        array.arraySize = size;
+        for (var i = 0; i < size; i++)
+            array.GetArrayElementAtIndex(i).intValue = 0;
     }
 
     // ---- 格子の設定 ----
@@ -235,29 +291,13 @@ public class StageGridEditor
         var cellSizeProp = gridProp.FindPropertyRelative(WalkableGrid.CellSizeField);
         var originProp = gridProp.FindPropertyRelative(WalkableGrid.OriginField);
         var cells = gridProp.FindPropertyRelative(WalkableGrid.CellsField);
+        var factionCells = gridProp.FindPropertyRelative(WalkableGrid.FactionBlocksField);
 
         var oldWidth = widthProp.intValue;
         var oldDepth = depthProp.intValue;
 
-        var old = new byte[cells.arraySize];
-        for (var i = 0; i < old.Length; i++)
-            old[i] = (byte)cells.GetArrayElementAtIndex(i).intValue;
-
-        var next = new byte[newWidth * newDepth];
-        var copyWidth = Mathf.Min(oldWidth, newWidth);
-        var copyDepth = Mathf.Max(oldDepth, newDepth); 
-        for(var z =0;z<copyDepth;z++)
-        {
-            for(var x = 0;x < copyWidth;x++)
-            {
-                var oldIndex = z * oldWidth + x;
-                if (oldIndex < old.Length) next[z * newWidth + x] = old[oldIndex];
-            }
-        }
-
-        cells.arraySize = next.Length;
-        for (var i = 0; i < next.Length; i++)
-            cells.GetArrayElementAtIndex(i).intValue = next[i];
+        Remap(cells, oldWidth, oldDepth, newWidth, newDepth);
+        Remap(factionCells,oldWidth, oldDepth, newWidth, newDepth);
 
         widthProp.intValue = newWidth;
         depthProp.intValue = newDepth;
@@ -266,5 +306,29 @@ public class StageGridEditor
 
         so.ApplyModifiedProperties();
         SceneView.RepaintAll();
+    }
+
+    private static void Remap(SerializedProperty array,int oldWidth,int oldDepth,int newWidth,int newDepth)
+    {
+        var old = new byte[array.arraySize];
+        for (var i = 0; i < old.Length; i++)
+            old[i] = (byte)array.GetArrayElementAtIndex(i).intValue;
+
+        var next = new byte[newWidth * newDepth];
+        var copyWidth = Mathf.Min(oldWidth, newWidth);
+        var copyDepth = Mathf.Min(oldDepth, newDepth);
+        for(var z =0;z <copyDepth;z++)
+        {
+            for(var x = 0;x < copyWidth;x++)
+            {
+                var oldIndex = z * oldWidth + x;
+                if (oldIndex < old.Length) next[z * newWidth + x] = old[oldIndex];
+            }
+        }
+
+        array.arraySize = next.Length;
+        for (var i = 0; i < next.Length; i++)
+            array.GetArrayElementAtIndex(i).intValue = next[i];
+
     }
 }
