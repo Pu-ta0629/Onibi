@@ -1,12 +1,11 @@
 using System;
 using UnityEditor;
-using UnityEditor.TerrainTools;
 using UnityEngine;
 
 [InitializeOnLoad]
 public class StageSceneEditor
 {
-    const float MarkerSize = 0.4f;
+    private const float MarkerSize = 0.4f;
 
     private static StageData _target;
     private static string _selectedPath;
@@ -67,9 +66,16 @@ public class StageSceneEditor
         var rot = Quaternion.Euler(0f, rotProp.floatValue, 0f);
 
         //敵とアイテムはIDもラベルに出す
-        var enemyId = element.FindPropertyRelative(EnemyPlacement.EnemyIdField);
+        var enemyProp = element.FindPropertyRelative(EnemyPlacement.EnemyField);
         var itemId = element.FindPropertyRelative(ItemPlacement.ItemIdField);
-        if (enemyId != null) label += $"(ID:{enemyId.intValue})";
+        if (enemyProp != null)
+        {
+            var enemy = enemyProp.objectReferenceValue as EnemyData;
+            var sizeProp = element.FindPropertyRelative(EnemyPlacement.SizeField);
+            var sizeClass = (SizeClass)sizeProp.enumValueIndex;
+            label += enemy != null ? $"({enemy.DisplayName} / {sizeClass})" : $"(未設定 / {sizeClass})";
+
+        }
         if (itemId != null) label += $"(ID:{itemId.intValue})";
 
         var selected = element.propertyPath == _selectedPath;
@@ -112,7 +118,10 @@ public class StageSceneEditor
         element.FindPropertyRelative(GoalPlacement.RadiusField).floatValue = 1f);
 
     public static void AddEnemy() => Add(StageData.EnemiesField, element =>
-        element.FindPropertyRelative(EnemyPlacement.EnemyIdField).intValue = 1);
+        {
+            element.FindPropertyRelative(EnemyPlacement.EnemyField).objectReferenceValue = null;
+            element.FindPropertyRelative(EnemyPlacement.SizeField).enumValueIndex = (int)SizeClass.Medium;
+        });
 
     public static void AddItem() => Add(StageData.ItemsField, element =>
         element.FindPropertyRelative(ItemPlacement.ItemIdField).intValue = 1);

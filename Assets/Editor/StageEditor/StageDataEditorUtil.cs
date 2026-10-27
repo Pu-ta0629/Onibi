@@ -11,7 +11,7 @@ public static class StageDataEditorUtil
         list.arraySize++;
         var element = list.GetArrayElementAtIndex(list.arraySize - 1);
 
-        element.FindPropertyRelative(EnemyPlacement.EnemyIdField).intValue = enemyId;
+        element.FindPropertyRelative(EnemyPlacement.EnemyField).intValue = enemyId;
         element.FindPropertyRelative(PlacementData.PositionField).vector3Value = position;
         element.FindPropertyRelative(PlacementData.RotationYField).floatValue = 0f;
 

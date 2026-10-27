@@ -28,7 +28,7 @@ public class StageIdCounter : ScriptableObject
         return id;
     }
 
-    static StageIdCounter LoadOrCreate()
+    private static StageIdCounter LoadOrCreate()
     {
         var counter = AssetDatabase.LoadAssetAtPath<StageIdCounter>(AssetPath);
 
