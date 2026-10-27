@@ -418,8 +418,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FireController
   _color: 1
+  _navMeshSampleDistance: 2
   _billboardTarget: {fileID: 309415831}
-  _yAxisOnly: 1
 --- !u!212 &309415834
 SpriteRenderer:
   serializedVersion: 2
@@ -1074,8 +1074,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FireController
   _color: 3
+  _navMeshSampleDistance: 2
   _billboardTarget: {fileID: 1178576345}
-  _yAxisOnly: 1
 --- !u!212 &1178576348
 SpriteRenderer:
   serializedVersion: 2
@@ -1204,8 +1204,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FireController
   _color: 2
+  _navMeshSampleDistance: 2
   _billboardTarget: {fileID: 1380250470}
-  _yAxisOnly: 1
 --- !u!212 &1380250473
 SpriteRenderer:
   serializedVersion: 2

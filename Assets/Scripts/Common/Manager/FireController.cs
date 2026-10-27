@@ -10,11 +10,13 @@ public class FireController : MonoBehaviour
 {
     [Header("FireConfig")]
     [SerializeField] private TypeManager.FireColor _color;
-    [SerializeField, Tooltip("マウス位置の近くでNavMeshを探す距離。地面の高さが少しずれていても届く大きさにする"), Range(0.1f, 10f)] private float _navMeshSampleDistance = 2f;
+    [Tooltip("マウス位置の近くでNavMeshを探す距離。地面の高さが少しずれていても届く大きさにする")]
+    [SerializeField,Range(0.1f, 10f)] private float _navMeshSampleDistance = 2f;
     private NavMeshAgent _agent;
 
     [Header("Billboard")]
-    [SerializeField, Tooltip("カメラに向けるスプライトのTransform。子オブジェクト推奨。未設定なら自分自身")] private Transform _billboardTarget;
+    [Tooltip("カメラに向けるスプライトのTransform。子オブジェクト推奨。未設定なら自分自身")]
+    [SerializeField] private Transform _billboardTarget;
 
     private Camera _billboardCamera;
     private TypeManager.FireAIPermission _aiPermission;
@@ -25,7 +27,7 @@ public class FireController : MonoBehaviour
 
     #region Initialize
     /// <summary>
-    /// FireManagerから呼ぶ。カメラはInitializeManagerが持つものをFireManager経由で受け取る
+    /// FireManagerで呼ぶ。カメラはInitializeManagerが持つものをFireManager経由で受け取る
     /// </summary>
     public void Initialize(Camera mainCamera)
     {
