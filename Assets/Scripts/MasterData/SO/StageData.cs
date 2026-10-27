@@ -27,11 +27,17 @@ public class GoalPlacement : PlacementData
 [System.Serializable]
 public class EnemyPlacement : PlacementData
 {
-    [SerializeField] private int _enemyId;
+    [SerializeField] private EnemyData _enemy;
 
-    public int EnemyId => _enemyId;
+    [SerializeField] private SizeClass _size = SizeClass.Medium;
 
-    public const string EnemyIdField = nameof(_enemyId);
+    public EnemyData Enemy => _enemy;
+    public SizeClass Size => _size;
+
+    public const string EnemyField = nameof(_enemy);
+    public const string SizeField = nameof(_size);
+
+    public MovementProfile Profile => new(_enemy != null ? _enemy.MoveType : MoveType.Walk, _size, Faction.Enemy);
 }
 
 [System.Serializable]
