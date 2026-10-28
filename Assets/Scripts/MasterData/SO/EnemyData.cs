@@ -11,8 +11,8 @@ public class EnemyAttack
     [Tooltip("Damage(基礎攻撃力に掛ける倍率)")]
     [SerializeField] private int _damageRate;
 
-    [Tooltip("AttackRange(攻撃範囲)")]
-    [SerializeField] private float _range;
+    [Tooltip("攻撃の当たり判定(AttackRange。形、範囲、手前の当たらない範囲、位置ずれ)")]
+    [SerializeField] private AttackCollider _collider = new();
 
     [Tooltip("AttackChargeTime(攻撃溜め時間。単位秒)")]
     [SerializeField] private float _chargeTime;
@@ -25,7 +25,9 @@ public class EnemyAttack
 
     public string Pattern => _pattern;
     public int DamageRate => _damageRate;
-    public float Range => _range;
+    public AttackCollider collider => _collider;
+
+    public float Range => _collider.Shape.Range;
     public float ChargeTime => _chargeTime;
     public float Cooldown => _cooldown;
     public float RecoveryTime => _recoveryTime;
@@ -63,6 +65,10 @@ public class EnemyData : MasterData
     [Tooltip("戦闘ロジック(名前。実装を選ぶためのキー)")]
     [SerializeField] string _battleLogic;
 
+    [Header("当たり判定")]
+    [Tooltip("当てられる側の体")]
+    [SerializeField] HitCollider _hitCollider = new();
+
     [Header("攻撃")]
     [SerializeField] EnemyAttack _attack1 = new();
     [SerializeField] EnemyAttack _attack2 = new();
@@ -78,6 +84,8 @@ public class EnemyData : MasterData
     public string BattleLogic => _battleLogic;
     public EnemyAttack Attack1 => _attack1;
     public EnemyAttack Attack2 => _attack2;
+
+    public HitCollider HitCollider => _hitCollider;
 
     public MoveType MoveType => _type != null ? _type.moveType : MoveType.Walk;
 
