@@ -9,12 +9,15 @@ using UnityEngine;
 public class FireManager : MonoBehaviour
 {
     [Header("Fires")]
-    [SerializeField, Tooltip("シーンに置いてある火。所持している色だけ登録される")] private FireController[] _sceneFires;
-    [SerializeField, Tooltip("ステージ開始時にラジアルで選択済みにする火（迷子の最初の追従先になる）")] private TypeManager.FireColor _initialSelectColor = TypeManager.FireColor.Red;
+    [Tooltip("シーンに置いてある火。所持している色だけ登録される")]
+    [SerializeField] private FireController[] _sceneFires;
+    [Tooltip("ステージ開始時にラジアルで選択済みにする火（迷子の最初の追従先になる）")]
+    [SerializeField] private TypeManager.FireColor _initialSelectColor = TypeManager.FireColor.Red;
 
     [Header("RadialMenu")]
     [SerializeField] private RadialMenu _radialMenu;
-    [SerializeField, Tooltip("ラジアルに表示する火の文字・アイコン。設定のない火は色の名前で表示する")] private FireRadialEntry[] _radialEntries;
+    [Tooltip("ラジアルに表示する火の文字・アイコン。設定のない火は色の名前で表示する")]
+    [SerializeField] private FireRadialEntry[] _radialEntries;
 
     private readonly Dictionary<TypeManager.FireColor, FireController> _fires = new Dictionary<TypeManager.FireColor, FireController>();
     private TypeManager _typeManager;
@@ -142,7 +145,7 @@ public class FireManager : MonoBehaviour
         }
 
         MoveSelectedFire();
-        UpdateMaigoTarget();
+        UpdateLostChildTarget();
     }
 
     private void OnDestroy()
@@ -183,28 +186,36 @@ public class FireManager : MonoBehaviour
     #endregion
 
     #region Update
-    //選択中かつ固定されていない火を、マウス位置の地面へ移動させる
+    //選択中かつ固定されていない火に、マウス位置の地面を目的地として渡す（火はNavMeshAgentでそこへ向かう）
     private void MoveSelectedFire()
     {
         TypeManager.FireColor color = _typeManager.SelectedColor;
-        if (_typeManager.IsRadialOpen || color == TypeManager.FireColor.None)
+        if (color == TypeManager.FireColor.None || !_fires.TryGetValue(color, out FireController fire))
         {
             return;
         }
 
+        //ラジアルを開いている間は、その場で止める
+        if (_typeManager.IsRadialOpen)
+        {
+            fire.StopMoving();
+            return;
+        }
+
+        //固定中は、Stateが変わった時点で止まっているので何もしない
         if (_typeManager.GetFireState(color).IsFixed)
         {
             return;
         }
 
-        if (_fires.TryGetValue(color, out FireController fire) && _inputManager.TryGetGroundPoint(out Vector3 point))
+        if (_inputManager.TryGetGroundPoint(out Vector3 point))
         {
             fire.MoveTo(point);
         }
     }
 
     //迷子へ追従先の座標を渡す
-    private void UpdateMaigoTarget()
+    private void UpdateLostChildTarget()
     {
         TypeManager.FireColor color = _typeManager.FollowTarget;
         if (color == TypeManager.FireColor.None)
