@@ -44,8 +44,6 @@ public class RadialMenu : MonoBehaviour
     [Tooltip("中心に表示するTextMeshPro/Imageの大きさ(Canvas単位)。Inner Radiusの内側に収まる大きさにする")]
     [SerializeField, Range(8f, 300f)] private float _activeSize = 80f;
 
-    private const float _iconAngle = 90f;   // Imageの向き(度)。項目と中心で共通
-
     private readonly List<Item> _items = new List<Item>();
     private readonly List<SectorGraphic> _itemSectors = new List<SectorGraphic>();
     private RectTransform _root;
@@ -244,7 +242,6 @@ public class RadialMenu : MonoBehaviour
         var iconRect = (RectTransform)iconObject.transform;
         iconRect.sizeDelta = Vector2.one * _iconSize;
         iconRect.anchoredPosition = position;   //扇形の中央に配置
-        iconRect.localRotation = Quaternion.Euler(0f, 0f, _iconAngle);
 
         var icon = iconObject.GetComponent<Image>();
         icon.sprite = item.Icon;
@@ -280,7 +277,6 @@ public class RadialMenu : MonoBehaviour
                     var iconRect = (RectTransform)_activeMenuObject.transform;
                     iconRect.sizeDelta = Vector2.one * _activeSize;
                     iconRect.anchoredPosition = Vector2.zero;
-                    iconRect.localRotation = Quaternion.Euler(0f, 0f, _iconAngle);
 
                     _activeIcon = _activeMenuObject.GetComponent<Image>();
                     _activeIcon.preserveAspect = true;

@@ -12,6 +12,8 @@ public class FireController : MonoBehaviour
     [SerializeField] private TypeManager.FireColor _color;
     [Tooltip("マウス位置の近くでNavMeshを探す距離。地面の高さが少しずれていても届く大きさにする")]
     [SerializeField,Range(0.1f, 10f)] private float _navMeshSampleDistance = 2f;
+    [Tooltip("マウス位置がこの距離以上動いたら、目的地を更新する（経路計算の回数を減らす）")]
+    [SerializeField, Range(0.05f, 2f)] private float _destinationUpdareDistance = 0.3f;
     private NavMeshAgent _agent;
 
     [Header("Billboard")]
@@ -19,7 +21,10 @@ public class FireController : MonoBehaviour
     [SerializeField] private Transform _billboardTarget;
 
     private Camera _billboardCamera;
+    private TypeManager.FireState _state;
     private TypeManager.FireAIPermission _aiPermission;
+    private Vector3 _lastTarget;
+    private bool _hasDestination;
 
     public TypeManager.FireColor color => _color;
     public Vector3 position => transform.position;
@@ -78,10 +83,11 @@ public class FireController : MonoBehaviour
 
     #region Public
     /// <summary>
-    /// Stateが変わったときに呼ぶ。AIの許可を更新し、動けない間はAgentを止める
+    /// 
     /// </summary>
     public void ApplyState(TypeManager.FireState state)
     {
+        _state = state;
         _aiPermission = TypeManager.ToAIPermission(state);
         RefreshAgent();
     }

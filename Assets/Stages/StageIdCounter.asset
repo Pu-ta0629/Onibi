@@ -12,4 +12,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7f214c6b072e1b54da93e964dd916f36, type: 3}
   m_Name: StageIdCounter
   m_EditorClassIdentifier: Assembly-CSharp-Editor::StageIdCounter
-  _nextId: 4
+  _nextId: 5
