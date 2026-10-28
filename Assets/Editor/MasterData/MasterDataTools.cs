@@ -96,7 +96,6 @@ public static class MasterDataTools
 
             CheckAttack($"{label}のAttack1", enemy.Attack1, enemy, issues);
             CheckAttack($"{label}のAttack2", enemy.Attack2, enemy, issues);
-            CheckHitCollider(label, enemy.HitCollider, enemy, issues);
         }
 
         foreach(var fire in fires)
@@ -112,8 +111,6 @@ public static class MasterDataTools
             if (fire.NormalCost < 0 || fire.SpecialCost < 0) issues.Add(($"{label}: クールタイムが、マイナスです",fire));
 
             if (fire.BurnPotency < 0 || fire.BurnCount < 0) issues.Add(($"{label}: 火傷威力か火傷回数が、マイナスです", fire));
-
-            CheckHitCollider(label, fire.HitCollider, fire, issues);
         }
 
         foreach (var (message, context) in issues)
@@ -147,13 +144,7 @@ public static class MasterDataTools
         if (attack.Range < 0) issues.Add(($"{label}: 攻撃範囲が、マイナスです", context));
         if (attack.ChargeTime < 0) issues.Add(($"{label}: 溜め時間が、マイナスです。", context));
         if (attack.Cooldown < 0) issues.Add(($"{label}: クールタイムが、マイナスです",context));
-        if (attack.RecoveryTime < 0) issues.Add(($"{label}: 硬直時間が、マイナスです", context));
-
-        var shape = attack.collider.Shape;
-        if (shape.InnerRange < 0) issues.Add(($"{label}: 手前の当たらない範囲が、マイナスです", context));
-        if (shape.InnerRange >= shape.Range) issues.Add(($"{label}: 手前の当たらない範囲が、攻撃範囲以上です(どこにも当たりません)", context));
-        if (shape.Kind == HitShapeKind.Sector && (shape.Angle <= 0f || shape.Angle > 360f)) issues.Add(($"{label}: 扇型の角度は、0< x <= 360 にしてください",context));
-        if (shape.Kind == HitShapeKind.Box && shape.Width <= 0f) issues.Add(($"{label}: 四角の幅は、0 より大きくしてください", context));
+        if (attack.RecoveryTime < 0) issues.Add(($"{label}: 硬直時間が、マイナスです", context)); 
     }
 
     private static void EnsureFolder(string path)
@@ -162,17 +153,5 @@ public static class MasterDataTools
         var parent = Path.GetDirectoryName(path).Replace('\\', '/');
         EnsureFolder(parent);
         AssetDatabase.CreateFolder(parent, Path.GetFileName(path));
-    }
-
-    private static void CheckHitCollider(string label,HitCollider collider,Object context,List<(string message,Object context)> issues)
-    {
-        if (collider.Circles.Count == 0)
-            issues.Add(($"{label}: 当たり判定(体)の円が、1つもありません", context));
-
-        foreach (var circle in collider.Circles)
-        {
-            if (circle.Radius <= 0f)
-                issues.Add(($"{label}: 当たり判定(体)に、半径が 0以下の円があります",context));
-        }
     }
 }

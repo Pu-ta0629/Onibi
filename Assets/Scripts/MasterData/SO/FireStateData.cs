@@ -1,6 +1,4 @@
-using System;
 using System.Runtime.InteropServices;
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.UI;
@@ -49,16 +47,6 @@ public class FireStateData :MasterData
     [Tooltip("火傷回数(攻撃時に与える火傷回数)")]
     [SerializeField] int _burnCount;
 
-    [Header("当たり判定")]
-    [Tooltip("当てられる側の体")]
-    [SerializeField] HitCollider _hitCollider = new();
-
-    [Tooltip("通常攻撃の当たり判定(近接攻撃)")]
-    [SerializeField] AttackCollider _normalAttackCollider = new();
-
-    [Tooltip("特殊行動の当たり判定")]
-    [SerializeField] AttackCollider _specialAttackCollider = new();
-
     public string FireState => _fireState;
     public int Rank => _rank;
     public float MoveSpeed => _moveSpeed;
@@ -71,7 +59,4 @@ public class FireStateData :MasterData
     public float SpecialCooldown => _specialCooldown;
     public int BurnPotency => _burnPotency;
     public int BurnCount => _burnCount;
-    public HitCollider HitCollider => _hitCollider;
-    public AttackCollider NormalAttackCollider => _normalAttackCollider;
-    public AttackCollider SpecialAttackcollider => _specialAttackCollider;
 }

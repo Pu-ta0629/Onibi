@@ -1,4 +1,3 @@
-using Unity.Cinemachine;
 using UnityEngine;
 
 // 当たりの形を、Debug.DrawLine の線で表示する(Scene ビューに出る。Game ビューは、Gizmos をオンにすると出る)
@@ -15,27 +14,22 @@ public static class HitDebug
         {
             case HitShapeKind.Circle:
                 DrawCircle(origin, shape.Range, color, duration);
-                if (shape.InnerRange > 0f) DrawCircle(origin, shape.InnerRange, color, duration);
                 break;
 
             case HitShapeKind.Sector:
                 DrawArc(origin, f, shape.Angle, shape.Range, color, duration);
-                if (shape.InnerRange > 0f) DrawArc(origin, f, shape.Angle, shape.InnerRange, color, duration);
                 // 扇形の両端の線
-                var left = Quaternion.AngleAxis(-shape.Angle * 0.5f, Vector3.up) * f;
-                var rightDir = Quaternion.AngleAxis(shape.Angle * 0.5f, Vector3.up) * f;
-                Debug.DrawLine(origin + left * shape.InnerRange, origin + left * shape.Range, color, duration);
-                Debug.DrawLine(origin + rightDir * shape.InnerRange, origin + rightDir * shape.Range, color, duration);
+                Debug.DrawLine(origin, origin + Quaternion.AngleAxis(-shape.Angle * 0.5f, Vector3.up) * f * shape.Range, color, duration);
+                Debug.DrawLine(origin, origin + Quaternion.AngleAxis(shape.Angle * 0.5f, Vector3.up) * f * shape.Range, color, duration);
                 break;
 
             case HitShapeKind.Box:
-                var side = Vector3.Cross(Vector3.up, f) * (shape.Width * 0.5f);
-                var start = f * shape.InnerRange;
+                var right = Vector3.Cross(Vector3.up, f) * (shape.Width * 0.5f);
                 var end = f * shape.Range;
-                Debug.DrawLine(origin + start - side, origin + start + side, color, duration);
-                Debug.DrawLine(origin + start + side, origin + end + side, color, duration);
-                Debug.DrawLine(origin + end + side, origin + end - side, color, duration);
-                Debug.DrawLine(origin + end - side, origin + start - side, color, duration);
+                Debug.DrawLine(origin - right, origin + right, color, duration);
+                Debug.DrawLine(origin + right, origin + right + end, color, duration);
+                Debug.DrawLine(origin + right + end, origin - right + end, color, duration);
+                Debug.DrawLine(origin - right + end, origin - right, color, duration);
                 break;
         }
     }
@@ -59,32 +53,4 @@ public static class HitDebug
             previous = next;
         }
     }
-
-    public static void DrawHitCollier(HitCollider collider,Vector3 position,float yaw,float duration = 0f)
-    {
-        var rotation = Quaternion.Euler(0f, yaw, 0f);
-        foreach (var circle in collider.Circles)
-        {
-            var center = position + rotation * new Vector3(circle.Offset.x, 0f, circle.Offset.y);
-            DrawCircle(center, circle.Radius, ColliderColors.Hit, duration);
-
-            var cross = Mathf.Min(circle.Radius, 0.2f);
-            Debug.DrawLine(center - Vector3.right * cross, center + Vector3.right * cross, ColliderColors.Hit, duration);
-            Debug.DrawLine(center - Vector3.forward * cross, center + Vector3.forward * cross, ColliderColors.Hit, duration);
-        }
-    }
-
-    public static void DrawAttackCollider(AttackCollider attack, Vector3 position, float yaw, float duration = 0f)
-    {
-        attack.Resolve(position, yaw, out var origin, out var forward);
-        Draw(attack.Shape,origin,forward,ColliderColors.Attack,duration);
-
-        var tip = origin + forward * 0.6f;
-        var back = -forward * 0.2f;
-        var side = Vector3.Cross(Vector3.up, forward) * 0.12f;
-        Debug.DrawLine(origin, tip, ColliderColors.Attack, duration);
-        Debug.DrawLine(tip,tip + back + side, ColliderColors.Attack, duration);
-        Debug.DrawLine(tip,tip + back - side, ColliderColors.Attack, duration);
-    }
-
 }
