@@ -28,18 +28,18 @@ public class HitWorld
         switch(shape.Kind)
         {
             case HitShapeKind.Circle:
-                QueryCircle(origin,shape.Range,mask,results);
+                QueryCircle(origin,shape.Range,mask,results,shape.InnerRange);
                 break;
             case HitShapeKind.Sector:
-                QuerySector(origin,forward,shape.Range,shape.Angle,mask,results);
+                QuerySector(origin,forward,shape.Range,shape.Angle,mask,results, shape.InnerRange);
                 break;
             case HitShapeKind.Box:
-                QueryBox(origin,forward,shape.Range,shape.Width,mask,results);
+                QueryBox(origin,forward,shape.Range,shape.Width,mask,results, shape.InnerRange);
                 break;
         }
     }
 
-    public void QueryCircle(Vector3 center, float radius, Faction mask, List<HitBody> results)
+    public void QueryCircle(Vector3 center, float radius, Faction mask, List<HitBody> results,float innerRadius = 0f)
     {
         results.Clear();
 
@@ -49,14 +49,18 @@ public class HitWorld
 
             var dx = body.Position.x - center.x;
             var dz = body.Position.z - center.z;
-            var sum = radius + body.Radius;
+            var distanceSqr = dx * dx + dz * dz;
 
-            if(dx * dx + dz * dz < sum * sum) 
-                results.Add(body);
+            var outer = radius + body.Radius;
+            if (distanceSqr > outer * outer) continue;
+
+            if (innerRadius > 0f && Mathf.Sqrt(distanceSqr) + body.Radius < innerRadius) continue;
+            
+            results.Add(body);
         }
     }
 
-    public void QuerySector(Vector3 origin,Vector3 forward,float range,float angle,Faction mask,List<HitBody> results)
+    public void QuerySector(Vector3 origin,Vector3 forward,float range,float angle,Faction mask,List<HitBody> results,float innerRange = 0f)
     {
         results.Clear();
         if (!TryGetDirection(forward, out var direction)) return;
@@ -72,6 +76,8 @@ public class HitWorld
 
             if (distance > range + body.Radius) continue;
 
+            if (distance + body.Radius < innerRange) continue;
+
             if(distance <= body.Radius)
             {
                 results.Add(body);
@@ -85,7 +91,7 @@ public class HitWorld
         }
     }
 
-    public void QueryBox(Vector3 origin,Vector3 forward,float length,float width,Faction mask,List<HitBody> results)
+    public void QueryBox(Vector3 origin,Vector3 forward,float length,float width,Faction mask,List<HitBody> results,float innerRange = 0f)
     {
         results.Clear();
         if(!TryGetDirection(forward,out var direction)) return;
@@ -102,7 +108,7 @@ public class HitWorld
             var localX = Vector2.Dot(to, right);
 
             var dx = localX - Mathf.Clamp(localX,-half,half);
-            var dz = localZ - Mathf.Clamp(localZ,0f,length);
+            var dz = localZ - Mathf.Clamp(localZ,innerRange,length);
 
             if (dx * dx + dz * dz <= body.Radius * body.Radius) results.Add(body);
         }
