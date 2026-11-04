@@ -1,3 +1,4 @@
+using System;
 using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine;
@@ -12,9 +13,7 @@ public sealed class ColliderDefDrawer : PropertyDrawer
     private sealed class Views
     {
         public Foldout Root;
-        public SerializedProperty Key;
-        public SerializedProperty Role;
-        public SerializedProperty Kind;
+        public SerializedProperty Property;   // コライダー1つ分の値(この Inspector の SerializedObject から取ったもの)
         public PropertyField Yaw;
         public PropertyField Targets;
         public HelpBox Warning;
@@ -22,11 +21,6 @@ public sealed class ColliderDefDrawer : PropertyDrawer
 
     public override VisualElement CreatePropertyGUI(SerializedProperty property)
     {
-        var keyProperty = property.FindPropertyRelative(ColliderDef.KeyField);
-        var roleProperty = property.FindPropertyRelative(ColliderDef.RoleField);
-        var shapeProperty = property.FindPropertyRelative(ColliderDef.ShapeField);
-        var kindProperty = shapeProperty.FindPropertyRelative(ColliderShape.KindField);
-
         var root = new Foldout { value = true };
         root.style.borderLeftWidth = 4;
         root.style.paddingLeft = 4;
@@ -35,41 +29,43 @@ public sealed class ColliderDefDrawer : PropertyDrawer
         var views = new Views
         {
             Root = root,
-            Key = keyProperty,
-            Role = roleProperty,
-            Kind = kindProperty,
+            Property = property,
             Yaw = new PropertyField(property.FindPropertyRelative(ColliderDef.YawOffsetField)),
             Targets = new PropertyField(property.FindPropertyRelative(ColliderDef.TargetsField)),
             Warning = new HelpBox(string.Empty, HelpBoxMessageType.Warning),
         };
 
-        root.Add(new PropertyField(keyProperty));
-        root.Add(new PropertyField(roleProperty));
+        root.Add(new PropertyField(property.FindPropertyRelative(ColliderDef.KeyField)));
+        root.Add(new PropertyField(property.FindPropertyRelative(ColliderDef.RoleField)));
         root.Add(views.Warning);
-        root.Add(new PropertyField(shapeProperty));
+        root.Add(new PropertyField(property.FindPropertyRelative(ColliderDef.ShapeField)));
         root.Add(new PropertyField(property.FindPropertyRelative(ColliderDef.OffsetField)));
         root.Add(views.Yaw);
         root.Add(views.Targets);
 
         Refresh(views);
 
-        // 名前、役割、形が変わったら、表示を更新する
-        root.TrackPropertyValue(keyProperty, _ => Refresh(views));
-        root.TrackPropertyValue(roleProperty, _ => Refresh(views));
-        root.TrackPropertyValue(kindProperty, _ => Refresh(views));
+        // 名前(文字)、役割と形(列挙型)が変わったら、表示を更新する。
+        // TrackPropertyValue は使わない(Inspector が作り直されたときに、消えた SerializedObject を参照して、エラーになることがあるため)
+        root.RegisterCallback<ChangeEvent<string>>(_ => Refresh(views));
+        root.RegisterCallback<ChangeEvent<Enum>>(_ => Refresh(views));
 
         return root;
     }
 
     private static void Refresh(Views views)
     {
+        var property = views.Property;
+        var key = property.FindPropertyRelative(ColliderDef.KeyField).stringValue;
+
         // enumValueIndex は、enum の値が 0 から順に並んでいる前提(新しい役割は、末尾に足す)
-        var role = (ColliderRole)views.Role.enumValueIndex;
-        var kind = (ColliderShapeKind)views.Kind.enumValueIndex;
+        var role = (ColliderRole)property.FindPropertyRelative(ColliderDef.RoleField).enumValueIndex;
+        var kind = (ColliderShapeKind)property.FindPropertyRelative(ColliderDef.ShapeField)
+            .FindPropertyRelative(ColliderShape.KindField).enumValueIndex;
         var color = ColliderColors.Of(role);
 
         // 見出しと、役割の色
-        views.Root.text = $"{views.Key.stringValue} ({role})";
+        views.Root.text = $"{key} ({role})";
         views.Root.style.borderLeftColor = color;
         views.Root.style.backgroundColor = new Color(color.r, color.g, color.b, 0.08f);
 

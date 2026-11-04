@@ -1,3 +1,4 @@
+using System;
 using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine.UIElements;
@@ -29,9 +30,11 @@ public sealed class ColliderShapeDrawer : PropertyDrawer
         // 最初の表示(enumValueIndex は、enum の値が 0 から順に並んでいる前提)
         Apply((ColliderShapeKind)kindProperty.enumValueIndex, radiusField, lengthField, widthField, angleField, innerRangeField);
 
-        // 形が変わったら、表示する項目を切り替える
-        root.TrackPropertyValue(kindProperty, changed =>
-            Apply((ColliderShapeKind)changed.enumValueIndex, radiusField, lengthField, widthField, angleField, innerRangeField));
+        // 形が変わったら、表示する項目を切り替える。
+        // TrackPropertyValue は使わない(Inspector が作り直されたときに、消えた SerializedObject を参照して、エラーになることがあるため)。
+        // この中に、列挙型の項目は、形(Kind)だけなので、通知の新しい値が、そのまま形になる
+        root.RegisterCallback<ChangeEvent<Enum>>(evt =>
+            Apply((ColliderShapeKind)evt.newValue, radiusField, lengthField, widthField, angleField, innerRangeField));
 
         return root;
     }

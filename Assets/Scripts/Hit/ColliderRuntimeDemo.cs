@@ -42,7 +42,7 @@ public class ColliderRuntimeDemo : MonoBehaviour
 
         foreach (var target in _targets)
         {
-            var body = new HitBody(target, Faction.Unit, _targetRadius);
+            var body = new HitBody(target, Faction.Fire, _targetRadius);
             _world.Add(body);
             _targetBodies.Add(body);
         }
