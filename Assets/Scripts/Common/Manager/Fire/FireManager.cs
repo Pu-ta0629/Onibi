@@ -19,6 +19,14 @@ public class FireManager : MonoBehaviour
     [Tooltip("ラジアルに表示する火の文字・アイコン。設定のない火は色の名前で表示する")]
     [SerializeField] private FireRadialEntry[] _radialEntries;
 
+    [Header("Light")]
+    [Tooltip("火に付属するLightを管理する。明るさレベルごとの光量は全ての火で共通で、ここで設定する")]
+    [SerializeField] private LightManager _lightManager;
+
+    [Header("Darkness")]
+    [Tooltip("迷子の周りの暗さの判定設定。暗いと迷子は追従しなくなる")]
+    [SerializeField] private DarknessConfig _darknessConfig = new DarknessConfig();
+
     private readonly Dictionary<TypeManager.FireColor, FireController> _fires = new Dictionary<TypeManager.FireColor, FireController>();
     private TypeManager _typeManager;
     private InputManager _inputManager;
@@ -26,9 +34,16 @@ public class FireManager : MonoBehaviour
     private Camera _mainCamera;
     private FireInventory _fireInventory;
     private FireRadialMenuBinder _radialMenuBinder;
+    private DarknessSensor _darkness;
     private bool _isInitialized;
 
+    /// <summary>ラジアルのMenu項目が選ばれたときに通知する（Menu画面を開く側が購読する）</summary>
+    public event System.Action OnMenuRequested;
+
     public FireInventory fireInventory => _fireInventory;
+
+    /// <summary>迷子の周りの暗さの検知（暗いときの処理はAddReactionで追加できる）</summary>
+    public DarknessSensor darkness => _darkness;
 
     #region Initialize
     /// <summary>
@@ -36,7 +51,7 @@ public class FireManager : MonoBehaviour
     /// </summary>
     public void Initialize(TypeManager typeManager, InputManager inputManager, LostChildController maigoController, Camera mainCamera)
     {
-        if (typeManager == null || inputManager == null || maigoController == null || mainCamera == null || _radialMenu == null)
+        if (typeManager == null || inputManager == null || maigoController == null || mainCamera == null || _radialMenu == null || _lightManager == null)
         {
             Debug.LogError("[FireManager] Initialize : Reference is Null!!! ");
             return;
@@ -49,6 +64,7 @@ public class FireManager : MonoBehaviour
 
         _fireInventory = new FireInventory();
         _fireInventory.Initialize();
+        _lightManager.Initialize();
 
         _typeManager.OnFireStateChanged += HandleFireStateChanged;
         _typeManager.OnFollowTargetChanged += HandleFollowTargetChanged;
@@ -62,6 +78,10 @@ public class FireManager : MonoBehaviour
         //所持している火をラジアルの項目として登録する（選択済みの火の反映もここで行う）
         _radialMenuBinder = new FireRadialMenuBinder();
         _radialMenuBinder.Initialize(_radialMenu, _typeManager, _fireInventory, this, _radialEntries);
+
+        //迷子の周りの暗さを検知する。暗いときの処理は、ここにAddReactionで足していく
+        _darkness = new DarknessSensor(_maigoController.transform, GetLightLevelAt, _darknessConfig);
+        _darkness.AddReaction(new StopFollowReaction(_maigoController));
     }
 
     //初期装備の火を登録する。所持している色だけ登録される
@@ -134,6 +154,23 @@ public class FireManager : MonoBehaviour
     {
         _typeManager.SetRadialOpen(isOpen);
     }
+
+    /// <summary>
+    /// 指定した地点の光量（0-15）。所持している全ての火のうち、最も明るい値を返す
+    /// </summary>
+    public float GetLightLevelAt(Vector3 point)
+    {
+        return _lightManager.GetLightLevelAt(point);
+    }
+
+    /// <summary>
+    /// ラジアルのMenu項目が選ばれたときに呼ぶ。Menu画面を開く依頼を通知する
+    /// </summary>
+    public void RequestMenu()
+    {
+        Debug.Log("[FireManager] RequestMenu : Menu is requested");
+        OnMenuRequested?.Invoke();
+    }
     #endregion
 
     #region UnityLifeCycle
@@ -144,8 +181,11 @@ public class FireManager : MonoBehaviour
             return;
         }
 
+        SyncInspectorBrightness();
         MoveSelectedFire();
+        _darkness.Tick();
         UpdateLostChildTarget();
+        TickFires();
     }
 
     private void OnDestroy()
@@ -181,11 +221,28 @@ public class FireManager : MonoBehaviour
 
         fire.Initialize(_mainCamera);
         _fires.Add(fire.color, fire);
-        fire.ApplyState(_typeManager.GetFireState(fire.color));
+        _lightManager.Register(fire.color, fire.transform);   //火にLightを付ける
+        _typeManager.ChangeBrightness(fire.color, fire.inspectorBrightness);   //Inspectorの明るさレベルを初期値にする
+
+        TypeManager.FireState state = _typeManager.GetFireState(fire.color);
+        fire.ApplyState(state);
+        _lightManager.SetBrightness(fire.color, state.Brightness);
     }
     #endregion
 
     #region Update
+    //再生中にInspectorで明るさレベルが変えられた火を、TypeManagerのStateへ反映する
+    private void SyncInspectorBrightness()
+    {
+        foreach (FireController fire in _fires.Values)
+        {
+            if (fire.TryConsumeBrightnessChange(out TypeManager.FireBrightness level))
+            {
+                _typeManager.ChangeBrightness(fire.color, level);
+            }
+        }
+    }
+
     //選択中かつ固定されていない火に、マウス位置の地面を目的地として渡す（火はNavMeshAgentでそこへ向かう）
     private void MoveSelectedFire()
     {
@@ -217,6 +274,12 @@ public class FireManager : MonoBehaviour
     //迷子へ追従先の座標を渡す
     private void UpdateLostChildTarget()
     {
+        //暗い場所にいる間は、追従先を渡さない（迷子は動かない）
+        if (_darkness.IsDark)
+        {
+            return;
+        }
+
         TypeManager.FireColor color = _typeManager.FollowTarget;
         if (color == TypeManager.FireColor.None)
         {
@@ -226,6 +289,16 @@ public class FireManager : MonoBehaviour
         if (_fires.TryGetValue(color, out FireController fire))
         {
             _maigoController.Tick(fire.position);
+        }
+    }
+
+    //火のAIを進める。迷子の座標を中心に渡す（動いてよいかの判定は各火が行う）
+    private void TickFires()
+    {
+        Vector3 center = _maigoController.transform.position;
+        foreach (FireController fire in _fires.Values)
+        {
+            fire.Tick(center);
         }
     }
     #endregion
@@ -252,6 +325,7 @@ public class FireManager : MonoBehaviour
         if (_fires.TryGetValue(color, out FireController fire))
         {
             fire.ApplyState(state);
+            _lightManager.SetBrightness(color, state.Brightness);
         }
     }
 

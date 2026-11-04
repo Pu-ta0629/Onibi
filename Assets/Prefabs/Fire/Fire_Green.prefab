@@ -47,9 +47,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FireController
   _color: 0
+  _moveSpeed: 5
   _navMeshSampleDistance: 2
   _destinationUpdateDistance: 0.3
-  _billboardTarget: {fileID: 1931921964476812001}
+  _orbitRadius: 3
+  _orbitSpeed: 60
 --- !u!195 &5556289984397221453
 NavMeshAgent:
   m_ObjectHideFlags: 0

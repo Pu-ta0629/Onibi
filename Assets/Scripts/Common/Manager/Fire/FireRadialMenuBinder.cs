@@ -52,6 +52,9 @@ public class FireRadialMenuBinder : IDisposable
         _fireManager = fireManager;
         _entries = entries;
 
+        //Menu項目は常に先頭（真上）に置く。火の項目はその後ろに並ぶ
+        AddRadialItem(TypeManager.FireColor.None);
+
         foreach (TypeManager.FireColor color in _fireInventory.ownedColors)
         {
             AddRadialItem(color);
@@ -86,12 +89,16 @@ public class FireRadialMenuBinder : IDisposable
     #endregion
 
     #region Private
-    //RadialMenuに火の項目を1つ追加する。選ばれたときの処理もここで渡す
+    //RadialMenuに項目を1つ追加する。選ばれたときの処理もここで渡す。FireColor.Noneは火ではなくMenu項目
     private void AddRadialItem(TypeManager.FireColor color)
     {
-        _colors.Add(color);
+        bool isMenu = color == TypeManager.FireColor.None;
+        if (!isMenu)
+        {
+            _colors.Add(color);
+        }
 
-        string label = color.ToString();
+        string label = isMenu ? "Menu" : color.ToString();
         Sprite icon = null;
         FireRadialEntry entry = FindEntry(color);
         if (entry != null)
@@ -103,7 +110,14 @@ public class FireRadialMenuBinder : IDisposable
             }
         }
 
-        _radialMenu.AddItem(label, icon, () => HandleSelected(color));
+        if (isMenu)
+        {
+            _radialMenu.AddItem(label, icon, HandleMenuSelected);
+        }
+        else
+        {
+            _radialMenu.AddItem(label, icon, () => HandleSelected(color));
+        }
     }
 
     private FireRadialEntry FindEntry(TypeManager.FireColor color)
@@ -125,9 +139,11 @@ public class FireRadialMenuBinder : IDisposable
     }
 
     //RadialMenuの中心に表示する項目を、TypeManagerの選択中の火に合わせる（選択なしなら-1）
+    //先頭はMenu項目なので、火の番号に1足す
     private void SyncActiveItem()
     {
-        _radialMenu.SetActiveItem(_colors.IndexOf(_typeManager.SelectedColor));
+        int index = _colors.IndexOf(_typeManager.SelectedColor);
+        _radialMenu.SetActiveItem(index < 0 ? -1 : index + 1);
     }
     #endregion
 
@@ -136,6 +152,13 @@ public class FireRadialMenuBinder : IDisposable
     {
         //選択の切り替え（同じ火をもう一度選ぶと解除）はTypeManagerの結果が正。見た目はその結果に合わせる
         _fireManager.ToggleSelectFire(color);
+        SyncActiveItem();
+    }
+
+    private void HandleMenuSelected()
+    {
+        //Menu画面を開く依頼を出す。中心の表示は、選択中の火のままにする
+        _fireManager.RequestMenu();
         SyncActiveItem();
     }
 

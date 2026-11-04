@@ -137,10 +137,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 877c700b2efc6db479914d1440061963, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FireController
-  _color: 0
+  _color: 3
+  _moveSpeed: 5
   _navMeshSampleDistance: 2
   _destinationUpdateDistance: 0.3
-  _billboardTarget: {fileID: 4793746609188081496}
+  _orbitRadius: 3
+  _orbitSpeed: 60
 --- !u!195 &7226663134164457802
 NavMeshAgent:
   m_ObjectHideFlags: 0

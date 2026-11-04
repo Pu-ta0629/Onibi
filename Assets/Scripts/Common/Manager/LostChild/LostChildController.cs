@@ -2,19 +2,25 @@ using UnityEngine;
 using UnityEngine.AI;
 
 /// <summary>
-/// 迷子。渡された追従先の座標へNavMeshAgentで向かう
-/// 追従先が一定距離以上動いたときだけ目的地を更新し、追従先に近づいたら止まる
+/// 迷子。渡された追従先の座標へ、Moverで向かう
+/// 追従先に近づいたら止まり、離れたら再び動く
 /// </summary>
 [RequireComponent(typeof(NavMeshAgent))]
 public class LostChildController : MonoBehaviour
 {
+    [Header("MoveConfig")]
+    [SerializeField, Tooltip("移動速度。Initialize時にNavMeshAgentのSpeedへ反映する"), Range(0.1f, 20f)] private float _moveSpeed = 5f;
+    [SerializeField, Tooltip("目的地の近くでNavMeshを探す距離"), Range(0.1f, 10f)] private float _navMeshSampleDistance = 2f;
+
+    [Header("Ground")]
+    [SerializeField, Tooltip("地面のLayer。NavMeshを使わない移動で、地形の高さに沿わせるのに使う")] private LayerMask _groundMask;
+
     [Header("FollowConfig")]
     [SerializeField, Tooltip("追従先がこの距離以上動いたら目的地を更新する"), Range(0.1f, 5f)] private float _repathDistance = 0.5f;
     [SerializeField, Tooltip("追従先にこの距離（水平）まで近づいたら止まる。離れたら再び動く"), Range(0.1f, 20f)] private float _stopDistance = 2f;
 
-    private NavMeshAgent _agent;
-    private Vector3 _lastDestination;
-    private bool _hasDestination;
+    private Mover _mover;
+    private bool _isInitialized;
 
     #region Initialize
     /// <summary>
@@ -22,14 +28,14 @@ public class LostChildController : MonoBehaviour
     /// </summary>
     public void Initialize()
     {
-        if (_agent == null && !TryGetComponent(out _agent))
+        if (!TryGetComponent(out NavMeshAgent agent))
         {
             Debug.LogError("[LostChildController] Initialize : NavMeshAgent is Null!!! ");
+            return;
         }
-    }
-    private void Start()
-    {
-        _agent = GetComponent<NavMeshAgent>();
+
+        _mover = new Mover(agent, _moveSpeed, _groundMask, _navMeshSampleDistance, _repathDistance);
+        _isInitialized = true;
     }
     #endregion
 
@@ -39,7 +45,7 @@ public class LostChildController : MonoBehaviour
     /// </summary>
     public void Tick(Vector3 targetPosition)
     {
-        if (_agent == null || !_agent.isOnNavMesh)
+        if (!_isInitialized)
         {
             return;
         }
@@ -49,20 +55,11 @@ public class LostChildController : MonoBehaviour
         delta.y = 0f;
         if (delta.sqrMagnitude <= _stopDistance * _stopDistance)
         {
-            StopMoving();
+            _mover.Stop();
             return;
         }
 
-        if (_hasDestination && (targetPosition - _lastDestination).sqrMagnitude < _repathDistance * _repathDistance)
-        {
-            return;
-        }
-
-        if (_agent.SetDestination(targetPosition))
-        {
-            _lastDestination = targetPosition;
-            _hasDestination = true;
-        }
+        _mover.Follow(targetPosition);
     }
 
     /// <summary>
@@ -70,20 +67,21 @@ public class LostChildController : MonoBehaviour
     /// </summary>
     public void ResetDestination()
     {
-        _hasDestination = false;
-    }
-    #endregion
-
-    #region Private
-    //今の経路を捨てて止まる。離れたときに再び目的地を設定できるよう、目的地の記録も消す
-    private void StopMoving()
-    {
-        if (_hasDestination || _agent.hasPath)
+        if (_isInitialized)
         {
-            _agent.ResetPath();
+            _mover.Stop();
         }
+    }
 
-        _hasDestination = false;
+    /// <summary>
+    /// 移動を許可する／止める。止めている間は、Tickが呼ばれても動かない（暗い場所など、追従を禁止したいときに使う）
+    /// </summary>
+    public void SetCanMove(bool canMove)
+    {
+        if (_isInitialized)
+        {
+            _mover.SetCanMove(canMove);
+        }
     }
     #endregion
 }

@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Runtime.CompilerServices;
 using Unity.VisualScripting.Antlr3.Runtime;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.Rendering;
 
@@ -17,6 +19,7 @@ public class TypeManager
     {
         public bool IsSelected;
         public bool IsFixed;
+        public FireBrightness Brightness;
     }
     /// <summary>火のAIが使える行動の許可（false=重み０として扱う）</summary>
     public struct FireAIPermission
@@ -42,6 +45,12 @@ public class TypeManager
         Yellow, 
         Magenta,
         White
+    }
+    public enum FireBrightness
+    {
+        Level1 = 0, 
+        Level2, 
+        Level3
     }
     /// <summary>迷子の追従先更新モード</summary>
     public enum LostChildFollowMode
@@ -79,6 +88,7 @@ public class TypeManager
             //Noneは「火を選択していない」状態なので、Stateを持たない
             if (color == FireColor.None) continue;
             _fireStates[color] = default;
+            _fireStates[color] = new FireState { Brightness = FireBrightness.Level2 };
         }
 
         _selectedColor = FireColor.None;     //最初から赤い火が選択されているのは全Stage共通
@@ -109,7 +119,9 @@ public class TypeManager
             Debug.LogWarning($"[TypeManager] ChangeFireState : {color} has no state!!");
             return;
         }
-        if (current.IsSelected == newState.IsSelected && current.IsFixed == newState.IsFixed)//ラジアルで選ばれている状態＆＆左クリックで場所の固定されている時は何もしない
+        if (current.IsSelected == newState.IsSelected 
+            && current.IsFixed == newState.IsFixed
+            && current.Brightness == newState.Brightness)//ラジアルで選ばれている状態＆＆左クリックで場所の固定されている時は何もしない
         {
             return;
         }
@@ -120,6 +132,21 @@ public class TypeManager
                   $"IsSelected = {newState.IsSelected}, \n" +
                   $"IsFixed = {newState.IsFixed}");
         OnFireStateChanged?.Invoke(color, newState);
+    }
+    /// <summary>火の明るさを指定した段階にする</summary>
+    public void ChangeBrightness(FireColor color, FireBrightness brightness)
+    {
+        if (!_fireStates.TryGetValue(color, out FireState state)) return;
+        state.Brightness = brightness;
+        ChangeFireState(color, state);
+    }
+
+    /// <summary>火の明るさを1段階ずつ上げ下げする（step=+1で明るく、-1で暗く。両端で止まる）</summary>
+    public void ShiftBrightness(FireColor color, int step)
+    {
+        if (!_fireStates.TryGetValue(color, out FireState state)) return;
+        int next = Mathf.Clamp((int)state.Brightness + step, (int)FireBrightness.Level1, (int)FireBrightness.Level3);
+        ChangeBrightness(color, (FireBrightness)next);
     }
 
     /// <summary>
