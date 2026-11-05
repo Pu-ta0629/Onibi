@@ -4,10 +4,10 @@ using UnityEngine;
 // 形を、Inspector で変えながら、当たりを目で確認する
 // 使い方: 空の GameObject に付け、targets に、いくつかの Transform を入れて、再生する。
 //         この GameObject の位置と向き(青い軸)が、攻撃の起点と向きになる。
-//         当たっている対象は赤い円、当たっていない対象は白い円で表示される。
+//         当たっている対象は黄色い円、当たっていない対象は白い円で表示される。
 public class HitShapeDemo : MonoBehaviour
 {
-    [SerializeField] HitShape shape = HitShape.Sector(4f, 90f);
+    [SerializeField] ColliderShape shape = ColliderShape.Sector(4f, 90f);
     [SerializeField] Transform[] targets;
     [SerializeField] float targetRadius = 0.5f;
 
@@ -33,8 +33,11 @@ public class HitShapeDemo : MonoBehaviour
 
         _world.Query(shape, transform.position, transform.forward, Faction.Enemy, _hits);
 
-        HitDebug.Draw(shape, transform.position, transform.forward, Color.yellow);
+        HitDebug.DrawShape(shape, transform.position, transform.forward, ColliderColors.Attack);
         foreach (var body in _bodies)
-            HitDebug.DrawCircle(body.Position, body.Radius, _hits.Contains(body) ? Color.red : Color.white);
+        {
+            var color = _hits.Contains(body) ? ColliderColors.Contact : Color.white;
+            HitDebug.DrawCircle(body.Position, body.Radius, color);
+        }
     }
 }

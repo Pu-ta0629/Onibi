@@ -22,17 +22,55 @@ MonoBehaviour:
   _searchType: 
   _searchRange: 0
   _battleLogic: 
+  _colliders:
+    _colliders:
+    - _key: 
+      _role: 0
+      _shape:
+        _kind: 0
+        _radius: 0
+        _length: 0
+        _width: 0
+        _angle: 0
+        _innerRange: 0
+      _offset: {x: 0, y: 0}
+      _yawOffset: 0
+      _targets: 0
+    - _key: Attack1
+      _role: 1
+      _shape:
+        _kind: 3
+        _radius: 1.06
+        _length: 0
+        _width: 0
+        _angle: 128.48
+        _innerRange: 0.55
+      _offset: {x: -2.86, y: -0.82}
+      _yawOffset: 10.85
+      _targets: 1
+    - _key: Attack1
+      _role: 1
+      _shape:
+        _kind: 3
+        _radius: 0.98
+        _length: 0
+        _width: 0
+        _angle: 37.92
+        _innerRange: 0.08
+      _offset: {x: 0, y: 0}
+      _yawOffset: 10.85
+      _targets: 1
   _attack1:
     _pattern: 
     _damageRate: 0
-    _range: 0
     _chargeTime: 0
+    _activeTime: 0.2
     _cooldown: 0
     _recoveryTime: 0
   _attack2:
     _pattern: 
     _damageRate: 0
-    _range: 0
     _chargeTime: 0
+    _activeTime: 0.2
     _cooldown: 0
     _recoveryTime: 0
