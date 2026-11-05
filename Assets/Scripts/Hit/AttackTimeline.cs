@@ -24,6 +24,11 @@ public readonly struct AttackTimeline
         _cooldown = Mathf.Max(0,cooldown);
     }
 
+    public static AttackTimeline From(EnemyAttack attack)
+    {
+        return new AttackTimeline(attack.ChargeTime, attack.ActiveTime, attack.RecoveryTime, attack.Cooldown);
+    }
+
     public float ChargeEnd => _chargeTime;
     public float ActiveEnd => _chargeTime + _activeTime;
     public float RecoveryEnd => _chargeTime + _activeTime + _recoveryTime;

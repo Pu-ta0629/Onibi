@@ -34,6 +34,14 @@ public sealed class ColliderCanvas : VisualElement
     private Vector2 _center;
     private float _scale = 1f;
 
+    private TestOverlay _test;
+    private bool _draggingScarecrow;
+
+    public event Action ScarecrowMoved;
+
+    private IReadOnlyList<CompareEntry> _compare;
+
+
     public ColliderCanvas()
     {
         style.minHeight = 240;
@@ -77,6 +85,36 @@ public sealed class ColliderCanvas : VisualElement
         _collidersPath = collidersPath;
     }
 
+    // 選んでいるコライダーの番号(未選択は -1)。コピーに使う
+    public int SelectedIndex => _selected;
+
+    // 重ねて比較する Entity を設定する(null でやめる)
+    public void SetCompare(IReadOnlyList<CompareEntry> entries)
+    {
+        _compare = entries;
+        MarkDirtyRepaint();
+    }
+
+    // 動作テストの表示を設定する(null で、表示をやめる)
+    public void SetTestOverlay(TestOverlay overlay)
+    {
+        _test = overlay;
+        MarkDirtyRepaint();
+    }
+
+    // 世界の座標の点が、案山子の上か(掴める範囲)
+    private bool IsOnScarecrow(Vector2 world)
+    {
+        var radius = Mathf.Max(0.3f, _test.ScarecrowSet != null ? _test.ScarecrowSet.BodyBoundingRadius : 0.5f);
+        return (world - _test.ScarecrowPosition).magnitude <= radius;
+    }
+
+    // 有効の間の、攻撃のコライダーか
+    private bool IsActiveAttack(ColliderDef def)
+    {
+        return _test != null && _test.Visible && _test.ActiveAttackKey != null && def.Key == _test.ActiveAttackKey;
+    }
+
     public void OnWheel(WheelEvent evt)
     {
         _zoom = Mathf.Clamp(_zoom * (evt.delta.y > 0f ? 0.9f : 1.1f), 0.2f, 8f);
@@ -95,11 +133,12 @@ public sealed class ColliderCanvas : VisualElement
         _center = rect.center;
 
         // ドラッグ中は、拡大率を固定する(形が変わっても、図が勝手に拡縮しないように)
-        _scale = _dragKind.HasValue
+        _scale = (_dragKind.HasValue || _draggingScarecrow)
             ? _frozenScale
             : Mathf.Min(rect.width, rect.height) * 0.45f / GetExtent() * _zoom;
 
         DrawGrid(painter, rect);
+        DrawCompare(painter);
         DrawEntityMarker(painter);
 
         var set = CurrentSet;
@@ -108,24 +147,43 @@ public sealed class ColliderCanvas : VisualElement
         for (var i = 0; i < set.All.Count; i++)
         {
             var def = set.All[i];
-            if (def != null) DrawCollider(painter, def, i == _selected);
+            if (def != null) DrawCollider(painter, def, i == _selected, IsActiveAttack(def));
         }
 
         DrawHandles(painter);
+        DrawTestOverlay(painter);
     }
 
+    // 図に収めたい、中心からの最大距離(m)
     private float GetExtent()
     {
         var extent = 2f;
 
         var set = CurrentSet;
-        if (set == null) return extent;
-
-        foreach (var def in set.All)
+        if (set != null)
         {
-            if (def == null) continue;
-            extent = Mathf.Max(extent, def.Offset.magnitude + def.Shape.BoundingRadius);
+            foreach (var def in set.All)
+            {
+                if (def == null) continue;
+                extent = Mathf.Max(extent, def.Offset.magnitude + def.Shape.BoundingRadius);
+            }
         }
+
+        if (_test != null && _test.Visible) extent = Mathf.Max(extent, _test.ScarecrowPosition.magnitude + 1f);
+
+        if (_compare != null)
+        {
+            foreach (var entry in _compare)
+            {
+                if (entry.Set == null) continue;
+
+                foreach (var def in entry.Set.All)
+                {
+                    if (def != null) extent = Mathf.Max(extent, def.Offset.magnitude + def.Shape.BoundingRadius);
+                }
+            }
+        }
+
         return extent;
     }
 
@@ -184,7 +242,8 @@ public sealed class ColliderCanvas : VisualElement
         DrawLine(painter, _center, _center + new Vector2(0f, -18f),gray, 1.5f);
     }
 
-    private void DrawCollider(Painter2D painter, ColliderDef def, bool selected)
+    // selected: 選んでいるコライダー。active: 動作テストで、有効の間の攻撃のコライダー
+    private void DrawCollider(Painter2D painter, ColliderDef def, bool selected, bool active)
     {
         // 起点と向きは、ゲーム中と同じ計算(ColliderDef.Resolve)を使う。Entity は、原点で、前を向いている
         def.Resolve(Vector3.zero, 0f, out var origin3, out var forward3);
@@ -194,11 +253,14 @@ public sealed class ColliderCanvas : VisualElement
         var right = new Vector2(forward.y, -forward.x);
         var color = ColliderColors.Of(def.Role);
 
-        // 選んでいるものは、塗りを濃く、輪郭を白く太くする
-        var fill = selected ? new Color(color.r, color.g, color.b, 0.4f) : ColliderColors.Fill(color);
+        // 選んでいるものは、輪郭を白く太くする。有効の間の攻撃は、塗りを濃く、輪郭を太くする
+        var fill = selected ? new Color(color.r, color.g, color.b, 0.4f)
+            : active ? new Color(color.r, color.g, color.b, 0.6f)
+            : ColliderColors.Fill(color);
         var stroke = selected ? Color.white : color;
+        var width = selected ? 3f : (active ? 4f : 2f);
 
-        DrawLoops(painter, BuildLoops(def.Shape, origin, forward, right), fill, stroke, selected ? 3f : 2f);
+        DrawLoops(painter, BuildLoops(def.Shape, origin, forward, right), fill, stroke, width);
         DrawRoleMarker(painter, def.Role, ToScreen(origin), ToScreenDirection(forward), color);
     }
 
@@ -365,6 +427,164 @@ public sealed class ColliderCanvas : VisualElement
             DrawHandle(painter, handle.ScreenPosition, color, _dragKind == handle.Kind);
     }
 
+    // 動作テストの、案山子を描く
+    private void DrawTestOverlay(Painter2D painter)
+    {
+        if (_test == null || !_test.Visible) return;
+
+        // 案山子の色: 当たっているときは黄、索敵に入っているときは青、それ以外は灰色
+        var color = _test.Hitting ? ColliderColors.Contact
+            : _test.Detected ? ColliderColors.Search
+            : new Color(0.75f, 0.75f, 0.75f, 1f);
+
+        var position = new Vector3(_test.ScarecrowPosition.x, 0f, _test.ScarecrowPosition.y);
+        var set = _test.ScarecrowSet;
+
+        if (set != null)
+        {
+            foreach (var def in set.All)
+            {
+                if (def == null || !ColliderRules.IsBody(def.Role)) continue;
+
+                def.Resolve(position, 0f, out var origin3, out var forward3);
+                var origin = new Vector2(origin3.x, origin3.z);
+                var forward = new Vector2(forward3.x, forward3.z);
+                var right = new Vector2(forward.y, -forward.x);
+
+                DrawLoops(painter, BuildLoops(def.Shape, origin, forward, right), new Color(color.r, color.g, color.b, 0.3f), color, 2.5f);
+            }
+        }
+
+        // 案山子の中心(×印)
+        var center = ToScreen(_test.ScarecrowPosition);
+        DrawLine(painter, center - new Vector2(5f, 5f), center + new Vector2(5f, 5f), color, 2f);
+        DrawLine(painter, center - new Vector2(5f, -5f), center + new Vector2(5f, -5f), color, 2f);
+    }
+
+    // 重ねて比較する Entity のコライダーを、薄い点線で描く。外側の端に、順番の数だけ点を付ける
+    private void DrawCompare(Painter2D painter)
+    {
+        if (_compare == null) return;
+
+        for (var k = 0; k < _compare.Count; k++)
+        {
+            var set = _compare[k].Set;
+            if (set == null) continue;
+
+            foreach (var def in set.All)
+            {
+                if (def == null) continue;
+
+                def.Resolve(Vector3.zero, 0f, out var origin3, out var forward3);
+                var origin = new Vector2(origin3.x, origin3.z);
+                var forward = new Vector2(forward3.x, forward3.z);
+                var right = new Vector2(forward.y, -forward.x);
+                var color = ColliderColors.Of(def.Role);
+                var loops = BuildLoops(def.Shape, origin, forward, right);
+
+                // ごく薄い塗りと、点線の輪郭
+                DrawLoops(painter, loops, new Color(color.r, color.g, color.b, 0.05f), new Color(color.r, color.g, color.b, 0f), 1f);
+                DrawDashedLoops(painter, loops, new Color(color.r, color.g, color.b, 0.85f));
+                DrawCountDots(painter, ToScreen(FarthestPoint(loops, origin)), k + 1, color);
+            }
+        }
+    }
+
+    // 輪を、点線で描く
+    private void DrawDashedLoops(Painter2D painter, List<List<Vector2>> loops, Color color)
+    {
+        const float dash = 8f;
+        const float gap = 5f;
+
+        painter.lineWidth = 1.5f;
+        painter.strokeColor = color;
+        painter.BeginPath();
+
+        foreach (var loop in loops)
+        {
+            if (loop.Count < 2) continue;
+
+            var drawing = true;
+            var remaining = dash;
+
+            for (var i = 0; i < loop.Count; i++)
+            {
+                var a = ToScreen(loop[i]);
+                var b = ToScreen(loop[(i + 1) % loop.Count]);
+                var length = Vector2.Distance(a, b);
+                if (length < 0.01f) continue;
+
+                var direction = (b - a) / length;
+                var position = 0f;
+
+                while (position < length)
+                {
+                    var step = Mathf.Min(remaining, length - position);
+                    if (drawing)
+                    {
+                        painter.MoveTo(a + direction * position);
+                        painter.LineTo(a + direction * (position + step));
+                    }
+
+                    position += step;
+                    remaining -= step;
+
+                    if (remaining <= 0.001f)
+                    {
+                        drawing = !drawing;
+                        remaining = drawing ? dash : gap;
+                    }
+                }
+            }
+        }
+
+        painter.Stroke();
+    }
+
+    // 輪の点のうち、Entity の中心(原点)から、いちばん遠い点
+    private static Vector2 FarthestPoint(List<List<Vector2>> loops, Vector2 fallback)
+    {
+        var best = fallback;
+        var bestDistance = -1f;
+
+        foreach (var loop in loops)
+        {
+            foreach (var point in loop)
+            {
+                var distance = point.sqrMagnitude;
+                if (distance > bestDistance)
+                {
+                    bestDistance = distance;
+                    best = point;
+                }
+            }
+        }
+
+        return best;
+    }
+
+    // 順番の目印として、小さな点を、横に並べて描く
+    private static void DrawCountDots(Painter2D painter, Vector2 position, int count, Color color)
+    {
+        painter.fillColor = color;
+
+        for (var i = 0; i < count; i++)
+        {
+            var center = position + new Vector2(8f + i * 7f, 0f);
+
+            painter.BeginPath();
+            for (var s = 0; s <= 8; s++)
+            {
+                var angle = s / 8f * Mathf.PI * 2f;
+                var point = center + new Vector2(Mathf.Cos(angle), Mathf.Sin(angle)) * 2.5f;
+                if (s == 0) painter.MoveTo(point);
+                else painter.LineTo(point);
+            }
+            painter.ClosePath();
+            painter.Fill();
+        }
+    }
+
     private static void DrawHandle(Painter2D painter, Vector2 position, Color color, bool active)
     {
         const float half = 5f;
@@ -384,16 +604,14 @@ public sealed class ColliderCanvas : VisualElement
 
     private void OnPointerDown(PointerDownEvent evt)
     {
-        if (evt.button != 0 || _serializedObject == null) return;
-
-        var set = CurrentSet;
-        if (set == null) return;
+        if (evt.button != 0) return;
 
         var position = (Vector2)evt.localPosition;
+        var set = CurrentSet;
 
         // 1. 選んでいるコライダーの、ハンドルを掴む(いちばん近いものを選ぶ)
         var def = SelectedDef();
-        if (def != null)
+        if (_serializedObject != null && def != null)
         {
             ColliderHandles.Collect(def, ToScreen, _scale, _handles);
 
@@ -417,8 +635,20 @@ public sealed class ColliderCanvas : VisualElement
             }
         }
 
-        // 2. コライダーの中を押したら、そのコライダーを選ぶ(後ろに描かれているものが、上にある)
+        // 2. 案山子を掴む
         var world = ToWorld(position);
+        if (_test != null && _test.Visible && IsOnScarecrow(world))
+        {
+            _draggingScarecrow = true;
+            _frozenScale = _scale;
+            this.CapturePointer(evt.pointerId);
+            evt.StopPropagation();
+            return;
+        }
+
+        // 3. コライダーの中を押したら、そのコライダーを選ぶ(後ろに描かれているものが、上にある)
+        if (set == null) return;
+
         _selected = -1;
         for (var i = set.All.Count - 1; i >= 0; i--)
         {
@@ -448,6 +678,23 @@ public sealed class ColliderCanvas : VisualElement
 
     private void OnPointerMove(PointerMoveEvent evt)
     {
+        // 案山子のドラッグ(Ctrl で、0.1m ごと)
+        if (_draggingScarecrow && this.HasPointerCapture(evt.pointerId))
+        {
+            var world = ToWorld((Vector2)evt.localPosition);
+            var snapToGrid = evt.ctrlKey || evt.commandKey;
+
+            _test.ScarecrowPosition = snapToGrid
+                ? new Vector2(Mathf.Round(world.x * 10f) / 10f, Mathf.Round(world.y * 10f) / 10f)
+                : world;
+
+            ScarecrowMoved?.Invoke();
+            MarkDirtyRepaint();
+            evt.StopPropagation();
+            return;
+        }
+
+        // コライダーのハンドルのドラッグ
         if (!_dragKind.HasValue || !this.HasPointerCapture(evt.pointerId)) return;
 
         var def = SelectedDef();
@@ -475,6 +722,15 @@ public sealed class ColliderCanvas : VisualElement
 
     private void OnPointerUp(PointerUpEvent evt)
     {
+        if (_draggingScarecrow)
+        {
+            this.ReleasePointer(evt.pointerId);
+            _draggingScarecrow = false;
+            MarkDirtyRepaint();
+            evt.StopPropagation();
+            return;
+        }
+
         if (!_dragKind.HasValue) return;
 
         this.ReleasePointer(evt.pointerId);
@@ -485,6 +741,12 @@ public sealed class ColliderCanvas : VisualElement
     // ウィンドウの外へ出るなどで、ポインターの捕捉が外れたときも、ドラッグを終える
     private void OnPointerCaptureOut(PointerCaptureOutEvent evt)
     {
+        if (_draggingScarecrow)
+        {
+            _draggingScarecrow = false;
+            MarkDirtyRepaint();
+        }
+
         if (_dragKind.HasValue) EndDrag();
     }
 

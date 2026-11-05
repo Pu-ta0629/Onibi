@@ -24,6 +24,30 @@ MonoBehaviour:
   _battleLogic: 
   _colliders:
     _colliders:
+    - _key: Attack1
+      _role: 1
+      _shape:
+        _kind: 3
+        _radius: 1.5
+        _length: 0
+        _width: 0
+        _angle: 111.96
+        _innerRange: 0.15
+      _offset: {x: 0, y: 0}
+      _yawOffset: 0
+      _targets: 3
+    - _key: 
+      _role: 2
+      _shape:
+        _kind: 3
+        _radius: 2.34
+        _length: 0
+        _width: 0
+        _angle: 140.12
+        _innerRange: 0.93
+      _offset: {x: 0, y: -0}
+      _yawOffset: 0
+      _targets: 3
     - _key: 
       _role: 0
       _shape:
@@ -36,37 +60,13 @@ MonoBehaviour:
       _offset: {x: 0, y: 0}
       _yawOffset: 0
       _targets: 0
-    - _key: Attack1
-      _role: 1
-      _shape:
-        _kind: 3
-        _radius: 1.06
-        _length: 0
-        _width: 0
-        _angle: 128.48
-        _innerRange: 0.55
-      _offset: {x: -2.86, y: -0.82}
-      _yawOffset: 10.85
-      _targets: 1
-    - _key: Attack1
-      _role: 1
-      _shape:
-        _kind: 3
-        _radius: 0.98
-        _length: 0
-        _width: 0
-        _angle: 37.92
-        _innerRange: 0.08
-      _offset: {x: 0, y: 0}
-      _yawOffset: 10.85
-      _targets: 1
   _attack1:
-    _pattern: 
-    _damageRate: 0
-    _chargeTime: 0
-    _activeTime: 0.2
-    _cooldown: 0
-    _recoveryTime: 0
+    _pattern: Attack1
+    _damageRate: 20
+    _chargeTime: 3
+    _activeTime: 0.3
+    _cooldown: 6
+    _recoveryTime: 0.5
   _attack2:
     _pattern: 
     _damageRate: 0
