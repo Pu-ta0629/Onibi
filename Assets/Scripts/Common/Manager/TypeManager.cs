@@ -1,65 +1,73 @@
 using System;
 using System.Collections.Generic;
-using System.Globalization;
-using System.Runtime.CompilerServices;
-using Unity.VisualScripting.Antlr3.Runtime;
-using UnityEditor;
+using Unity.IO.LowLevel.Unsafe;
 using UnityEngine;
-using UnityEngine.Rendering;
+
+#region Enum
+/// <summary>火の色（ラジアルに登録できる最大７色）</summary>
+public enum FireColor
+{
+    None = 0,
+    Red,
+    Green,
+    Blue,
+    Cyan,
+    Yellow,
+    Magenta,
+    White
+}
+
+public enum FireBrightness
+{
+    Level1 = 0,
+    Level2,
+    Level3
+}
+
+/// <summary>迷子の追従先更新モード</summary>
+public enum LostChildFollowMode
+{
+    None,       //対象無し
+    KeepTarget, //対象固定
+    UpdateTarget//随時更新
+}
+public enum EnemyType
+{   
+    Kappa,
+    Oni,
+    Dog,
+    Cat
+}
+#endregion
+#region Struct
+/// <summary> 火ごとの操作状態</summary>
+public struct FireState
+{
+    public bool IsSelected;
+    public bool IsFixed;
+    public FireBrightness Brightness;
+}
+
+/// <summary>火のAIが使える行動の許可（false=重み０として扱う）</summary>
+public struct FireAIPermission
+{
+    public bool CanDash;        //第１スキル（近距離攻撃）突進
+    public bool CanMove;        //移動
+    public bool CanSearch;      //索敵
+    public bool CanLongAttack;  //第２スキル：遠距離攻撃
+    public bool CanGuard;       //第２スキル：守護
+    public bool CanCounterGuard;//第２スキル：反撃守護
+    public bool CanExplosion;   //第２スキル：自爆
+}
+#endregion 
 
 /// <summary>
-/// Enum・Structの管理と、（Enum|Struct）の取得・ChangeStateえお一括で行う純粋なC#Class
+/// Enum・Structの管理と、（Enum|Struct）の取得・ChangeStateを一括で行う純粋なC#Class
 /// 各スクリプトはStateに関する処理を必ず経由して行う
+/// （Enum・Structの定義は FireTypes.cs / EnemyType.cs にある）
 /// </summary>
 public class TypeManager
 {
-    #region Struct
-    /// <summary> 火ごとの操作状態</summary>
-    public struct FireState
-    {
-        public bool IsSelected;
-        public bool IsFixed;
-        public FireBrightness Brightness;
-    }
-    /// <summary>火のAIが使える行動の許可（false=重み０として扱う）</summary>
-    public struct FireAIPermission
-    {
-        public bool CanDash;        //第１スキル（近距離攻撃）突進
-        public bool CanMove;        //移動
-        public bool CanSeach;       //索敵
-        public bool CanLongAttack;  //第２スキル：遠距離攻撃
-        public bool CanGuard;       //第２スキル：守護
-        public bool CanCounterGuard;//第２スキル：反撃守護
-        public bool CanExplosion;   //第２スキル：自爆
-    }
-    #endregion
-    #region Enum
-    /// <summary>火の色（ラジアルに登録できる最大７色）</summary>
-    public enum FireColor
-    {
-        None = 0,
-        Red, 
-        Green,
-        Blue, 
-        Cyan, 
-        Yellow, 
-        Magenta,
-        White
-    }
-    public enum FireBrightness
-    {
-        Level1 = 0, 
-        Level2, 
-        Level3
-    }
-    /// <summary>迷子の追従先更新モード</summary>
-    public enum LostChildFollowMode
-    {
-        None,       //対象無し
-        KeepTarget, //対象固定
-        UpdateTarget//随時更新
-    }
-    #endregion 
     public event Action<FireColor, FireState> OnFireStateChanged;
     public event Action<FireColor> OnFollowTargetChanged;
     public event Action<LostChildFollowMode> OnFollowModeChanged;
@@ -83,17 +91,16 @@ public class TypeManager
     public void Initialize()
     {
         _fireStates.Clear();
-        foreach(FireColor color in Enum.GetValues(typeof(FireColor)))
+        foreach (FireColor color in Enum.GetValues(typeof(FireColor)))
         {
             //Noneは「火を選択していない」状態なので、Stateを持たない
             if (color == FireColor.None) continue;
-            _fireStates[color] = default;
             _fireStates[color] = new FireState { Brightness = FireBrightness.Level2 };
         }
 
         _selectedColor = FireColor.None;     //最初から赤い火が選択されているのは全Stage共通
         _lastSelectedColor = FireColor.None;
-        _followTarget = FireColor.None; 
+        _followTarget = FireColor.None;
         _followMode = LostChildFollowMode.UpdateTarget;
         _isRadialOpen = false;
     }
@@ -119,7 +126,7 @@ public class TypeManager
             Debug.LogWarning($"[TypeManager] ChangeFireState : {color} has no state!!");
             return;
         }
-        if (current.IsSelected == newState.IsSelected 
+        if (current.IsSelected == newState.IsSelected
             && current.IsFixed == newState.IsFixed
             && current.Brightness == newState.Brightness)//ラジアルで選ばれている状態＆＆左クリックで場所の固定されている時は何もしない
         {
@@ -178,19 +185,19 @@ public class TypeManager
         RefreshFollowTarget();
     }
 
-    /// <summary>選択中の火の固定／固定解除を切り替える。選択中のひがなければ何もせずfalseを返す</summary>
+    /// <summary>選択中の火の固定／固定解除を切り替える。選択中の火がなければ何もせずfalseを返す</summary>
     public bool ToggleFixedSelectedFire()
     {
         if (_selectedColor == FireColor.None) return false;
 
         FireState state = _fireStates[_selectedColor];
-        state .IsFixed = !state.IsFixed; //　固定/固定解除
+        state.IsFixed = !state.IsFixed; //　固定/固定解除
         ChangeFireState(_selectedColor, state);
         return true;
     }
 
     /// <summary>ラジアルメニューの開閉状態を設定する</summary>
-   public void SetRadialOpen(bool isOpen)
+    public void SetRadialOpen(bool isOpen)
     {
         _isRadialOpen = isOpen;
     }
@@ -207,14 +214,14 @@ public class TypeManager
     public void ToggleFollowMode()
     {
         //現在のFollowModeを格納
-        _followMode = _followMode == LostChildFollowMode.KeepTarget 
-            ? LostChildFollowMode.UpdateTarget 
+        _followMode = _followMode == LostChildFollowMode.KeepTarget
+            ? LostChildFollowMode.UpdateTarget
             : LostChildFollowMode.KeepTarget;
 
         Debug.Log($"[TypeManager] ToggleFollowMode : followMode = {_followMode}");
         OnFollowModeChanged?.Invoke(_followMode);
 
-        if(_followMode == LostChildFollowMode.UpdateTarget)
+        if (_followMode == LostChildFollowMode.UpdateTarget)
         {
             ChangeFollowTarget(_lastSelectedColor);
         }
@@ -222,14 +229,14 @@ public class TypeManager
     private void RefreshFollowTarget()
     {
         //追従先が未設定（None）なら最初に選んだ火が追従先になる。更新モードなら常に最後に選んだ火
-        if(_followTarget == FireColor.None || _followMode == LostChildFollowMode.UpdateTarget)
+        if (_followTarget == FireColor.None || _followMode == LostChildFollowMode.UpdateTarget)
         {
             ChangeFollowTarget(_lastSelectedColor);
         }
     }
     private void ChangeFollowTarget(FireColor next)
     {
-        if(next == FireColor.None || _followTarget == next)
+        if (next == FireColor.None || _followTarget == next)
         {
             return;
         }
@@ -242,7 +249,7 @@ public class TypeManager
     #region Convert
     public static FireAIPermission ToAIPermission(FireState state)
     {
-        if(state.IsSelected)
+        if (state.IsSelected)
         {
             return default;
         }
@@ -252,7 +259,7 @@ public class TypeManager
         {
             CanDash = isFree,
             CanMove = isFree,
-            CanSeach = true,
+            CanSearch = true,
             CanLongAttack = true,
             CanGuard = true,
             CanCounterGuard = true,
@@ -260,19 +267,19 @@ public class TypeManager
         };
     }
 
-    /// <summary>火の色をUnityのColorに変換する。Noenは透明</summary>
+    /// <summary>火の色をUnityのColorに変換する。Noneは透明</summary>
     public static Color ToUnityColor(FireColor color)
     {
         switch (color)
         {
-            case FireColor.None:    return Color.clear;
-            case FireColor.Red:     return Color.red;
-            case FireColor.Green:   return Color.green;
-            case FireColor.Blue:    return Color.blue;
-            case FireColor.Cyan:    return Color.cyan;
-            case FireColor.Yellow:  return Color.yellow;
+            case FireColor.None: return Color.clear;
+            case FireColor.Red: return Color.red;
+            case FireColor.Green: return Color.green;
+            case FireColor.Blue: return Color.blue;
+            case FireColor.Cyan: return Color.cyan;
+            case FireColor.Yellow: return Color.yellow;
             case FireColor.Magenta: return Color.magenta;
-            case FireColor.White:   return Color.white;
+            case FireColor.White: return Color.white;
             default: Debug.LogWarning($"[TypeManager] ToUnityColor : Unknown FireColor = {color}"); return Color.white;
         }
     }
@@ -287,5 +294,5 @@ public class TypeManager
     {
         return new Dictionary<FireColor, FireState>(_fireStates);
     }
-    #endregion 
+    #endregion
 }

@@ -13,5 +13,6 @@ MonoBehaviour:
   m_Name: EnemyType_002
   m_EditorClassIdentifier: Assembly-CSharp::EnemyTypeData
   _id: 2
-  _displayName: 
+  _displayName: Oni
   _moveType: 0
+  _enemyType: 1

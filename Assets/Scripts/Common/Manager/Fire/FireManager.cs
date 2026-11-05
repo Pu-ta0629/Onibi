@@ -12,7 +12,7 @@ public class FireManager : MonoBehaviour
     [Tooltip("シーンに置いてある火。所持している色だけ登録される")]
     [SerializeField] private FireController[] _sceneFires;
     [Tooltip("ステージ開始時にラジアルで選択済みにする火（迷子の最初の追従先になる）")]
-    [SerializeField] private TypeManager.FireColor _initialSelectColor = TypeManager.FireColor.Red;
+    [SerializeField] private FireColor _initialSelectColor = FireColor.Red;
 
     [Header("RadialMenu")]
     [SerializeField] private RadialMenu _radialMenu;
@@ -27,11 +27,13 @@ public class FireManager : MonoBehaviour
     [Tooltip("迷子の周りの暗さの判定設定。暗いと迷子は追従しなくなる")]
     [SerializeField] private DarknessConfig _darknessConfig = new DarknessConfig();
 
-    private readonly Dictionary<TypeManager.FireColor, FireController> _fires = new Dictionary<TypeManager.FireColor, FireController>();
+    private readonly Dictionary<FireColor, FireController> _fires = new Dictionary<FireColor, FireController>();
     private TypeManager _typeManager;
     private InputManager _inputManager;
     private LostChildController _maigoController;
     private Camera _mainCamera;
+    private HitWorld _hitWorld;
+    private KodamaStock _kodamaStock;
     private FireInventory _fireInventory;
     private FireRadialMenuBinder _radialMenuBinder;
     private DarknessSensor _darkness;
@@ -47,11 +49,11 @@ public class FireManager : MonoBehaviour
 
     #region Initialize
     /// <summary>
-    /// InitializeManagerから一度だけ呼ぶ
+    /// InitializeManagerから一度だけ呼ぶ。hitWorld: 全員で共有する当たり判定の世界 / kodamaStock: 火が突進で消費する木霊
     /// </summary>
-    public void Initialize(TypeManager typeManager, InputManager inputManager, LostChildController maigoController, Camera mainCamera)
+    public void Initialize(TypeManager typeManager, InputManager inputManager, LostChildController maigoController, Camera mainCamera, HitWorld hitWorld, KodamaStock kodamaStock)
     {
-        if (typeManager == null || inputManager == null || maigoController == null || mainCamera == null || _radialMenu == null || _lightManager == null)
+        if (typeManager == null || inputManager == null || maigoController == null || mainCamera == null || hitWorld == null || kodamaStock == null || _radialMenu == null || _lightManager == null)
         {
             Debug.LogError("[FireManager] Initialize : Reference is Null!!! ");
             return;
@@ -61,6 +63,8 @@ public class FireManager : MonoBehaviour
         _inputManager = inputManager;
         _maigoController = maigoController;
         _mainCamera = mainCamera;
+        _hitWorld = hitWorld;
+        _kodamaStock = kodamaStock;
 
         _fireInventory = new FireInventory();
         _fireInventory.Initialize();
@@ -104,7 +108,7 @@ public class FireManager : MonoBehaviour
     //ステージ開始時に、指定した火（通常は赤）を選択済みにする。これで迷子の追従先も決まる
     private void SelectInitialFire()
     {
-        if (_initialSelectColor != TypeManager.FireColor.None)
+        if (_initialSelectColor != FireColor.None)
         {
             ToggleSelectFire(_initialSelectColor);
         }
@@ -136,7 +140,7 @@ public class FireManager : MonoBehaviour
     /// <summary>
     /// ラジアルメニューで火が選ばれたときに呼ぶ（選択中の火をもう一度選ぶと選択解除）
     /// </summary>
-    public void ToggleSelectFire(TypeManager.FireColor color)
+    public void ToggleSelectFire(FireColor color)
     {
         if (!_fires.ContainsKey(color))
         {
@@ -185,6 +189,7 @@ public class FireManager : MonoBehaviour
         MoveSelectedFire();
         _darkness.Tick();
         UpdateLostChildTarget();
+        _maigoController.UpdateCombat();   //火が迷子の索敵結果を読むので、火のTickより先に更新する
         TickFires();
     }
 
@@ -207,7 +212,7 @@ public class FireManager : MonoBehaviour
     #region Private
     private void RegisterFire(FireController fire)
     {
-        if (fire.color == TypeManager.FireColor.None)
+        if (fire.color == FireColor.None)
         {
             Debug.LogError($"[FireManager] RegisterFire : FireColor is None!!! name = {fire.name}");
             return;
@@ -220,11 +225,12 @@ public class FireManager : MonoBehaviour
         }
 
         fire.Initialize(_mainCamera);
+        fire.InitializeCombat(_hitWorld, _maigoController, _kodamaStock);   //当たり判定・索敵・突進の準備
         _fires.Add(fire.color, fire);
         _lightManager.Register(fire.color, fire.transform);   //火にLightを付ける
         _typeManager.ChangeBrightness(fire.color, fire.inspectorBrightness);   //Inspectorの明るさレベルを初期値にする
 
-        TypeManager.FireState state = _typeManager.GetFireState(fire.color);
+        FireState state = _typeManager.GetFireState(fire.color);
         fire.ApplyState(state);
         _lightManager.SetBrightness(fire.color, state.Brightness);
     }
@@ -236,7 +242,7 @@ public class FireManager : MonoBehaviour
     {
         foreach (FireController fire in _fires.Values)
         {
-            if (fire.TryConsumeBrightnessChange(out TypeManager.FireBrightness level))
+            if (fire.TryConsumeBrightnessChange(out FireBrightness level))
             {
                 _typeManager.ChangeBrightness(fire.color, level);
             }
@@ -246,8 +252,8 @@ public class FireManager : MonoBehaviour
     //選択中かつ固定されていない火に、マウス位置の地面を目的地として渡す（火はNavMeshAgentでそこへ向かう）
     private void MoveSelectedFire()
     {
-        TypeManager.FireColor color = _typeManager.SelectedColor;
-        if (color == TypeManager.FireColor.None || !_fires.TryGetValue(color, out FireController fire))
+        FireColor color = _typeManager.SelectedColor;
+        if (color == FireColor.None || !_fires.TryGetValue(color, out FireController fire))
         {
             return;
         }
@@ -280,8 +286,8 @@ public class FireManager : MonoBehaviour
             return;
         }
 
-        TypeManager.FireColor color = _typeManager.FollowTarget;
-        if (color == TypeManager.FireColor.None)
+        FireColor color = _typeManager.FollowTarget;
+        if (color == FireColor.None)
         {
             return;
         }
@@ -320,7 +326,7 @@ public class FireManager : MonoBehaviour
         _typeManager.ToggleFollowMode();
     }
 
-    private void HandleFireStateChanged(TypeManager.FireColor color, TypeManager.FireState state)
+    private void HandleFireStateChanged(FireColor color, FireState state)
     {
         if (_fires.TryGetValue(color, out FireController fire))
         {
@@ -329,7 +335,7 @@ public class FireManager : MonoBehaviour
         }
     }
 
-    private void HandleFollowTargetChanged(TypeManager.FireColor color)
+    private void HandleFollowTargetChanged(FireColor color)
     {
         _maigoController.ResetDestination();
     }

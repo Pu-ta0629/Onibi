@@ -25,12 +25,12 @@ public class FireLightConfig
     [Range(1, FireLight.MaxLightLevel)] public int Level3 = 11;
 
     /// <summary>明るさレベルに対応する光量レベルを返す</summary>
-    public int GetLightLevel(TypeManager.FireBrightness brightness)
+    public int GetLightLevel(FireBrightness brightness)
     {
         switch (brightness)
         {
-            case TypeManager.FireBrightness.Level1: return Level1;
-            case TypeManager.FireBrightness.Level3: return Level3;
+            case FireBrightness.Level1: return Level1;
+            case FireBrightness.Level3: return Level3;
             default: return Level2;
         }
     }
@@ -49,7 +49,7 @@ public class FireLight
     private readonly Transform _owner;
     private readonly FireLightConfig _config;
     private readonly Light _light;
-    private TypeManager.FireBrightness _brightness = TypeManager.FireBrightness.Level2;
+    private FireBrightness _brightness = FireBrightness.Level2;
 
     /// <summary>今の光量レベル（1~15）</summary>
     public int LightLevel => _config.GetLightLevel(_brightness);
@@ -60,7 +60,7 @@ public class FireLight
     /// <summary>
     /// ownerの子として、火の色のPoint Lightを作る。existingLightを渡すとそれを使う（nullなら自動で作る）
     /// </summary>
-    public FireLight(Transform owner, TypeManager.FireColor color, FireLightConfig config, Light existingLight = null)
+    public FireLight(Transform owner, FireColor color, FireLightConfig config, Light existingLight = null)
     {
         _owner = owner;
         _config = config;
@@ -70,7 +70,7 @@ public class FireLight
 
     #region Public
     /// <summary>明るさレベルを設定して、Lightに反映する</summary>
-    public void SetBrightness(TypeManager.FireBrightness brightness)
+    public void SetBrightness(FireBrightness brightness)
     {
         _brightness = brightness;
         Refresh();
@@ -105,7 +105,7 @@ public class FireLight
 
     #region Private
     //火の色のPoint Lightを子として作る
-    private static Light CreateLight(Transform owner, TypeManager.FireColor color, FireLightConfig config)
+    private static Light CreateLight(Transform owner, FireColor color, FireLightConfig config)
     {
         GameObject obj = new GameObject("FireLight");
         obj.transform.SetParent(owner, false);

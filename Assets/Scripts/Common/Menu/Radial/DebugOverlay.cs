@@ -26,7 +26,7 @@ public class DebugOverlay : MonoBehaviour
     [Serializable]
     public class IconEntry
     {
-        public TypeManager.FireColor Color;
+        public FireColor Color;
         public Sprite Icon;
     }
 
@@ -237,9 +237,9 @@ public class DebugOverlay : MonoBehaviour
             return;
         }
 
-        foreach (TypeManager.FireColor color in _fireManager.fireInventory.ownedColors)
+        foreach (FireColor color in _fireManager.fireInventory.ownedColors)
         {
-            TypeManager.FireState state = _typeManager.GetFireState(color);
+            FireState state = _typeManager.GetFireState(color);
 
             GUILayout.BeginHorizontal();
             DrawIcon(color);
@@ -253,21 +253,21 @@ public class DebugOverlay : MonoBehaviour
     }
 
     //「タイトル : [アイコン] 名前」を1行で表示する
-    private void DrawFireLine(string title, TypeManager.FireColor color)
+    private void DrawFireLine(string title, FireColor color)
     {
         GUILayout.BeginHorizontal();
         GUILayout.Label($"{title} :", _labelStyle, GUILayout.Width(100f));
         DrawIcon(color);
-        GUILayout.Label(color == TypeManager.FireColor.None ? "なし" : color.ToString(), _labelStyle);
+        GUILayout.Label(color == FireColor.None ? "なし" : color.ToString(), _labelStyle);
         GUILayout.EndHorizontal();
     }
 
     //火のアイコンを表示する。アイコンの設定がなければ、火の色の四角を表示する
-    private void DrawIcon(TypeManager.FireColor color)
+    private void DrawIcon(FireColor color)
     {
         float size = _fontSize + 8f;
         Rect rect = GUILayoutUtility.GetRect(size, size, GUILayout.Width(size), GUILayout.Height(size));
-        if (color == TypeManager.FireColor.None)
+        if (color == FireColor.None)
         {
             return;
         }
@@ -301,7 +301,7 @@ public class DebugOverlay : MonoBehaviour
         _headerStyle.fontSize = _fontSize + 2;
     }
 
-    private Sprite FindIcon(TypeManager.FireColor color)
+    private Sprite FindIcon(FireColor color)
     {
         if (_icons == null)
         {
@@ -339,19 +339,19 @@ public class DebugOverlay : MonoBehaviour
     }
 
     //明るさを「Lv2 ■■□」の形で表示する
-    private static string Level(TypeManager.FireBrightness brightness)
+    private static string Level(FireBrightness brightness)
     {
         int level = (int)brightness + 1;
         string bar = new string('■', level) + new string('□', 3 - level);
         return $"<color=#FFDD66>Lv{level} {bar}</color>";
     }
 
-    private static string ModeName(TypeManager.LostChildFollowMode mode)
+    private static string ModeName(LostChildFollowMode mode)
     {
         switch (mode)
         {
-            case TypeManager.LostChildFollowMode.UpdateTarget: return "随時更新する";
-            case TypeManager.LostChildFollowMode.KeepTarget: return "更新しない（対象固定）";
+            case LostChildFollowMode.UpdateTarget: return "随時更新する";
+            case LostChildFollowMode.KeepTarget: return "更新しない（対象固定）";
             default: return "対象なし";
         }
     }
@@ -363,19 +363,19 @@ public class DebugOverlay : MonoBehaviour
     private void HandleRightClickDown() { AddLog("右クリック押下（ラジアルを開く）"); }
     private void HandleRightClickUp() { AddLog("右クリック離す（ラジアルを閉じる）"); }
 
-    private void HandleFollowTargetChanged(TypeManager.FireColor color)
+    private void HandleFollowTargetChanged(FireColor color)
     {
         _followChangedTime = Time.unscaledTime;
         _followChangeCount++;
         AddLog($"追従先を更新 → {color}");
     }
 
-    private void HandleFollowModeChanged(TypeManager.LostChildFollowMode mode)
+    private void HandleFollowModeChanged(LostChildFollowMode mode)
     {
         AddLog($"追従モード → {ModeName(mode)}");
     }
 
-    private void HandleFireStateChanged(TypeManager.FireColor color, TypeManager.FireState state)
+    private void HandleFireStateChanged(FireColor color, FireState state)
     {
         AddLog($"{color} : 選択 {(state.IsSelected ? "ON" : "OFF")} / 固定 {(state.IsFixed ? "ON" : "OFF")} / 明るさ Lv{(int)state.Brightness + 1}");
     }

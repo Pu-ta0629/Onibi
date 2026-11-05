@@ -1,11 +1,13 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 
 /// <summary>
-/// 火1体ぶんの挙動。Stateから変換した「AIが使える行動の許可」を保持し、移動はMoverに任せる
-/// 選択中でも固定中でもない火は、迷子の周りを円形に動き続ける（円の計算はここで行う）
+/// 火1つぶんの挙動。Stateから変換した「AIが使ってよい行動の許可」を保持し、移動はMoverに任せる
+/// 選択中でも固定中でもない火は、迷子の周りを円形に回り、攻撃対象を見つけたら突進して敵にダメージを与える
+/// 突進するときは木霊を消費する。HPは持たない
 /// 見た目（2Dスプライト）は、常にカメラの向きに合わせる（ビルボード）
-/// 火自体が発光体。持つのは明るさのレベル（Level1-3）だけで、光の値はLightManagerが共通の設定から決める
+/// 火の明るさはレベル（Level1-3）だけを持ち、実際の値はLightManagerが共通の設定から決める
 /// </summary>
 public class FireController : MonoBehaviour
 {
@@ -14,58 +16,73 @@ public class FireController : MonoBehaviour
     #region Fields
     [Header("FireConfig")]
     [Tooltip("この火の色。FireManagerの所持リスト・ラジアルと対応する（None == NULL）")]
-    [SerializeField] private TypeManager.FireColor _color;
+    [SerializeField] private FireColor _color;
 
-    [Tooltip("移動速度。Initialize時にNavMeshAgentのSpeedへ反映する")]
+    [Tooltip("移動速度。Initialize時にMoverへ反映する")]
     [SerializeField, Range(0.1f, 20f)] private float _moveSpeed = 5f;
 
     [Header("NavMesh")]
-    [Tooltip("目的地の近くでNavMeshを探す距離。地面の高さが少しずれていても届く大きさにする")]
+    [Tooltip("目的地の近くのNavMeshを探す距離。地面の高さがずれていても届くよう、大きめにする")]
     [SerializeField, Range(0.1f, 10f)] private float _navMeshSampleDistance = 2f;
 
     [Tooltip("目的地がこの距離以上動いたら、経路を更新する（経路計算の回数を減らす）")]
     [SerializeField, Range(0.05f, 2f)] private float _destinationUpdateDistance = 0.3f;
 
     [Header("Ground")]
-    [Tooltip("地面のLayer。NavMeshを使わない移動で、地形の高さに沿わせるのに使う")]
+    [Tooltip("地面のLayer。NavMeshを使わない移動で、地形の高さに合わせるのに使う")]
     [SerializeField] private LayerMask _groundMask;
 
     [Header("Orbit")]
     [Tooltip("迷子を中心に周回する円の半径")]
     [SerializeField, Range(0.5f, 20f)] private float _orbitRadius = 3f;
 
-    [Tooltip("周回の速さ（度/秒）。移動速度より速い周回はできない")]
+    [Tooltip("周回の速さ（度/秒）。移動速度より速く回ることはできない")]
     [SerializeField, Range(10f, 180f)] private float _orbitSpeed = 60f;
 
     [Header("Brightness")]
-    [Tooltip("この火の明るさレベル。各レベルの光量はLightManagerで共通に設定する。開始時に反映され、再生中に変えるとすぐ反映される")]
-    [SerializeField] private TypeManager.FireBrightness _brightness = TypeManager.FireBrightness.Level2;
+    [Tooltip("この火の明るさレベル。各レベルの効果はLightManagerで共通に設定する。開始時に反映され、再生中に変えても反映される")]
+    [SerializeField] private FireBrightness _brightness = FireBrightness.Level2;
+
+    [Header("Combat")]
+    [Tooltip("この火のマスターデータ（コライダー・木霊の消費量・クールタイム・火傷威力を読む）")]
+    [SerializeField] private FireStateData _data;
+
+    private readonly List<HitInfo> _hits = new List<HitInfo>();
+    private readonly AttackProcessor _attackProcessor = new AttackProcessor();
 
     private NavMeshAgent _agent;
     private Mover _mover;
     private Camera _billboardCamera;
 
-    private TypeManager.FireState _state;
-    private TypeManager.FireAIPermission _aiPermission;
+    private FireState _state;
+    private FireAIPermission _aiPermission;
 
-    private TypeManager.FireBrightness _syncedBrightness;   //TypeManagerへ渡し済みのInspectorの値
+    private FireBrightness _syncedBrightness;   //TypeManagerへ渡し済みのInspectorの値
     private float _orbitAngle;   //周回中の角度（度）
     private bool _isInitialized;
+
+    private HitDetector _hit;
+    private FireTargetSearch _targetSearch;
+    private KodamaStock _kodama;
+    private float _cooldown;      //次の突進までの残り時間（秒）
+    private float _facingYaw;     //突進の向き（度）。攻撃のコライダーの向きに使う
+    private bool _isDashing;
+    private bool _isCombatInitialized;
     #endregion
 
     #region Properties
-    public TypeManager.FireColor color => _color;
+    public FireColor color => _color;
     public Vector3 position => transform.position;
-    public TypeManager.FireAIPermission aiPermission => _aiPermission;
-    public TypeManager.FireBrightness brightness => _state.Brightness;
+    public FireAIPermission aiPermission => _aiPermission;
+    public FireBrightness brightness => _state.Brightness;
 
     /// <summary>Inspectorで設定した明るさレベル</summary>
-    public TypeManager.FireBrightness inspectorBrightness => _brightness;
+    public FireBrightness inspectorBrightness => _brightness;
     #endregion
 
     #region Initialize
     /// <summary>
-    /// FireManagerから呼ぶ。カメラはInitializeManagerが持つものをFireManager経由で受け取る
+    /// FireManagerから呼ぶ。カメラはInitializeManagerが持つので、FireManager経由で受け取る
     /// </summary>
     public void Initialize(Camera mainCamera)
     {
@@ -84,7 +101,25 @@ public class FireController : MonoBehaviour
         _isInitialized = true;
     }
 
-    //Initializeに必要な参照がそろっているか確認する。足りなければエラーを出してfalse
+    /// <summary>
+    /// Initializeの後に、FireManagerから呼ぶ。戦闘（当たり判定・索敵・突進）の準備をする
+    /// world: 全員で共有するHitWorld / lostChild: 索敵結果を借りる迷子 / kodama: 突進で消費する木霊
+    /// </summary>
+    public void InitializeCombat(HitWorld world, LostChildController lostChild, KodamaStock kodama)
+    {
+        if (!_isInitialized || world == null || lostChild == null || kodama == null || _data == null)
+        {
+            Debug.LogError($"[FireController] InitializeCombat : Reference is Null!!! color = {_color}");
+            return;
+        }
+
+        _kodama = kodama;
+        _hit = new HitDetector(world, this, Faction.Fire, _data.Colliders);
+        _targetSearch = new FireTargetSearch(new WeightedSearch<EnemyController>(_hit), lostChild);
+        _isCombatInitialized = true;
+    }
+
+    //Initializeに必要な参照が揃っているか確認する。足りなければエラーを出してfalse
     private bool NullChecker()
     {
         bool isValid = true;
@@ -101,7 +136,7 @@ public class FireController : MonoBehaviour
             isValid = false;
         }
 
-        if (_color == TypeManager.FireColor.None)
+        if (_color == FireColor.None)
         {
             Debug.LogError($"[FireController] Initialize : FireColor is None!!! name = {name}");
             isValid = false;
@@ -123,16 +158,35 @@ public class FireController : MonoBehaviour
         //カメラと完全に同じ向きにそろえ、スプライトがカメラに正対するようにする
         transform.rotation = _billboardCamera.transform.rotation;
     }
+
+    private void OnDestroy()
+    {
+        _hit?.Dispose();
+    }
     #endregion
 
     #region Public
     /// <summary>
-    /// 毎フレーム、周回の中心（迷子の座標）を渡す。移動が許可されている火だけ、中心の周りの円を回る
-    /// 周回はNavMeshを使わず、円周上の点へ直進で向かう（軽い）
+    /// 毎フレーム、周回の中心（迷子の座標）を渡す。移動が許可されていれば、中心の周りの円を回る
+    /// 突進中は、周回せずに突進を進める。周回はNavMeshを使わず、円周上の点へ直進で向かう（軽量）
     /// </summary>
     public void Tick(Vector3 center)
     {
-        if (!_isInitialized || !_aiPermission.CanMove)
+        if (!_isInitialized)
+        {
+            return;
+        }
+
+        if (_isCombatInitialized)
+        {
+            TickCombat();
+            if (_isDashing)
+            {
+                return;
+            }
+        }
+
+        if (!_aiPermission.CanMove)
         {
             return;
         }
@@ -145,10 +199,10 @@ public class FireController : MonoBehaviour
     }
 
     /// <summary>
-    /// Stateが変わったときに呼ぶ。それまでの経路を捨てて、Stateに合わせて移動を許可する／止める
+    /// Stateが変わったときに呼ぶ。これまでの経路を捨てて、Stateに合わせて移動を許可／停止する
     /// 選択中の火はマウスを追って動く（固定中は止まる）。選択中でなければAIの許可に従う
     /// </summary>
-    public void ApplyState(TypeManager.FireState state)
+    public void ApplyState(FireState state)
     {
         _state = state;
         _aiPermission = TypeManager.ToAIPermission(state);
@@ -181,7 +235,7 @@ public class FireController : MonoBehaviour
     /// <summary>
     /// 再生中にInspectorの明るさレベルが変えられていたら、その値を返してtrueにする（FireManagerが毎フレーム確認する）
     /// </summary>
-    public bool TryConsumeBrightnessChange(out TypeManager.FireBrightness level)
+    public bool TryConsumeBrightnessChange(out FireBrightness level)
     {
         level = _brightness;
         if (!_isInitialized || _brightness == _syncedBrightness)
@@ -191,6 +245,85 @@ public class FireController : MonoBehaviour
 
         _syncedBrightness = _brightness;
         return true;
+    }
+    #endregion
+
+    #region Combat
+    //体の位置の更新、索敵、突進の開始と進行を行う
+    private void TickCombat()
+    {
+        _hit.SetTransform(transform.position, _facingYaw);
+        _cooldown = Mathf.Max(0f, _cooldown - Time.deltaTime);
+
+        if (_isDashing)
+        {
+            TickDash();
+            return;
+        }
+
+        if (_aiPermission.CanSearch)
+        {
+            _targetSearch.Tick(transform.position);
+        }
+
+        if (_aiPermission.CanDash && _cooldown <= 0f)
+        {
+            TryBeginDash();
+        }
+    }
+
+    //攻撃対象（迷子と火の索敵結果を合わせた、一番重みが大きい敵）がいて、木霊が足りるなら、突進を始める
+    private void TryBeginDash()
+    {
+        if (!_targetSearch.TryGetTarget(out SearchResult target))
+        {
+            return;
+        }
+
+        if (!_kodama.TryConsume(_data.NormalCost))
+        {
+            return;
+        }
+
+        Vector3 direction = target.Position - transform.position;
+        direction.y = 0f;
+        if (direction.sqrMagnitude > 1e-6f)
+        {
+            _facingYaw = Mathf.Atan2(direction.x, direction.z) * Mathf.Rad2Deg;
+        }
+
+        _mover.BeginStraightTo(target.Position);   //突進の目的地は、始めた瞬間の敵の位置
+        _attackProcessor.Begin();
+        _isDashing = true;
+    }
+
+    //目的地へ直進しながら、攻撃のコライダーで敵に当たったか調べる。着いたら終わる
+    private void TickDash()
+    {
+        if (!_aiPermission.CanDash)
+        {
+            EndDash();
+            return;
+        }
+
+        bool isMoving = _mover.MoveStraightToTarget();
+        _hit.SetTransform(transform.position, _facingYaw);
+
+        if (_hit.Detect<EnemyController>(_data.NormalAttackKey, _hits))
+        {
+            _attackProcessor.Apply(_hits, _data.BurnPotency);
+        }
+
+        if (!isMoving)
+        {
+            EndDash();
+        }
+    }
+
+    private void EndDash()
+    {
+        _isDashing = false;
+        _cooldown = _data.NormalCooldown;
     }
     #endregion
 }

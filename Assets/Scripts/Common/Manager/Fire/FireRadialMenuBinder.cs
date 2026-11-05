@@ -8,7 +8,7 @@ using UnityEngine;
 [Serializable]
 public class FireRadialEntry
 {
-    public TypeManager.FireColor Color;
+    public FireColor Color;
     [Tooltip("TextMeshProモードで表示する文字。空なら色の名前")] public string Label;
     [Tooltip("Imageモードで表示するアイコン")] public Sprite Icon;
 }
@@ -20,7 +20,7 @@ public class FireRadialEntry
 /// </summary>
 public class FireRadialMenuBinder : IDisposable
 {
-    private readonly List<TypeManager.FireColor> _colors = new List<TypeManager.FireColor>();  //RadialMenuの項目の並び（番号が一致する）
+    private readonly List<FireColor> _colors = new List<FireColor>();  //RadialMenuの項目の並び（番号が一致する）
 
     private RadialMenu _radialMenu;
     private TypeManager _typeManager;
@@ -53,9 +53,9 @@ public class FireRadialMenuBinder : IDisposable
         _entries = entries;
 
         //Menu項目は常に先頭（真上）に置く。火の項目はその後ろに並ぶ
-        AddRadialItem(TypeManager.FireColor.None);
+        AddRadialItem(FireColor.None);
 
-        foreach (TypeManager.FireColor color in _fireInventory.ownedColors)
+        foreach (FireColor color in _fireInventory.ownedColors)
         {
             AddRadialItem(color);
         }
@@ -90,9 +90,9 @@ public class FireRadialMenuBinder : IDisposable
 
     #region Private
     //RadialMenuに項目を1つ追加する。選ばれたときの処理もここで渡す。FireColor.Noneは火ではなくMenu項目
-    private void AddRadialItem(TypeManager.FireColor color)
+    private void AddRadialItem(FireColor color)
     {
-        bool isMenu = color == TypeManager.FireColor.None;
+        bool isMenu = color == FireColor.None;
         if (!isMenu)
         {
             _colors.Add(color);
@@ -120,7 +120,7 @@ public class FireRadialMenuBinder : IDisposable
         }
     }
 
-    private FireRadialEntry FindEntry(TypeManager.FireColor color)
+    private FireRadialEntry FindEntry(FireColor color)
     {
         if (_entries == null)
         {
@@ -148,7 +148,7 @@ public class FireRadialMenuBinder : IDisposable
     #endregion
 
     #region Handler
-    private void HandleSelected(TypeManager.FireColor color)
+    private void HandleSelected(FireColor color)
     {
         //選択の切り替え（同じ火をもう一度選ぶと解除）はTypeManagerの結果が正。見た目はその結果に合わせる
         _fireManager.ToggleSelectFire(color);
@@ -162,7 +162,7 @@ public class FireRadialMenuBinder : IDisposable
         SyncActiveItem();
     }
 
-    private void HandleFireAdded(TypeManager.FireColor color)
+    private void HandleFireAdded(FireColor color)
     {
         AddRadialItem(color);
     }

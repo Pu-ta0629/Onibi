@@ -12,7 +12,7 @@ public class LightManager : MonoBehaviour
     [Header("共通の光の設定（全ての火で共通）")]
     [SerializeField] private FireLightConfig _config = new FireLightConfig();
 
-    private readonly Dictionary<TypeManager.FireColor, FireLight> _lights = new Dictionary<TypeManager.FireColor, FireLight>();
+    private readonly Dictionary<FireColor, FireLight> _lights = new Dictionary<FireColor, FireLight>();
     private bool _isInitialized;
 
     #region Initialize
@@ -30,9 +30,9 @@ public class LightManager : MonoBehaviour
     /// <summary>
     /// 火にLightを付ける。火の子としてLightを作り、以降はSetBrightnessで値を変える
     /// </summary>
-    public bool Register(TypeManager.FireColor color, Transform owner)
+    public bool Register(FireColor color, Transform owner)
     {
-        if (!_isInitialized || owner == null || color == TypeManager.FireColor.None)
+        if (!_isInitialized || owner == null || color == FireColor.None)
         {
             Debug.LogError("[LightManager] Register : Not initialized or reference is Null!!! ");
             return false;
@@ -51,7 +51,7 @@ public class LightManager : MonoBehaviour
     /// <summary>
     /// 火の明るさレベルを反映する。そのレベルに対応する共通の値でLightが変わる
     /// </summary>
-    public void SetBrightness(TypeManager.FireColor color, TypeManager.FireBrightness brightness)
+    public void SetBrightness(FireColor color, FireBrightness brightness)
     {
         if (_lights.TryGetValue(color, out FireLight light))
         {

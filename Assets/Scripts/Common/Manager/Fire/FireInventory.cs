@@ -7,11 +7,11 @@ using System.Collections.Generic;
 /// </summary>
 public class FireInventory
 {
-    public event Action<TypeManager.FireColor> OnFireAdded;
+    public event Action<FireColor> OnFireAdded;
 
-    private readonly List<TypeManager.FireColor> _ownedColors = new List<TypeManager.FireColor>();
+    private readonly List<FireColor> _ownedColors = new List<FireColor>();
 
-    public IReadOnlyList<TypeManager.FireColor> ownedColors => _ownedColors;
+    public IReadOnlyList<FireColor> ownedColors => _ownedColors;
 
     #region Initialize
     /// <summary>
@@ -20,9 +20,9 @@ public class FireInventory
     public void Initialize()
     {
         _ownedColors.Clear();
-        _ownedColors.Add(TypeManager.FireColor.Red);
-        _ownedColors.Add(TypeManager.FireColor.Green);
-        _ownedColors.Add(TypeManager.FireColor.Blue);
+        _ownedColors.Add(FireColor.Red);
+        _ownedColors.Add(FireColor.Green);
+        _ownedColors.Add(FireColor.Blue);
     }
     #endregion
 
@@ -30,7 +30,7 @@ public class FireInventory
     /// <summary>
     /// ‰Î‚ğŠ‚µ‚Ä‚¢‚é‚©
     /// </summary>
-    public bool Has(TypeManager.FireColor color)
+    public bool Has(FireColor color)
     {
         return _ownedColors.Contains(color);
     }
@@ -38,9 +38,9 @@ public class FireInventory
     /// <summary>
     /// ‰Î‚ğŠl“¾‚·‚éB‚·‚Å‚ÉŠ‚µ‚Ä‚¢‚éê‡‚Ífalse‚ğ•Ô‚·
     /// </summary>
-    public bool TryAdd(TypeManager.FireColor color)
+    public bool TryAdd(FireColor color)
     {
-        if (color == TypeManager.FireColor.None || _ownedColors.Contains(color))
+        if (color == FireColor.None || _ownedColors.Contains(color))
         {
             return false;
         }

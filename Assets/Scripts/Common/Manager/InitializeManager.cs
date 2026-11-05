@@ -1,9 +1,9 @@
 using UnityEngine;
 
 /// <summary>
-/// 各Managerの生成・初期化の呼び出しと、参照の配布だけを担う
+/// 各Managerの生成・初期化の呼び出しと、参照の配布を担当する
 /// 参照はInspectorで受け取り、Initializeの引数として各スクリプトへ渡す（Instanceは使わない）
-/// 各Managerが持つ設定（火の情報など）は、それぞれのManager側のInspectorで持つ
+/// 各Managerの固有設定（火の情報など）は、それぞれのManagerがInspectorで持つ
 /// </summary>
 public class InitializeManager : MonoBehaviour
 {
@@ -12,15 +12,22 @@ public class InitializeManager : MonoBehaviour
     [SerializeField] private InputManager _inputManager;
     [SerializeField] private LostChildController _lostChildController;
     [SerializeField] private FireManager _fireManager;
+    [SerializeField] private EnemyGenerator _enemyGenerator;
+
+    [Header("Battle")]
+    [Tooltip("ステージ開始時の木霊の量。火が突進するたびに消費する")]
+    [SerializeField, Range(0, 999)] private int _initialKodama = 30;
 
     private TypeManager _typeManager;
+    private HitWorld _hitWorld;
+    private KodamaStock _kodamaStock;
 
     public TypeManager typeManager => _typeManager;
 
     #region UnityLifeCycle
     private void Awake()
     {
-        if (_inputManager == null || _lostChildController == null || _fireManager == null)
+        if (_inputManager == null || _lostChildController == null || _fireManager == null || _enemyGenerator == null)
         {
             Debug.LogError("[InitializeManager] Awake : Reference is Null!!! ");
             return;
@@ -37,11 +44,14 @@ public class InitializeManager : MonoBehaviour
         //純粋なC#クラスを生成して初期化する
         _typeManager = new TypeManager();
         _typeManager.Initialize();
+        _hitWorld = new HitWorld();
+        _kodamaStock = new KodamaStock(_initialKodama);
 
-        //入力→迷子→火の順で初期化する（FireManagerは他の参照を使うため最後）
+        //入力→迷子→火→敵の順で初期化する（FireManagerは他の参照を使うため、敵より前）
         _inputManager.Initialize(mainCamera);
-        _lostChildController.Initialize();
-        _fireManager.Initialize(_typeManager, _inputManager, _lostChildController, mainCamera);
+        _lostChildController.Initialize(_hitWorld);
+        _fireManager.Initialize(_typeManager, _inputManager, _lostChildController, mainCamera, _hitWorld, _kodamaStock);
+        _enemyGenerator.Initialize(_hitWorld, _lostChildController);
     }
     #endregion
 }
