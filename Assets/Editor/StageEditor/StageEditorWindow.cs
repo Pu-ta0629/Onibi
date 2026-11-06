@@ -43,7 +43,6 @@ public class StageEditorWindow : EditorWindow
         placeBar.Add(new ToolbarButton(StageSceneEditor.SetStartHere) { text = "Start設置" });
         placeBar.Add(new ToolbarButton(StageSceneEditor.AddGoal) { text = "ゴール追加" });
         placeBar.Add(new ToolbarButton(StageSceneEditor.AddEnemy) { text = "エネミー追加" });
-        placeBar.Add(new ToolbarButton(StageSceneEditor.AddItem) { text = "アイテム追加" });
         placeBar.Add(new ToolbarButton(StageSceneEditor.RemoveSelected) { text = "削除" });
         root.Add(placeBar);
 
@@ -133,6 +132,10 @@ public class StageEditorWindow : EditorWindow
         var stage = CreateInstance<StageData>();
         AssetDatabase.CreateAsset(stage, path);
         SetStageId(stage, id);
+
+        WalkableGrid grid = stage.WalkableGrid;
+        StageGridEditor.ApplySettings(stage, grid.Width, grid.Depth, grid.CellSize, grid.Origin, true);
+        EditorUtility.SetDirty(stage);
 
         Reload();
         Select(stage);

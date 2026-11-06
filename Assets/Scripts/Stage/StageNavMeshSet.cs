@@ -17,18 +17,47 @@ public sealed class StageNavMeshSet : IDisposable
 
     private readonly WalkableGrid _grid;
     private readonly Dictionary<MovementProfile, Entry> _entries = new();
+    private readonly HashSet<MovementProfile> _failed = new();
 
     public StageNavMeshSet(WalkableGrid grid) => _grid = grid;
 
     public int GetAgentTypeId(MovementProfile profile)
     {
         if (_entries.TryGetValue(profile, out var cached)) return cached.AgentTypeId;
+        if(_failed.Contains(profile)) return -1;
 
         var entry = Build(profile);
-        if (entry == null) return -1;
+        if (entry == null) 
+        {
+            _failed.Add(profile);
+            return -1; 
+        }
 
         _entries.Add(profile, entry);
         return entry.AgentTypeId;
+    }
+
+    public void Prewarm(IEnumerable<MovementProfile> profiles)
+    {
+        foreach (MovementProfile profile in profiles)
+            GetAgentTypeId(profile);    //作って、キャッシュに入れる
+    }
+
+    public static HashSet<MovementProfile> CollectProfiles(StageData stage, params MovementProfile[] extraProfiles)
+    {
+        var profiles = new HashSet<MovementProfile>(extraProfiles);
+        profiles.Add(MovementProfile.Fire); // Fireは、全ステージで必要
+        foreach (EnemyPlacement placement in stage.Enemies)
+            profiles.Add(placement.Profile);
+        return profiles;
+    }
+
+    // 警護対象のように、StageDataに入っていないプロファイルは、extraProfilesで渡す
+    public static StageNavMeshSet CreateFor(StageData stage,params MovementProfile[] extraProfiles)
+    {
+        var set = new StageNavMeshSet(stage.WalkableGrid);
+        set.Prewarm(CollectProfiles(stage, extraProfiles));
+        return set;
     }
 
     public bool TrySamplePosition(MovementProfile profile, Vector3 position, float maxDistance, out Vector3 result)
@@ -130,5 +159,9 @@ public sealed class StageNavMeshSet : IDisposable
         }
 
         _entries.Clear();
+        _failed.Clear();
     }
+
+    
+    
 }

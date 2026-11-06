@@ -374,9 +374,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::HitShapeDemo
   shape:
     _kind: 1
-    _range: 4
-    _angle: 90
+    _radius: 4
+    _length: 0
     _width: 0
+    _angle: 90
+    _innerRange: 0
   targets:
   - {fileID: 1062047197}
   - {fileID: 10200865}

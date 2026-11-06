@@ -5,7 +5,7 @@ using UnityEditor;
 using UnityEngine;
 
 // MasterData の作成・検査メニュー
-// Tools > Master Data > New > Enemy / Enemy Type / Fire State / Lost Childe : 新しいアセットを、次の空き ID で作る
+// Tools > Master Data > New > Enemy / Enemy Type / Fire State / Lost child : 新しいアセットを、次の空き ID で作る
 // Tools > Master Data > Validate : 全アセットの検査
 public static class MasterDataTools
 {
@@ -22,8 +22,8 @@ public static class MasterDataTools
     [MenuItem("Tools/Master Data/New/New Fire State")]
     private static void NewFireState() => Create<FireStateData>("FireStates", "FireState");
 
-    [MenuItem("Tools/Master Data/New/Lost Childe")]
-    private static void NewLostChilde() => Create<LostChilde>("LostChildren", "LostChilde");
+    [MenuItem("Tools/Master Data/New/Lost child")]
+    private static void NewLostchild() => Create<LostChild>("LostChildren", "Lostchild");
 
     [MenuItem("Tools/Master Data/New/Scarecrow")]
     private static void NewScarecrow() => Create<ScarecrowData>("Scarecrows", "Scarecrow");
@@ -77,12 +77,12 @@ public static class MasterDataTools
         var types = LoadAll<EnemyTypeData>();
         var enemies = LoadAll<EnemyData>();
         var fires = LoadAll<FireStateData>();
-        var childes = LoadAll<LostChilde>();
+        var children = LoadAll<LostChild>();
 
         CheckIds(types, issues);
         CheckIds(enemies, issues);
         CheckIds(fires, issues);
-        CheckIds(childes, issues);
+        CheckIds(children, issues);
 
         foreach (var type in types)
         {
@@ -124,13 +124,13 @@ public static class MasterDataTools
             CheckColliderKey($"{label} の固有行動", fire.SpecialAttackKey, fire.Colliders, ColliderRole.Attack, fire, issues);
         }
 
-        foreach (var childe in childes)
+        foreach (var child in children)
         {
-            var label = childe.name;
+            var label = child.name;
 
-            if (string.IsNullOrWhiteSpace(childe.DisplayName)) issues.Add(($"{label}: 名前が空です", childe));
+            if (string.IsNullOrWhiteSpace(child.DisplayName)) issues.Add(($"{label}: 名前が空です", child));
 
-            CheckColliders(label, childe.Colliders, childe, issues);
+            CheckColliders(label, child.Colliders, child, issues);
         }
 
         return issues;

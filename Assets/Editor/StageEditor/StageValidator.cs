@@ -4,7 +4,7 @@ using UnityEngine;
 public static class StageValidator
 {
     // Unit(Fire)は、移動領域が共通でFly、大きさは最小のSmall
-    private static readonly MovementProfile FireProfile = new(MoveType.Fly, SizeClass.Small, Faction.Fire);
+    private static readonly MovementProfile FireProfile = MovementProfile.Fire;
 
     public static List<string> Validate(StageData stage)
     {
@@ -26,9 +26,6 @@ public static class StageValidator
             CheckPlacement(issues, name, grid, $"Enemy{i + 1}", placement, placement.Profile);
         }
 
-        // 修正: 以前は Item{i + i} になっていて番号がずれていた
-        for (var i = 0; i < stage.Items.Count; i++)
-            CheckPlacement(issues, name, grid, $"Item{i + 1}", stage.Items[i], FireProfile);
 
         if (TryGetWalkableCell(grid, stage.Start.Position, FireProfile, out var sx, out var sz))
         {
@@ -37,8 +34,6 @@ public static class StageValidator
             for (var i = 0; i < stage.Goals.Count; i++)
                 CheckReachable(issues, name, grid, reached, $"Goal{i + 1}", stage.Goals[i], FireProfile, "スタートから到達できません");
 
-            for (var i = 0; i < stage.Items.Count; i++)
-                CheckReachable(issues, name, grid, reached, $"Item{i + 1}", stage.Items[i], FireProfile, "スタートから到達できません(取れないアイテム)");
         }
 
         return issues;

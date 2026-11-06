@@ -16,7 +16,7 @@ MonoBehaviour:
   _displayName: 
   _type: {fileID: 11400000, guid: 615f39f93b30c614593d900bc79e2f1f, type: 2}
   _maxHP: 0
-  _baseAttack: 0
+  _baseAttack: 1
   _moveSpeed: 0
   _moveLogic: 
   _searchType: 

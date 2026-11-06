@@ -83,9 +83,9 @@ public sealed class EntityEditorWindow : EditorWindow
 
         new EntityKind(
             "迷い子",
-            () => ToMasterList(MasterDataTools.LoadAll<LostChilde>()),
-            asset => ((LostChilde)asset).DisplayName,
-            asset => ((LostChilde)asset).Colliders,
+            () => ToMasterList(MasterDataTools.LoadAll<LostChild>()),
+            asset => ((LostChild)asset).DisplayName,
+            asset => ((LostChild)asset).Colliders,
             new[] { "_colliders" }),
     };
 
