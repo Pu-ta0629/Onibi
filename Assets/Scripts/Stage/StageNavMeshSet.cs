@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.AI;
 // 修正: UnityEditor.SettingsManagementのusingを削除(ビルド時にエラーになるため)
@@ -20,6 +21,7 @@ public sealed class StageNavMeshSet : IDisposable
     private readonly HashSet<MovementProfile> _failed = new();
 
     public StageNavMeshSet(WalkableGrid grid) => _grid = grid;
+    public float GroundY => _grid.Origin.y;
 
     public int GetAgentTypeId(MovementProfile profile)
     {
@@ -58,6 +60,14 @@ public sealed class StageNavMeshSet : IDisposable
         var set = new StageNavMeshSet(stage.WalkableGrid);
         set.Prewarm(CollectProfiles(stage, extraProfiles));
         return set;
+    }
+
+    //失敗の原因調べ用（その位置のマスがｍそのプロファイルで通れるか）
+    public string DescribeCell(MovementProfile profile, Vector3 position)
+    {
+        var x = Mathf.FloorToInt((position.x - _grid.Origin.x) / _grid.CellSize);
+        var z = Mathf.FloorToInt((position.z - _grid.Origin.z) / _grid.CellSize);
+        return $"cell({x}, {z}) terrain={_grid.GetTerrain(x, z)} blockedFactions={_grid.GetBlockedFactions(x, z)} canEnter={_grid.CanEnter(x, z, profile)}";
     }
 
     public bool TrySamplePosition(MovementProfile profile, Vector3 position, float maxDistance, out Vector3 result)

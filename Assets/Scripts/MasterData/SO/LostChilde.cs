@@ -11,6 +11,9 @@ public class LostChild : MasterData
     [Tooltip("体(Hit)、攻撃(Attack)、索敵(Search)など。役割(Role)で、使い道が決まる")]
     [SerializeField] private ColliderSet _colliders = new();
 
+    [SerializeField] private MovementProfile _movementProfile;
+
     public string DisplayName => _displayName;
     public ColliderSet Colliders => _colliders;
+    public MovementProfile MovementProfile => _movementProfile;
 }

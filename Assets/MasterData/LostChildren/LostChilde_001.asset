@@ -40,3 +40,7 @@ MonoBehaviour:
       _offset: {x: 0, y: 0}
       _yawOffset: 0
       _targets: 4
+  _movementProfile:
+    _moveType: 0
+    _size: 1
+    _faction: 2

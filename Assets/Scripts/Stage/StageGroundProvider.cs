@@ -8,6 +8,10 @@ public class StageGroundProvider
     public static void Load(StageData stage)
     {
         Unload();
+        if (stage == null) return;
+
+        _builder = new StageGroundBuilder();
+        _builder.Build(stage.WalkableGrid, new StageTerrainColors(), HideFlags.None);
     }
 
     // ステージの終了時に1回呼ぶ
