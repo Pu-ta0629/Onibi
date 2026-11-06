@@ -5,7 +5,7 @@ using UnityEditor;
 using UnityEngine;
 
 // MasterData の作成・検査メニュー
-// Tools > Master Data > New > Enemy / Enemy Type / Fire State / Lost Childe : 新しいアセットを、次の空き ID で作る
+// Tools > Master Data > New > Enemy / Enemy Type / Fire State / Lost child : 新しいアセットを、次の空き ID で作る
 // Tools > Master Data > Validate : 全アセットの検査
 public static class MasterDataTools
 {
@@ -22,9 +22,11 @@ public static class MasterDataTools
     [MenuItem("Tools/Master Data/New/New Fire State")]
     private static void NewFireState() => Create<FireStateData>("FireStates", "FireState");
 
-    [MenuItem("Tools/Master Data/New/Lost Childe")]
-    private static void NewLostChilde() => Create<LostChilde>("LostChildren", "LostChilde");
+    [MenuItem("Tools/Master Data/New/Lost child")]
+    private static void NewLostchild() => Create<LostChild>("LostChildren", "Lostchild");
 
+    [MenuItem("Tools/Master Data/New/Scarecrow")]
+    private static void NewScarecrow() => Create<ScarecrowData>("Scarecrows", "Scarecrow");
     private static void Create<T>(string folderName, string prefix) where T : MasterData
     {
         var folder = $"{Root}/{folderName}";
@@ -68,20 +70,19 @@ public static class MasterDataTools
 
     // ---- 検査 ----
 
-    [MenuItem("Tools/Master Data/Validate")]
-    private static void Validate()
+    public static List<(string message,Object context)> CollectIssues()
     {
         var issues = new List<(string message, Object context)>();
 
         var types = LoadAll<EnemyTypeData>();
         var enemies = LoadAll<EnemyData>();
         var fires = LoadAll<FireStateData>();
-        var childes = LoadAll<LostChilde>();
+        var children = LoadAll<LostChild>();
 
         CheckIds(types, issues);
         CheckIds(enemies, issues);
         CheckIds(fires, issues);
-        CheckIds(childes, issues);
+        CheckIds(children, issues);
 
         foreach (var type in types)
         {
@@ -123,20 +124,29 @@ public static class MasterDataTools
             CheckColliderKey($"{label} の固有行動", fire.SpecialAttackKey, fire.Colliders, ColliderRole.Attack, fire, issues);
         }
 
-        foreach (var childe in childes)
+        foreach (var child in children)
         {
-            var label = childe.name;
+            var label = child.name;
 
-            if (string.IsNullOrWhiteSpace(childe.DisplayName)) issues.Add(($"{label}: 名前が空です", childe));
+            if (string.IsNullOrWhiteSpace(child.DisplayName)) issues.Add(($"{label}: 名前が空です", child));
 
-            CheckColliders(label, childe.Colliders, childe, issues);
+            CheckColliders(label, child.Colliders, child, issues);
         }
+
+        return issues;
+    }
+
+    // メニューから、検査して、Console に警告を出す
+    [MenuItem("Tools/Master Data/Validate")]
+    private static void Validate()
+    {
+        var issues = CollectIssues();
 
         foreach (var (message, context) in issues)
             Debug.LogWarning($"[MasterData] {message}", context);   // クリックすると、そのアセットが選ばれる
 
         Debug.Log(issues.Count == 0
-            ? $"[MasterData] 問題はありません(種類 {types.Count}、敵 {enemies.Count}、火の状態 {fires.Count}、迷い子 {childes.Count})"
+            ? "[MasterData] 問題はありません"
             : $"[MasterData] 問題が {issues.Count} 件あります");
     }
 

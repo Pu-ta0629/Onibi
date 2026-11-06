@@ -1,12 +1,12 @@
 using System;
 using System.Collections.Generic;
-using UnityEditor.SettingsManagement;
 using UnityEngine;
 using UnityEngine.AI;
+// 修正: UnityEditor.SettingsManagementのusingを削除(ビルド時にエラーになるため)
 
 public sealed class StageNavMeshSet : IDisposable
 {
-    private float Thickness = 0.2f;
+    private const float Thickness = 0.2f;
 
     private sealed class Entry
     {
@@ -16,19 +16,48 @@ public sealed class StageNavMeshSet : IDisposable
     }
 
     private readonly WalkableGrid _grid;
-    private Dictionary<MovementProfile, Entry> _entries = new();
+    private readonly Dictionary<MovementProfile, Entry> _entries = new();
+    private readonly HashSet<MovementProfile> _failed = new();
 
     public StageNavMeshSet(WalkableGrid grid) => _grid = grid;
 
     public int GetAgentTypeId(MovementProfile profile)
     {
         if (_entries.TryGetValue(profile, out var cached)) return cached.AgentTypeId;
+        if(_failed.Contains(profile)) return -1;
 
         var entry = Build(profile);
-        if (entry == null) return -1;
+        if (entry == null) 
+        {
+            _failed.Add(profile);
+            return -1; 
+        }
 
         _entries.Add(profile, entry);
         return entry.AgentTypeId;
+    }
+
+    public void Prewarm(IEnumerable<MovementProfile> profiles)
+    {
+        foreach (MovementProfile profile in profiles)
+            GetAgentTypeId(profile);    //作って、キャッシュに入れる
+    }
+
+    public static HashSet<MovementProfile> CollectProfiles(StageData stage, params MovementProfile[] extraProfiles)
+    {
+        var profiles = new HashSet<MovementProfile>(extraProfiles);
+        profiles.Add(MovementProfile.Fire); // Fireは、全ステージで必要
+        foreach (EnemyPlacement placement in stage.Enemies)
+            profiles.Add(placement.Profile);
+        return profiles;
+    }
+
+    // 警護対象のように、StageDataに入っていないプロファイルは、extraProfilesで渡す
+    public static StageNavMeshSet CreateFor(StageData stage,params MovementProfile[] extraProfiles)
+    {
+        var set = new StageNavMeshSet(stage.WalkableGrid);
+        set.Prewarm(CollectProfiles(stage, extraProfiles));
+        return set;
     }
 
     public bool TrySamplePosition(MovementProfile profile, Vector3 position, float maxDistance, out Vector3 result)
@@ -46,16 +75,18 @@ public sealed class StageNavMeshSet : IDisposable
         if (!NavMesh.SamplePosition(position, out var hit, maxDistance, filter)) return false;
 
         result = hit.position;
-        return true; 
+        return true;
     }
+
     private Entry Build(MovementProfile profile)
     {
         var sources = CollectSources(profile);
-        if(sources.Count == 0)
+        if (sources.Count == 0)
         {
-            Debug.LogWarning($"[StageNavMeshSet]{profile}が通れるマスがないので、NavMeshを作りませんでした");
+            Debug.LogWarning($"[StageNavMeshSet] {profile}が通れるマスがないので、NavMeshを作りませんでした");
             return null;
         }
+
         var settings = NavMesh.CreateSettings();
         settings.agentRadius = SizeRules.AgentRadius(profile.Size);
         settings.agentHeight = 2f;
@@ -85,12 +116,12 @@ public sealed class StageNavMeshSet : IDisposable
         var o = _grid.Origin;
         var s = _grid.CellSize;
 
-        for(var z = 0; z < _grid.Depth;z++)
+        for (var z = 0; z < _grid.Depth; z++)
         {
             var x = 0;
             while (x < _grid.Width)
             {
-                if(!_grid.CanEnter(x,z,profile))
+                if (!_grid.CanEnter(x, z, profile))
                 {
                     x++;
                     continue;
@@ -120,7 +151,7 @@ public sealed class StageNavMeshSet : IDisposable
 
     public void Dispose()
     {
-        foreach(var entry in _entries.Values)
+        foreach (var entry in _entries.Values)
         {
             if (entry.Instance.valid) entry.Instance.Remove();
             if (entry.Data != null) UnityEngine.Object.Destroy(entry.Data);
@@ -128,5 +159,9 @@ public sealed class StageNavMeshSet : IDisposable
         }
 
         _entries.Clear();
+        _failed.Clear();
     }
+
+    
+    
 }

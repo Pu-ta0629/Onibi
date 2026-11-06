@@ -22,7 +22,6 @@ MonoBehaviour:
     _rotationY: 0
     _radius: 0
   _enemies: []
-  _items: []
   _walkableGrid:
     _width: 32
     _depth: 32

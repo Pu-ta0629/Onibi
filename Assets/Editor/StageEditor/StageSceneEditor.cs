@@ -18,6 +18,7 @@ public class StageSceneEditor
             if (_target == value) return;
             _target = value;
             _selectedPath = null;
+            StageGroundPreview.Refresh();
             SceneView.RepaintAll();
         }
     }
@@ -43,7 +44,6 @@ public class StageSceneEditor
         DrawElement(so.FindProperty(StageData.StartField), "Start", Color.cyan, false);
         DrawList(so, StageData.GoalsField, Color.green, "Goal", true);
         DrawList(so, StageData.EnemiesField, Color.red, "Enemy", false);
-        DrawList(so, StageData.ItemsField, Color.yellow, "Item", false);
 
         so.ApplyModifiedProperties();
     }
@@ -65,9 +65,8 @@ public class StageSceneEditor
         var pos = posProp.vector3Value;
         var rot = Quaternion.Euler(0f, rotProp.floatValue, 0f);
 
-        //敵とアイテムはIDもラベルに出す
+        //敵はIDもラベルに出す
         var enemyProp = element.FindPropertyRelative(EnemyPlacement.EnemyField);
-        var itemId = element.FindPropertyRelative(ItemPlacement.ItemIdField);
         if (enemyProp != null)
         {
             var enemy = enemyProp.objectReferenceValue as EnemyData;
@@ -76,7 +75,6 @@ public class StageSceneEditor
             label += enemy != null ? $"({enemy.DisplayName} / {sizeClass})" : $"(未設定 / {sizeClass})";
 
         }
-        if (itemId != null) label += $"(ID:{itemId.intValue})";
 
         var selected = element.propertyPath == _selectedPath;
         Handles.color = selected ? Color.white : color;
@@ -123,8 +121,6 @@ public class StageSceneEditor
             element.FindPropertyRelative(EnemyPlacement.SizeField).enumValueIndex = (int)SizeClass.Medium;
         });
 
-    public static void AddItem() => Add(StageData.ItemsField, element =>
-        element.FindPropertyRelative(ItemPlacement.ItemIdField).intValue = 1);
 
     private static void Add(string listField,Action<SerializedProperty> init)
     {
@@ -176,4 +172,6 @@ public class StageSceneEditor
         _selectedPath = null;
         SceneView.RepaintAll();
     }
+
+    
 }

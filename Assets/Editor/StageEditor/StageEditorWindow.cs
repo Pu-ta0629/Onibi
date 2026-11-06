@@ -6,7 +6,8 @@ using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UIElements;
 
-public class Stageeditorwindow : EditorWindow
+// クラス名をファイル名(StageEditorWindow)に合わせた
+public class StageEditorWindow : EditorWindow
 {
     private const string StageFolder = "Assets/Stages";
 
@@ -17,7 +18,7 @@ public class Stageeditorwindow : EditorWindow
     private StageGridPanel _gridPanel;
 
     [MenuItem("Tools/Stage Editor")]
-    private static void Open() => GetWindow<Stageeditorwindow>("Stage Editor");
+    private static void Open() => GetWindow<StageEditorWindow>("Stage Editor");
 
     private void OnDisable()
     {
@@ -25,6 +26,7 @@ public class Stageeditorwindow : EditorWindow
 
         StageGridEditor.CurrentTool = StageGridEditor.PaintTool.Off;
     }
+
     private void CreateGUI()
     {
         var root = rootVisualElement;
@@ -41,7 +43,6 @@ public class Stageeditorwindow : EditorWindow
         placeBar.Add(new ToolbarButton(StageSceneEditor.SetStartHere) { text = "Start設置" });
         placeBar.Add(new ToolbarButton(StageSceneEditor.AddGoal) { text = "ゴール追加" });
         placeBar.Add(new ToolbarButton(StageSceneEditor.AddEnemy) { text = "エネミー追加" });
-        placeBar.Add(new ToolbarButton(StageSceneEditor.AddItem) { text = "アイテム追加" });
         placeBar.Add(new ToolbarButton(StageSceneEditor.RemoveSelected) { text = "削除" });
         root.Add(placeBar);
 
@@ -57,7 +58,7 @@ public class Stageeditorwindow : EditorWindow
             fixedItemHeight = 22,
             selectionType = SelectionType.Single,
             makeItem = () => new Label(),
-            bindItem = (element,index) =>
+            bindItem = (element, index) =>
             {
                 var stage = _stages[index];
                 var name = string.IsNullOrEmpty(stage.StageName) ? "(no name)" : stage.StageName;
@@ -84,7 +85,7 @@ public class Stageeditorwindow : EditorWindow
         var selected = _list.selectedItem as StageData;
 
         _stages.Clear();
-        foreach(var guid in AssetDatabase.FindAssets("t:StageData"))
+        foreach (var guid in AssetDatabase.FindAssets("t:StageData"))
         {
             var path = AssetDatabase.GUIDToAssetPath(guid);
             var stage = AssetDatabase.LoadAssetAtPath<StageData>(path);
@@ -132,6 +133,10 @@ public class Stageeditorwindow : EditorWindow
         AssetDatabase.CreateAsset(stage, path);
         SetStageId(stage, id);
 
+        WalkableGrid grid = stage.WalkableGrid;
+        StageGridEditor.ApplySettings(stage, grid.Width, grid.Depth, grid.CellSize, grid.Origin, true);
+        EditorUtility.SetDirty(stage);
+
         Reload();
         Select(stage);
     }
@@ -145,7 +150,7 @@ public class Stageeditorwindow : EditorWindow
         var path = AssetDatabase.GetAssetPath(stage);
 
         if (!EditorUtility.DisplayDialog("ステージの削除", $"{name}\n({path})\nを削除しますか？", "削除", "キャンセル"))
-        return;
+            return;
 
         StageSceneEditor.Target = null;
 
@@ -182,7 +187,7 @@ public class Stageeditorwindow : EditorWindow
         foreach (var group in _stages.GroupBy(s => s.StageId).Where(g => g.Count() > 1))
             issues.Add($"stageId {group.Key}が重複: {string.Join(", ", group.Select(s => s.name))}");
 
-        foreach(var stage in _stages)
+        foreach (var stage in _stages)
         {
             if (string.IsNullOrWhiteSpace(stage.StageName))
                 issues.Add($"{stage.name}: stageName が空です");
@@ -199,7 +204,7 @@ public class Stageeditorwindow : EditorWindow
 
     private int NextId() => StageIdCounter.Take(id => _stages.Any(s => s.StageId == id));
 
-    private static void SetStageId(StageData stage,int id)
+    private static void SetStageId(StageData stage, int id)
     {
         var so = new SerializedObject(stage);
         so.FindProperty(StageData.StageIdField).intValue = id;

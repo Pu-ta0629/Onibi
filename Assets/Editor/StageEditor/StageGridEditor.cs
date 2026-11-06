@@ -78,6 +78,7 @@ public class StageGridEditor
                 case EventType.MouseUp when GUIUtility.hotControl == controlId:
                 GUIUtility.hotControl = 0;
                 Undo.CollapseUndoOperations(_undoGroup);
+                StageGroundPreview.Refresh();
                 e.Use();
                 break;
         }
@@ -278,7 +279,7 @@ public class StageGridEditor
 
     // ---- 格子の設定 ----
 
-    public static void ApplySettings(StageData stage,int newWidth,int newDepth,float newCellSize,Vector3 newOrigin)
+    public static void ApplySettings(StageData stage,int newWidth,int newDepth,float newCellSize,Vector3 newOrigin,bool centered)
     {
         newWidth = Mathf.Clamp(newWidth, 1, MaxCells);
         newDepth = Mathf.Clamp(newDepth, 1,MaxCells);
@@ -293,11 +294,30 @@ public class StageGridEditor
         var cells = gridProp.FindPropertyRelative(WalkableGrid.CellsField);
         var factionCells = gridProp.FindPropertyRelative(WalkableGrid.FactionBlocksField);
 
-        var oldWidth = widthProp.intValue;
-        var oldDepth = depthProp.intValue;
+        int oldWidth = widthProp.intValue;
+        int oldDepth = depthProp.intValue;
+        Vector3 oldOrigin = originProp.vector3Value;
+        float oldCellSize = cellSizeProp.floatValue;
 
-        Remap(cells, oldWidth, oldDepth, newWidth, newDepth);
-        Remap(factionCells,oldWidth, oldDepth, newWidth, newDepth);
+        if (centered)
+            newOrigin = CenteredOrigin(newWidth, newDepth, newCellSize, new Vector3(0f, newOrigin.y, 0f));
+
+        int shiftX = 0;
+        int shiftZ = 0;
+        if(centered && Mathf.Approximately(oldCellSize,newCellSize))
+        {
+            shiftX = Mathf.RoundToInt((oldOrigin.x - newOrigin.x) / newCellSize);
+            shiftZ = Mathf.RoundToInt((oldOrigin.z - newOrigin.z) / newCellSize);
+        }
+
+        int lost = CountLost(cells, oldWidth, oldDepth, newWidth, newDepth, shiftX, shiftZ)
+                + CountLost(factionCells, oldWidth, oldDepth, newWidth, newDepth, shiftX, shiftZ);
+        if (lost > 0 && !EditorUtility.DisplayDialog("格子の変更",
+                $"塗済みのデータ{lost}個が、格子の外になって消えます。続けますか?", "続ける", "キャンセル"))
+            return;
+
+        Remap(cells, oldWidth, oldDepth, newWidth, newDepth,shiftX,shiftZ);
+        Remap(factionCells,oldWidth, oldDepth, newWidth, newDepth,shiftX,shiftZ);
 
         widthProp.intValue = newWidth;
         depthProp.intValue = newDepth;
@@ -305,24 +325,36 @@ public class StageGridEditor
         originProp.vector3Value = newOrigin;
 
         so.ApplyModifiedProperties();
+        StageGroundPreview.Refresh();
         SceneView.RepaintAll();
     }
 
-    private static void Remap(SerializedProperty array,int oldWidth,int oldDepth,int newWidth,int newDepth)
+    public static Vector3 CenteredOrigin(int width,int depth,float cellSize,Vector3 center)
+    {
+        return new Vector3(
+            center.x - (width / 2) * cellSize,
+            center.y,
+            center.z - (depth /2) * cellSize);
+    }   
+
+    private static void Remap(SerializedProperty array,int oldWidth,int oldDepth,int newWidth,int newDepth,int shiftX,int shiftZ)
     {
         var old = new byte[array.arraySize];
         for (var i = 0; i < old.Length; i++)
             old[i] = (byte)array.GetArrayElementAtIndex(i).intValue;
 
         var next = new byte[newWidth * newDepth];
-        var copyWidth = Mathf.Min(oldWidth, newWidth);
-        var copyDepth = Mathf.Min(oldDepth, newDepth);
-        for(var z =0;z <copyDepth;z++)
+        for(var z =0;z <oldDepth;z++)
         {
-            for(var x = 0;x < copyWidth;x++)
+            for(var x = 0;x < oldWidth;x++)
             {
-                var oldIndex = z * oldWidth + x;
-                if (oldIndex < old.Length) next[z * newWidth + x] = old[oldIndex];
+                int oldIndex = z * oldWidth + x;
+                int nx = x + shiftX;
+                int nz = z + shiftZ;
+                if (oldIndex >= old.Length) continue;
+                if(nx < 0 || nz < 0 || nx >= newWidth || nz >= newDepth) continue;
+
+                next[nz * newWidth + nx] = old[oldIndex];
             }
         }
 
@@ -330,5 +362,24 @@ public class StageGridEditor
         for (var i = 0; i < next.Length; i++)
             array.GetArrayElementAtIndex(i).intValue = next[i];
 
+    }
+
+    private static int CountLost(SerializedProperty array,int oldWidth,int oldDepth,int newWidth,int newDepth,int shiftX,int shiftZ)
+    {
+        int lost = 0;
+        for(int z = 0;z < oldDepth;z++)
+        {
+            for(int x = 0; x < oldWidth;x++)
+            {
+                int oldIndex = z * oldWidth + x;
+                if (oldIndex >= array.arraySize) continue;
+                if (array.GetArrayElementAtIndex(oldIndex).intValue == 0) continue;
+
+                int nx = x + shiftX;
+                int nz = z + shiftZ;
+                if (nx < 0 || nz < 0 || nx >= newWidth || nz >= newDepth) lost++;
+            }
+        }
+        return lost;
     }
 }

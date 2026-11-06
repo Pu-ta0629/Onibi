@@ -10,6 +10,7 @@ public class StageGridPanel : VisualElement
     private readonly IntegerField _depth;
     private readonly FloatField _cellSize;
     private readonly Vector3Field _origin;
+    private readonly Toggle _centered;
 
     private StageData _stage;
     
@@ -76,6 +77,11 @@ public class StageGridPanel : VisualElement
         Add(_depth);
         Add(_cellSize);
         Add(_origin);
+
+        _centered = new Toggle("Keep Centered (0,0)") { value = true };
+        Add(_centered);
+        Add(new Label("オンの時は、OriginのXとZは使われません"));
+
         Add(new Button(Apply) { text = "Apply Grid Setting" });
     }
 
@@ -95,7 +101,7 @@ public class StageGridPanel : VisualElement
     private void Apply()
     {
         if (_stage == null) return;
-        StageGridEditor.ApplySettings(_stage, _width.value, _depth.value, _cellSize.value, _origin.value);
+        StageGridEditor.ApplySettings(_stage, _width.value, _depth.value, _cellSize.value, _origin.value,_centered.value);
         SetTarget(_stage);
     }
 }

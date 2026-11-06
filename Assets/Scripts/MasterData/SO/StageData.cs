@@ -40,15 +40,7 @@ public class EnemyPlacement : PlacementData
     public MovementProfile Profile => new(_enemy != null ? _enemy.MoveType : MoveType.Walk, _size, Faction.Enemy);
 }
 
-[System.Serializable]
-public class ItemPlacement : PlacementData
-{
-    [SerializeField] int _itemId;
 
-    public int ItemId => _itemId;
-
-    public const string ItemIdField = nameof(_itemId);
-}
 
 
 [CreateAssetMenu(menuName = "Scriptable Objects/StageData")]
@@ -60,7 +52,6 @@ public class StageData : ScriptableObject
     [SerializeField] PlacementData _start;
     [SerializeField] List<GoalPlacement> _goals = new();
     [SerializeField] List<EnemyPlacement> _enemies = new();
-    [SerializeField] List<ItemPlacement> _items = new();
     [SerializeField] WalkableGrid _walkableGrid = new();
 
     public int StageId => _stageId;
@@ -69,7 +60,6 @@ public class StageData : ScriptableObject
     public PlacementData Start => _start;
     public IReadOnlyList<GoalPlacement> Goals => _goals;
     public IReadOnlyList<EnemyPlacement> Enemies => _enemies;
-    public IReadOnlyList<ItemPlacement> Items => _items;
 
     public WalkableGrid WalkableGrid => _walkableGrid;
 
@@ -78,7 +68,6 @@ public class StageData : ScriptableObject
     public const string StartField = nameof(_start);
     public const string GoalsField = nameof(_goals);
     public const string EnemiesField = nameof(_enemies);
-    public const string ItemsField = nameof(_items);
     public const string WalkableGridField = nameof(_walkableGrid);
 
 

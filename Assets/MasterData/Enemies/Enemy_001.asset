@@ -31,13 +31,13 @@ MonoBehaviour:
         _radius: 0.16
         _length: 0
         _width: 0
-        _angle: 0
-        _innerRange: 0
+        _angle: 111.96
+        _innerRange: 0.15
       _offset: {x: 0, y: 0}
       _yawOffset: 0
-      _targets: 0
-    - _key: Attack1
-      _role: 1
+      _targets: 3
+    - _key: 
+      _role: 2
       _shape:
         _kind: 3
         _radius: 2

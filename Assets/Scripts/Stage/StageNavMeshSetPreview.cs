@@ -1,28 +1,32 @@
-using UnityEditor.ShaderKeywordFilter;
 using UnityEngine;
 using UnityEngine.AI;
+// 修正: UnityEditor.ShaderKeywordFilterのusingを削除(ビルド時にエラーになるため)
+// ファイル名も、クラス名(StageNavMeshSetPreview)に合わせた。ファイル名が違うと、コンポーネントとして追加できない
 
 public class StageNavMeshSetPreview : MonoBehaviour
 {
-    [SerializeField] StageData stage;
-    [SerializeField] MovementProfile profile;
+    [SerializeField] private StageData stage;
+    [SerializeField] private MovementProfile profile;
 
-    StageNavMeshSet _set;
-    NavMeshTriangulation _triangulation;
+    private StageNavMeshSet _set;
+    private NavMeshTriangulation _triangulation;
 
-    void Start()
+    private void Start()
     {
         if (stage == null) return;
 
         _set = new StageNavMeshSet(stage.WalkableGrid);
 
+        // 注意: CalculateTriangulationは、存在するすべてのNavMeshをまとめて返す。
+        // このプレビューは1つのプロファイルだけを作るので、他でNavMeshを作っていなければ、そのプロファイルだけが描かれる
         if (_set.GetAgentTypeId(profile) >= 0)
             _triangulation = NavMesh.CalculateTriangulation();
     }
 
     private void OnDestroy() => _set?.Dispose();
+
 #if UNITY_EDITOR
-    void OnDrawGizmos()
+    private void OnDrawGizmos()
     {
         if (_set == null || _triangulation.indices == null) return;
 
