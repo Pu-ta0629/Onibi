@@ -8,7 +8,10 @@ public class EnemyTypeData : MasterData
 
     [Tooltip("移動領域(Walk=陸のみ/Swim=泳げる/Fly=飛べる)")]
     [SerializeField] MoveType _moveType;
+    [SerializeField] EnemyType _enemyType;
 
     public string DisplayName => _displayName;
     public MoveType moveType => _moveType;
+
+    public EnemyType enemyType => _enemyType;
 }
