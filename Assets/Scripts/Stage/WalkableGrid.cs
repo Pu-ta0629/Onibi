@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 [System.Serializable]
@@ -8,7 +9,7 @@ public class WalkableGrid
     [SerializeField] private float _cellsize = 1f;
     [SerializeField] private Vector3 _origin;
     // 地形の種類(TerrainTypeの値。0 地面、1 壁、2 川、3 崖や穴)
-    [SerializeField, HideInInspector] private byte[] _cells = new byte[32 * 32];
+    [SerializeField, HideInInspector] private byte[] _cells = CreateFilled(32 * 32, (byte)TerrainType.Wall);
     // 陣営ごとの、通れないマス(Factionのビットを、マスごとに持つ。0は誰も制限しない)
     [SerializeField, HideInInspector] private byte[] _factionBlocks = new byte[32 * 32];
 
@@ -26,6 +27,13 @@ public class WalkableGrid
     public const string CellsField = nameof(_cells);
     public const string FactionBlocksField = nameof(_factionBlocks);
 
+    private static byte[] CreateFilled(int count,byte value)
+    {
+        byte[] array = new byte[count];
+        for (int i = 0; i < count; i++) array[i] = value;
+        return array;
+    }
+
     public TerrainType GetTerrain(int x, int z)
     {
         if (x < 0 || z < 0 || x >= _width || z >= _depth) return TerrainType.Wall;
@@ -41,6 +49,11 @@ public class WalkableGrid
 
         var index = z * Width + x;
         return index < _factionBlocks.Length ? (Faction)_factionBlocks[index] : Faction.None;
+    }
+
+    public Faction GetPassableFactions(int x,int z)
+    {
+        return FactionRules.All & ~GetBlockedFactions(x, z);
     }
 
     // マス単位の判定(古い判定。移動手段と陣営を見ないので、CanEnterを使うこと)
@@ -85,5 +98,24 @@ public class WalkableGrid
             _origin.x + (x + 0.5f) * _cellsize,
             _origin.y,
             _origin.z + (z + 0.5f) * _cellsize);
+    }
+
+    public void CollectCellsInCircle(Vector3 center,float radius,List<Vector2Int> result)
+    {
+        int minX = Mathf.Max(0, Mathf.FloorToInt((center.x - radius - _origin.x) / _cellsize));
+        int maxX = Mathf.Min(_width - 1, Mathf.FloorToInt((center.x + radius - _origin.x) / _cellsize));
+        int minZ = Mathf.Max(0, Mathf.FloorToInt((center.z - radius - _origin.z) / _cellsize));
+        int maxZ = Mathf.Min(_depth - 1, Mathf.FloorToInt((center.z + radius - _origin.z) / _cellsize));
+
+        for (int z = minZ; z <= maxZ; z++)
+        {
+            for (int x = minX; x <= maxX; x++)
+            {
+                Vector3 cellCenter = CellCenter(x, z);
+                float dx = cellCenter.x - center.x;
+                float dz = cellCenter.z - center.z;
+                if (dx * dx + dz * dz <= radius * radius) result.Add(new Vector2Int(x, z));
+            }
+        }
     }
 }

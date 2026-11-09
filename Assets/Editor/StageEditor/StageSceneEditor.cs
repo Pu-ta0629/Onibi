@@ -10,6 +10,28 @@ public class StageSceneEditor
     private static StageData _target;
     private static string _selectedPath;
 
+    private static readonly Color KodamaColor = new Color(0.2f, 1f, 1f);
+    private static readonly Color EnemySpawnColor = new Color(1f, 0.2f, 0.9f);
+
+    private static readonly Color SpecialKodamaColor = new Color(1f, 0.8f, 0.2f);
+
+    public static bool SnapToGrid { get; set; } = true;
+
+    [System.Flags]
+    public enum ObjectKind
+    {
+        None = 0,
+        Start = 1,
+        Goal = 2,
+        Enemy = 4,
+        Spot = 8,
+        All = 15,
+    }
+
+    public static ObjectKind VisibleKinds { get; set; } = ObjectKind.All;
+
+    private static bool IsLocked => StageGridEditor.PenEnabled;
+
     public static StageData Target
     {
         get => _target;
@@ -21,6 +43,15 @@ public class StageSceneEditor
             StageGroundPreview.Refresh();
             SceneView.RepaintAll();
         }
+    }
+
+    private static Vector3 SnapToCell(Vector3 position)
+    {
+        WalkableGrid grid = _target.WalkableGrid;
+        int x = Mathf.Clamp(Mathf.FloorToInt((position.x - grid.Origin.x) / grid.CellSize), 0, grid.Width - 1);
+        int z = Mathf.Clamp(Mathf.FloorToInt((position.z - grid.Origin.z) / grid.CellSize), 0, grid.Depth - 1);
+        Vector3 center = grid.CellCenter(x, z);
+        return new Vector3(center.x, position.y, center.z);
     }
 
     static StageSceneEditor() => SceneView.duringSceneGui += OnSceneGUI;
@@ -38,73 +69,115 @@ public class StageSceneEditor
     {
         if (_target == null) return;
 
-        var so = new SerializedObject(_target);
+        SerializedObject so = new SerializedObject(_target);
         so.Update();
 
-        DrawElement(so.FindProperty(StageData.StartField), "Start", Color.cyan, false);
-        DrawList(so, StageData.GoalsField, Color.green, "Goal", true);
-        DrawList(so, StageData.EnemiesField, Color.red, "Enemy", false);
+        //種類を渡す
+        DrawElement(so.FindProperty(StageData.StartField), "Start", Color.cyan, ObjectKind.Start);
+        DrawList(so, StageData.GoalsField, Color.green, "Goal", ObjectKind.Goal);
+        DrawList(so, StageData.EnemiesField, Color.red, "Enemy", ObjectKind.Enemy);
+        DrawList(so, StageData.SpawnSpotsField, Color.white, "Spot", ObjectKind.Spot); // 色は、DrawElementの中で種類ごとに決める
 
         so.ApplyModifiedProperties();
-    }
 
-    private static void DrawList(SerializedObject so,string listField,Color color,string label,bool isGoal)
-    {
-        var list = so.FindProperty(listField);
-        for(var i = 0; i < list.arraySize;i++)
+        //Paint中は、触れないことを画面に出す
+        if (IsLocked && Event.current.type == EventType.Repaint)
         {
-            var element = list.GetArrayElementAtIndex(i);
-            DrawElement(element, $"{label}{i + 1}", color, isGoal);
+            Handles.BeginGUI();
+            GUI.Label(new Rect(10f, view.position.height - 60f, 480f, 20f),
+                "Pen中: Objectは触れません(PenをOffにすると触れます)", EditorStyles.boldLabel);   // 文言だけ変更
+            Handles.EndGUI();
         }
     }
 
-    private static void DrawElement(SerializedProperty element,string label,Color color,bool isGoal)
-    {
-        var posProp = element.FindPropertyRelative(PlacementData.PositionField);
-        var rotProp = element.FindPropertyRelative(PlacementData.RotationYField);
-        var pos = posProp.vector3Value;
-        var rot = Quaternion.Euler(0f, rotProp.floatValue, 0f);
 
-        //敵はIDもラベルに出す
-        var enemyProp = element.FindPropertyRelative(EnemyPlacement.EnemyField);
+    private static void DrawList(SerializedObject so, string listField, Color color, string label, ObjectKind objectKind)
+    {
+        SerializedProperty list = so.FindProperty(listField);
+        for (int i = 0; i < list.arraySize; i++)
+            DrawElement(list.GetArrayElementAtIndex(i), $"{label}{i + 1}", color, objectKind);
+    }
+
+    private static void DrawElement(SerializedProperty element, string label, Color color, ObjectKind objectKind)
+    {
+        // 追加: 非表示の種類は、描かない(触れない)
+        if ((VisibleKinds & objectKind) == 0) return;
+
+        SerializedProperty posProp = element.FindPropertyRelative(PlacementData.PositionField);
+        SerializedProperty rotProp = element.FindPropertyRelative(PlacementData.RotationYField);
+        SerializedProperty radiusProp = element.FindPropertyRelative(RadiusPlacement.RadiusField);   // ゴールと湧きスポットだけが持つ
+        SerializedProperty enemyProp = element.FindPropertyRelative(EnemyPlacement.EnemyField);
+        SerializedProperty kindProp = element.FindPropertyRelative(SpawnSpotPlacement.KindField);
+
+        Vector3 pos = posProp.vector3Value;
+        Quaternion rot = Quaternion.Euler(0f, rotProp.floatValue, 0f);
+
+        // 敵は、種類と大きさもラベルに出す
         if (enemyProp != null)
         {
-            var enemy = enemyProp.objectReferenceValue as EnemyData;
-            var sizeProp = element.FindPropertyRelative(EnemyPlacement.SizeField);
-            var sizeClass = (SizeClass)sizeProp.enumValueIndex;
+            EnemyData enemy = enemyProp.objectReferenceValue as EnemyData;
+            SerializedProperty sizeProp = element.FindPropertyRelative(EnemyPlacement.SizeField);
+            SizeClass sizeClass = (SizeClass)sizeProp.enumValueIndex;
             label += enemy != null ? $"({enemy.DisplayName} / {sizeClass})" : $"(未設定 / {sizeClass})";
-
         }
 
-        var selected = element.propertyPath == _selectedPath;
-        Handles.color = selected ? Color.white : color;
-
-        if(isGoal)
+        // 湧きスポットは、種類をラベルに出して、色も種類で変える
+        if (kindProp != null)
         {
-            var radius = element.FindPropertyRelative(GoalPlacement.RadiusField).floatValue;
-            Handles.DrawWireDisc(pos, Vector3.up, radius);
+            SpawnKind kind = (SpawnKind)kindProp.enumValueIndex;
+            label += $"({kind})";
+            switch (kind)
+            {
+                case SpawnKind.Kodama: color = KodamaColor; break;
+                case SpawnKind.SpecialKodama: color = SpecialKodamaColor; break;
+                default: color = EnemySpawnColor; break;
+            }
+        }
+
+        // 変更: Paint中は、選択の見た目にせず、薄く描く
+        bool selected = !IsLocked && element.propertyPath == _selectedPath;
+        Color drawColor = IsLocked ? new Color(color.r, color.g, color.b, 0.4f) : color;
+        Handles.color = selected ? Color.white : drawColor;
+
+        if (radiusProp != null)
+        {
+            Handles.DrawWireDisc(pos, Vector3.up, radiusProp.floatValue);
+
+            // 湧きスポットは、範囲を半透明で塗る
+            if (kindProp != null)
+            {
+                Handles.color = new Color(color.r, color.g, color.b, IsLocked ? 0.07f : 0.15f);
+                Handles.DrawSolidDisc(pos, Vector3.up, radiusProp.floatValue);
+                Handles.color = selected ? Color.white : drawColor;
+            }
         }
 
         Handles.DrawLine(pos, pos + rot * Vector3.forward * (MarkerSize * 3f));
         Handles.Label(pos + Vector3.up * (MarkerSize * 1.5f), label);
 
-        var size = HandleUtility.GetHandleSize(pos) * MarkerSize;
+        // 追加: Paint中は、選択も移動もできない(ボタンも、ハンドルも出さない)
+        if (IsLocked) return;
+
+        float size = HandleUtility.GetHandleSize(pos) * MarkerSize;
         if (Handles.Button(pos, Quaternion.identity, size, size * 1.3f, Handles.SphereHandleCap))
             _selectedPath = element.propertyPath;
 
         if (!selected) return;
-        
-        //選択中のものだけ、移動ハンドルを出す
-        EditorGUI.BeginChangeCheck();
-        var newPos = Handles.PositionHandle(pos, Quaternion.identity);
-        if (EditorGUI.EndChangeCheck())
-            posProp.vector3Value = newPos;
 
-        if(isGoal)
+        // 選択中のものだけ、移動ハンドルを出す。敵と湧きスポットは、マスの中心に合わせる
+        EditorGUI.BeginChangeCheck();
+        Vector3 newPos = Handles.PositionHandle(pos, Quaternion.identity);
+        if (EditorGUI.EndChangeCheck())
         {
-            var radiusProp = element.FindPropertyRelative(GoalPlacement.RadiusField);
+            if ((enemyProp != null || kindProp != null) && SnapToGrid) newPos = SnapToCell(newPos);
+            posProp.vector3Value = newPos;
+        }
+
+        // 半径のハンドル(自由な値)
+        if (radiusProp != null)
+        {
             EditorGUI.BeginChangeCheck();
-            var newRadius = Handles.RadiusHandle(Quaternion.identity, pos, radiusProp.floatValue);
+            float newRadius = Handles.RadiusHandle(Quaternion.identity, pos, radiusProp.floatValue);
             if (EditorGUI.EndChangeCheck())
                 radiusProp.floatValue = Mathf.Max(0.1f, newRadius);
         }
@@ -115,12 +188,48 @@ public class StageSceneEditor
     public static void AddGoal() => Add(StageData.GoalsField, element =>
         element.FindPropertyRelative(GoalPlacement.RadiusField).floatValue = 1f);
 
+    public static void AddSpawnSpot() => Add(StageData.SpawnSpotsField, element =>
+    {
+        element.FindPropertyRelative(SpawnSpotPlacement.KindField).enumValueIndex = (int)SpawnKind.Kodama;
+        element.FindPropertyRelative(RadiusPlacement.RadiusField).floatValue = 2f;
+
+        if (SnapToGrid)
+        {
+            SerializedProperty posProp = element.FindPropertyRelative(PlacementData.PositionField);
+            posProp.vector3Value = SnapToCell(posProp.vector3Value);
+        }
+    });
+
     public static void AddEnemy() => Add(StageData.EnemiesField, element =>
         {
             element.FindPropertyRelative(EnemyPlacement.EnemyField).objectReferenceValue = null;
             element.FindPropertyRelative(EnemyPlacement.SizeField).enumValueIndex = (int)SizeClass.Medium;
+
+            if(SnapToGrid)
+            {
+                SerializedProperty posProp = element.FindPropertyRelative(PlacementData.PositionField);
+                posProp.vector3Value = SnapToCell(posProp.vector3Value);
+            }
         });
 
+    public static void SnapAll()
+    {
+        if (_target == null) return;
+
+        SerializedObject so = new SerializedObject(_target);
+        string[] listFields = { StageData.EnemiesField, StageData.SpawnSpotsField };
+        foreach (string listField in listFields)
+        {
+            SerializedProperty list = so.FindProperty(listField);
+            for (int i = 0; i < list.arraySize; i++)
+            {
+                SerializedProperty posProp = list.GetArrayElementAtIndex(i).FindPropertyRelative(PlacementData.PositionField);
+                posProp.vector3Value = SnapToCell(posProp.vector3Value);
+            }
+        }
+        so.ApplyModifiedProperties();
+        SceneView.RepaintAll();
+    }
 
     private static void Add(string listField,Action<SerializedProperty> init)
     {
@@ -155,6 +264,8 @@ public class StageSceneEditor
 
     public static void RemoveSelected()
     {
+        if (IsLocked) return;
+
         if(_target == null || string.IsNullOrEmpty(_selectedPath)) return;
 
         var open = _selectedPath.IndexOf("[");
@@ -173,5 +284,29 @@ public class StageSceneEditor
         SceneView.RepaintAll();
     }
 
-    
+    public static void SetVisible(ObjectKind objectKind, bool visible)
+    {
+        VisibleKinds = visible ? (VisibleKinds | objectKind) : (VisibleKinds & ~objectKind);
+
+        // 非表示にした種類の選択は、外す(見えないまま削除してしまうのを防ぐ)
+        if (!visible && !string.IsNullOrEmpty(_selectedPath))
+        {
+            string field = FieldOf(objectKind);
+            if (_selectedPath == field || _selectedPath.StartsWith(field + ".")) _selectedPath = null;
+        }
+        SceneView.RepaintAll();
+    }
+
+    private static string FieldOf(ObjectKind objectKind)
+    {
+        switch (objectKind)
+        {
+            case ObjectKind.Start: return StageData.StartField;
+            case ObjectKind.Goal: return StageData.GoalsField;
+            case ObjectKind.Enemy: return StageData.EnemiesField;
+            default: return StageData.SpawnSpotsField;
+        }
+    }
+
+
 }

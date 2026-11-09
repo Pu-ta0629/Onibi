@@ -21,6 +21,22 @@ public sealed class StageNavMeshSet : IDisposable
 
     public StageNavMeshSet(WalkableGrid grid) => _grid = grid;
 
+
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+
+    public WalkableGrid Grid => _grid;
+
+    public int BuiltCount => _entries.Count;
+
+    public IEnumerable<KeyValuePair<MovementProfile,int>> GetBuiltAgentTypes()
+    {
+        foreach (KeyValuePair<MovementProfile, Entry> pair in _entries)
+            yield return new KeyValuePair<MovementProfile, int>(pair.Key, pair.Value.AgentTypeId);
+    }
+
+#endif
+
+
     public int GetAgentTypeId(MovementProfile profile)
     {
         if (_entries.TryGetValue(profile, out var cached)) return cached.AgentTypeId;
@@ -49,6 +65,13 @@ public sealed class StageNavMeshSet : IDisposable
         profiles.Add(MovementProfile.Fire); // Fireは、全ステージで必要
         foreach (EnemyPlacement placement in stage.Enemies)
             profiles.Add(placement.Profile);
+
+        foreach(SpawnSpotPlacement spot in stage.SpawnSpots)
+        {
+            foreach (MovementProfile profile in spot.EnemyProfiles)
+                profiles.Add(profile);
+        }
+
         return profiles;
     }
 
