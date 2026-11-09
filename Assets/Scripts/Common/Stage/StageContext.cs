@@ -6,15 +6,22 @@ using UnityEngine;
 /// </summary>
 public sealed class StageContext
 {
-    public HitWorld world { get; }
-    public LostChildController lostChild { get; }
-    public Camera mainCamera { get; }
+    [Tooltip("未設定ならnull(Scene上の地形をそのまま使う)")]
+    public StageData Stage { get; }
+    public HitWorld World { get; }
+    public LostChildController LostChildController { get; }
+    [Tooltip("MainCamera：ゲーム通して一つしかないカメラ")]
+    public Camera MainCamera { get; }
+    [Tooltip("生成物の親Obj")]
+    public Transform Root { get; }
 
-    public StageContext(HitWorld world, LostChildController lostChild, Camera mainCamera)
+    public StageContext(StageData stage, HitWorld world, LostChildController lostChild, Camera mainCamera, Transform root)
     {
-        this.world = world;
-        this.lostChild = lostChild;
-        this.mainCamera = mainCamera;
+        this.Stage = stage;
+        this.World = world;
+        this.LostChildController = lostChild;
+        this.MainCamera = mainCamera;
+        this.Root = root;
     }
 }
 

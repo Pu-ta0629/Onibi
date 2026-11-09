@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.AI;
+using UnityEngine.InputSystem.Android;
 
 public static class NavAgentProfile
 {
@@ -8,32 +9,29 @@ public static class NavAgentProfile
     // StageNavMeshSetの agentHeight と同じ値にしておく
     private const float AgentHeight = 2f;
 
-    // 生成直後に1回呼ぶ。失敗したらfalse(通れるマスが無い、位置がNavMesh上にない、など)
-    public static bool Apply(NavMeshAgent agent,StageNavMeshSet navSet,MovementProfile profile,Vector3 position)
+    //AgentのTypeと大きさを、profileに合わせる（位置には触らない。Agentは無効のまま残す）
+    public static bool ConfigureType(NavMeshAgent agent, StageNavMeshSet navSet, MovementProfile profile)
     {
-        // 設定を変えるので、一旦無効
-        agent.enabled = false;
+        if (agent == null || navSet == null) return false;
 
-        int agentTypeId = navSet.GetAgentTypeId(profile);
-        if (agentTypeId < 0) return false;
-
-        if(!navSet.TrySamplePosition(profile,position,SampleDistance,out var onMesh))
+        var id = navSet.GetAgentTypeId(profile);
+        if (id < 0)
         {
-            Debug.LogWarning($"[NavAgentProfile] {agent.name}:{profile}のNavMesh上に、位置{position}が見つかりません");
+            Debug.LogWarning($"[NavAgentProfile] {agent.name}: {profile} のNavMeshがありません(通れるマスが0、または作成に失敗)");
             return false;
         }
+        if (agent.agentTypeID == id) return true;
 
-        // 有効にする前に、種類と大きさを設定する
-        agent.agentTypeID = agentTypeId;
+        agent.enabled = false;
+        agent.agentTypeID = id;
         agent.radius = SizeRules.AgentRadius(profile.Size);
         agent.height = AgentHeight;
         agent.areaMask = NavMesh.AllAreas;
 
-        // 有効にしてから、NavMesh上の位置へ置く
-        agent.enabled = true;
-        return agent.Warp(onMesh);
+        if (agent.agentTypeID != id)
+            Debug.LogWarning($"[NavAgentProfile] {agent.name}: agentTypeIDが反映されません(設定 {id} / 読み取り {agent.agentTypeID})");
+        return true;
     }
-
     public static bool Apply(NavMeshAgent agent,MovementProfile profile,Vector3 position)
     {
         if(StageNavMeshProvider.Current == null)
@@ -43,6 +41,27 @@ public static class NavAgentProfile
         }
         return Apply(agent, StageNavMeshProvider.Current, profile, position);
     }
+
+    // 生成直後に1回呼ぶ。失敗したらfalse(通れるマスが無い、位置がNavMesh上にない、など)
+    public static bool Apply(NavMeshAgent agent,StageNavMeshSet navSet,MovementProfile profile,Vector3 position)
+    {
+        // 設定を変えるので、一旦無効
+        agent.enabled = false;
+
+        if (!ConfigureType(agent, navSet, profile)) return false;
+
+        //NavMEshは格子の高さにあるので、高さを合わせてから探す
+        var prode = new Vector3(position.x, navSet.GroundY, position.z);
+        if(!navSet.TrySamplePosition(profile, prode, SampleDistance, out var onMesh))
+        {
+            Debug.LogWarning($"[NavAgentProfile]{agent.name}:{profile}のNavMesh上に、位置{position}が見つかりません / {navSet.DescribeCell(profile, position)}");
+        }
+
+        // 有効にしてから、NavMesh上の位置へ置く
+        agent.enabled = true;
+        return agent.Warp(onMesh);
+    }
+
 
    
 

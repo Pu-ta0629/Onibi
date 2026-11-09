@@ -4,7 +4,7 @@ using UnityEngine;
 public class FireStateData : MasterData
 {
     // Unit(Fire)の移動プロファイルは、全員共通の固定値(飛べる、最小の大きさ)
-    public static readonly MovementProfile UnitProfile = new(MoveType.Fly, SizeClass.Small, Faction.Fire);
+    public static readonly MovementProfile FireProfile = new(MoveType.Fly, SizeClass.Small, Faction.Fire);
 
     [Tooltip("種類(火の状態の名前)")]
     [SerializeField] private string _fireState;

@@ -1,8 +1,4 @@
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
-using UnityEditor;
-using UnityEditor.ShaderGraph.Internal;
-using UnityEditor.TerrainTools;
 using UnityEngine;
 
 public sealed class StageGroundBuilder
@@ -47,9 +43,9 @@ public sealed class StageGroundBuilder
             Transform t = plane.transform;
             t.SetParent(Root.transform, false);
             t.localPosition = new Vector3(
-                origin.x = (block.X + block.W * 0.5f) *  cellSize,
+                origin.x + (block.X + block.W * 0.5f) *  cellSize,
                 origin.y,
-                origin.z = (block.Z + block.D * 0.5f ) * cellSize);
+                origin.z + (block.Z + block.D * 0.5f ) * cellSize);
             t.localScale = new Vector3(block.W * cellSize / PlaneUnit, 1f, block.D * cellSize / PlaneUnit);
 
             Renderer renderer = plane.GetComponent<Renderer>();

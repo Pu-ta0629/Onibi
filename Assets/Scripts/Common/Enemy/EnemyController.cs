@@ -77,7 +77,7 @@ public abstract class EnemyController : IDamageable, IDisposable
         _transform = agent.transform;
         _stopDistance = config.StopDistance;
 
-        _mover = new Mover(agent, data.MoveSpeed, config.GroundMask, config.NavMeshSampleDistance, config.RepathDistance);
+        _mover = new Mover(agent, data.MoveSpeed, config.GroundMask, config.NavMeshSampleDistance, config.RepathDistance, new MovementProfile(data.MoveType, SizeClass.Medium, Faction.Enemy));
         _hit = new HitDetector(world, this, Faction.Enemy, data.Colliders);
         _hit.SetActive(false);
 
