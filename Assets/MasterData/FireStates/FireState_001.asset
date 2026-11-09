@@ -13,15 +13,55 @@ MonoBehaviour:
   m_Name: FireState_001
   m_EditorClassIdentifier: Assembly-CSharp::FireStateData
   _id: 1
-  _fireState: 
-  _rank: 0
-  _moveSpeed: 0
-  _lightRadius: 0
+  _fireState: Nobi
+  _rank: 3
+  _moveSpeed: 5
+  _lightRadius: 5
   _kodamaCount: 0
   _kodamaType: 
   _normalCost: 0
   _specialCost: 0
   _normalCooldown: 0
   _specialCooldown: 0
-  _burnPotency: 0
-  _burnCount: 0
+  _burnPotency: 1
+  _burnCount: 1
+  _colliders:
+    _colliders:
+    - _key: hit
+      _role: 0
+      _shape:
+        _kind: 0
+        _radius: 0.5
+        _length: 0
+        _width: 0
+        _angle: 0
+        _innerRange: 0
+      _offset: {x: 0, y: 0}
+      _yawOffset: 0
+      _targets: 0
+    - _key: normal
+      _role: 1
+      _shape:
+        _kind: 2
+        _radius: 1.7
+        _length: 2.31
+        _width: 2.31
+        _angle: 155.34
+        _innerRange: 0
+      _offset: {x: 0, y: 0}
+      _yawOffset: 0
+      _targets: 4
+    - _key: Seach
+      _role: 2
+      _shape:
+        _kind: 0
+        _radius: 5
+        _length: 0
+        _width: 0
+        _angle: 0
+        _innerRange: 0
+      _offset: {x: 0, y: 0}
+      _yawOffset: 0
+      _targets: 4
+  _normalAttackKey: normal
+  _specialAttackKey: special

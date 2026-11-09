@@ -13,22 +13,22 @@ MonoBehaviour:
   m_Name: Enemy_001
   m_EditorClassIdentifier: Assembly-CSharp::EnemyData
   _id: 1
-  _displayName: 
+  _displayName: Kappa
   _type: {fileID: 11400000, guid: 615f39f93b30c614593d900bc79e2f1f, type: 2}
-  _maxHP: 0
+  _maxHP: 1
   _baseAttack: 1
-  _moveSpeed: 0
+  _moveSpeed: 5
   _moveLogic: 
   _searchType: 
   _searchRange: 0
   _battleLogic: 
   _colliders:
     _colliders:
-    - _key: Attack1
-      _role: 1
+    - _key: hit
+      _role: 0
       _shape:
-        _kind: 3
-        _radius: 1.5
+        _kind: 0
+        _radius: 0.16
         _length: 0
         _width: 0
         _angle: 111.96
@@ -40,35 +40,35 @@ MonoBehaviour:
       _role: 2
       _shape:
         _kind: 3
-        _radius: 2.34
+        _radius: 2
         _length: 0
         _width: 0
-        _angle: 140.12
-        _innerRange: 0.93
-      _offset: {x: 0, y: -0}
-      _yawOffset: 0
-      _targets: 3
-    - _key: 
-      _role: 0
-      _shape:
-        _kind: 0
-        _radius: 0
-        _length: 0
-        _width: 0
-        _angle: 0
+        _angle: 180
         _innerRange: 0
       _offset: {x: 0, y: 0}
       _yawOffset: 0
-      _targets: 0
+      _targets: 3
+    - _key: Attack2
+      _role: 1
+      _shape:
+        _kind: 3
+        _radius: 0.16
+        _length: 0
+        _width: 0
+        _angle: 180
+        _innerRange: 0
+      _offset: {x: 0, y: 0}
+      _yawOffset: 0
+      _targets: 3
   _attack1:
     _pattern: Attack1
-    _damageRate: 20
-    _chargeTime: 3
-    _activeTime: 0.3
-    _cooldown: 6
-    _recoveryTime: 0.5
+    _damageRate: 1
+    _chargeTime: 2
+    _activeTime: 0.2
+    _cooldown: 3
+    _recoveryTime: 1
   _attack2:
-    _pattern: 
+    _pattern: Attack2
     _damageRate: 0
     _chargeTime: 0
     _activeTime: 0.2
