@@ -1,6 +1,6 @@
+using Mono.Cecil;
 using UnityEngine;
 using UnityEngine.AI;
-using UnityEngine.InputSystem.Android;
 
 public static class NavAgentProfile
 {
@@ -14,13 +14,11 @@ public static class NavAgentProfile
     {
         if (agent == null || navSet == null) return false;
 
-        var id = navSet.GetAgentTypeId(profile);
-        if (id < 0)
+        if (!navSet.TryGetAgentTypeId(profile,out int id))
         {
             Debug.LogWarning($"[NavAgentProfile] {agent.name}: {profile} のNavMeshがありません(通れるマスが0、または作成に失敗)");
             return false;
         }
-        if (agent.agentTypeID == id) return true;
 
         agent.enabled = false;
         agent.agentTypeID = id;
@@ -45,21 +43,36 @@ public static class NavAgentProfile
     // 生成直後に1回呼ぶ。失敗したらfalse(通れるマスが無い、位置がNavMesh上にない、など)
     public static bool Apply(NavMeshAgent agent,StageNavMeshSet navSet,MovementProfile profile,Vector3 position)
     {
-        // 設定を変えるので、一旦無効
+        if (agent == null || navSet == null) return false;
+
         agent.enabled = false;
+        if(!ConfigureType(agent,navSet,profile)) return false;
 
-        if (!ConfigureType(agent, navSet, profile)) return false;
-
-        //NavMEshは格子の高さにあるので、高さを合わせてから探す
-        var prode = new Vector3(position.x, navSet.GroundY, position.z);
-        if(!navSet.TrySamplePosition(profile, prode, SampleDistance, out var onMesh))
+        Vector3 probe = new Vector3(position.x, navSet.GroundY, position.z);
+        if(!navSet.TrySamplePosition(profile,probe,SampleDistance,out Vector3 onMesh))
         {
-            Debug.LogWarning($"[NavAgentProfile]{agent.name}:{profile}のNavMesh上に、位置{position}が見つかりません / {navSet.DescribeCell(profile, position)}");
+            Debug.LogWarning($"[NavAgentProfile] {agent.name}: {profile}のNavMesh上に、位置{position}が見つかりません / {navSet.DescribeCell(profile, position)}");
+            return false;
         }
 
-        // 有効にしてから、NavMesh上の位置へ置く
+        agent.transform.position = onMesh;
+
         agent.enabled = true;
-        return agent.Warp(onMesh);
+        bool placed = agent.isOnNavMesh || agent.Warp(onMesh);
+        if (!placed)
+            Debug.LogWarning($"[NavAgentProfile] {agent.name}: NavMesh上に置けませんでした(位置{onMesh}、type={agent.agentTypeID})");
+
+#if UNITY_EDITOR
+        navSet.TryGetAgentTypeId(profile, out int expected);
+        Debug.Log($"[NavAgentProfile]{agent.name}: Apply完了 type={agent.agentTypeID} 期待={expected}" +
+                  $"isOnNavMesh={agent.isOnNavMesh} placed={placed} frame={Time.frameCount}");
+        NavAgentTypeWatcher watcher = agent.GetComponent<NavAgentTypeWatcher>();
+        if(watcher == null) watcher = agent.gameObject.AddComponent<NavAgentTypeWatcher>();
+        watcher.Expect(agent,expected);
+
+#endif
+        return placed;
+
     }
 
 

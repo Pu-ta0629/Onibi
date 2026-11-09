@@ -39,26 +39,12 @@ public sealed class StageNavMeshSet : IDisposable
 #endif
 
 
-    public int GetAgentTypeId(MovementProfile profile)
-    {
-        if (_entries.TryGetValue(profile, out var cached)) return cached.AgentTypeId;
-        if(_failed.Contains(profile)) return -1;
-
-        var entry = Build(profile);
-        if (entry == null) 
-        {
-            _failed.Add(profile);
-            return -1; 
-        }
-
-        _entries.Add(profile, entry);
-        return entry.AgentTypeId;
-    }
+    
 
     public void Prewarm(IEnumerable<MovementProfile> profiles)
     {
         foreach (MovementProfile profile in profiles)
-            GetAgentTypeId(profile);    //作って、キャッシュに入れる
+            TryGetAgentTypeId(profile,out int _);    //作って、キャッシュに入れる
     }
 
     public static HashSet<MovementProfile> CollectProfiles(StageData stage, params MovementProfile[] extraProfiles)
@@ -97,8 +83,7 @@ public sealed class StageNavMeshSet : IDisposable
     {
         result = position;
 
-        var agentTypeId = GetAgentTypeId(profile);
-        if (agentTypeId < 0) return false;
+        if (!TryGetAgentTypeId(profile,out int agentTypeId)) return false;
 
         var filter = new NavMeshQueryFilter
         {
@@ -110,6 +95,32 @@ public sealed class StageNavMeshSet : IDisposable
         result = hit.position;
         return true;
     }
+
+    public bool TryGetAgentTypeId(MovementProfile profile, out int agentTypeId)
+    {
+        agentTypeId = 0;
+
+        if (_entries.TryGetValue(profile, out Entry cached))
+        {
+            agentTypeId = cached.AgentTypeId;
+            return true;
+        }
+        if (_failed.Contains(profile)) return false;
+
+        Entry entry = Build(profile);
+        if (entry == null)
+        {
+            _failed.Add(profile);
+            return false;
+        }
+
+        _entries.Add(profile, entry);
+        agentTypeId = entry.AgentTypeId;
+        return true;
+    }
+
+    [System.Obsolete("IDは負の値になることがあります。TryGetAgentTypeIdを使ってください")]
+    public int GetAgentTypeId(MovementProfile profile) => TryGetAgentTypeId(profile, out int id) ? id : -1;
 
     private Entry Build(MovementProfile profile)
     {

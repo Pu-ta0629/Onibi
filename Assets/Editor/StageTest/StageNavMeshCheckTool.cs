@@ -41,7 +41,7 @@ public static class StageNavMeshCheckTool
     {
         WalkableGrid grid = stage.WalkableGrid;
 
-        if (set.GetAgentTypeId(profile) < 0)
+        if (set.TryGetAgentTypeId(profile,out int _))
         {
             Debug.Log($"[NavMeshCheck] {profile}: NavMeshなし(通れるマスが0)");
             return;
@@ -104,8 +104,7 @@ public static class StageNavMeshCheckTool
     private static void CheckReach(StageData stage, StageNavMeshSet set)
     {
         MovementProfile profile = MovementProfile.Fire;
-        int agentTypeId = set.GetAgentTypeId(profile);
-        if (agentTypeId < 0)
+        if (!set.TryGetAgentTypeId(profile,out int agentTypeId))
         {
             Debug.LogWarning("[NavMeshCheck] Fireの NavMesh がありません");
             return;

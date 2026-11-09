@@ -71,7 +71,7 @@ public class StageGridPanel : VisualElement
         Label help = new Label(
             "Pen: 左クリックで塗る、右クリックで消す、中クリックでTerrain/Faction切替、ホイールでペンサイズ、数字キーで選択\n" +
             "Terrain: 緑=Ground、青=Water、黒=Hole、赤=Wall(下地。消すとWallに戻る)\n" +
-            "Faction: 選んだ陣営の、左=通れる、右=通れない。黄=選んだ陣営が通れないマス\n" +
+            "Faction: 最初は全陣営が通れない。選んだ陣営の、左=通れるようにする、右=通れなくする。色=選んだ陣営が通れるマス\n" +
             "ブラシを置くと、マスの地形と、通れる陣営が文字で出る");
         help.style.whiteSpace = WhiteSpace.Normal;
         Add(help);
@@ -80,7 +80,8 @@ public class StageGridPanel : VisualElement
         _brush.RegisterValueChangedCallback(e => StageGridEditor.BrushSize = e.newValue);
         Add(_brush);
 
-        Add(new Button(FillAll) { text = "Fill All (選択中のTerrainで全面を塗る)" });
+        Add(new Button(FillAll) { text = "Fill All (選択中のTerrainで全面を塗る)" });   // 既存
+        Add(new Button(AllowAllFactions) { text = "Allow All Factions (全陣営を、全面で通れるようにする)" });
 
         // 陣営ごとの、動ける範囲の表示。移動手段によって通れる地形が変わるので、移動手段も選ぶ
         Label rangeTitle = new Label("動ける範囲の表示(陣営ごと)");
@@ -182,5 +183,16 @@ public class StageGridPanel : VisualElement
             return;
 
         StageGridEditor.FillTerrain(_stage, terrain);
+    }
+
+    private void AllowAllFactions()
+    {
+        if (_stage == null) return;
+
+        if (!EditorUtility.DisplayDialog("全陣営を通れるようにする",
+                "格子の全面を、すべての陣営が通れるようにします。陣営の塗り分けは、消えます。続けますか?", "続ける", "キャンセル"))
+            return;
+
+        StageGridEditor.AllowAllFactions(_stage);
     }
 }

@@ -171,7 +171,11 @@ public class StageNavMeshTest : MonoBehaviour
         foreach (TestAgent test in _agents)
         {
             NavMeshAgent agent = test.Agent;
-            int expected = StageNavMeshProvider.Current.GetAgentTypeId(test.Profile);
+            if(!StageNavMeshProvider.Current.TryGetAgentTypeId(test.Profile,out int expected))
+            {
+                Debug.Log($"[NavMeshTest] {test.Root.name}: NavMeshがありません");
+                continue;
+            }
             float expectedRadius = SizeRules.AgentRadius(test.Profile.Size);
 
             bool typeOk = agent.agentTypeID == expected;

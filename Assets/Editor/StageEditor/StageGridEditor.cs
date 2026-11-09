@@ -20,7 +20,7 @@ public class StageGridEditor
 
     // 格子の下地(Wall)と、陣営の初期値(全員が通れる)
     private const byte TerrainBase = (byte)TerrainType.Wall;
-    private const byte FactionBase = 0;
+    private const byte FactionBase = (byte)FactionRules.All;
 
     private const int MinBrush = 1;
     private const int MaxBrush = 9;
@@ -124,9 +124,9 @@ public class StageGridEditor
     {
         switch (index)
         {
-            case 0: return new Color(1f, 0.55f, 0.1f);   // Fire: オレンジ
-            case 1: return new Color(0.7f, 0.5f, 1f);    // LostChild: 紫
-            default: return new Color(1f, 0.3f, 0.6f);   // Enemy: ピンク
+            case 0: return new Color(1f, 0.15f, 0.05f);   // Fire: 赤
+            case 1: return new Color(0.1f, 1f, 0.2f);     // LostChild: 緑
+            default: return new Color(0.15f, 0.3f, 1f);   // Enemy: 青
         }
     }
 
@@ -291,14 +291,17 @@ public class StageGridEditor
         if (CurrentLayer != PaintLayer.Faction) return;
 
         // 陣営の層: 選んでいる陣営が、通れないマスを、黄色で出す
-        Color fill = new Color(1f, 0.85f, 0.1f, 0.35f);
-        Color outline = new Color(1f, 0.85f, 0.1f, 0.9f);
+        int factionIndex = Array.IndexOf(FactionOrder, PaintFaction);
+        Color factionColor = FactionColor(factionIndex < 0 ? 0 : factionIndex);
+        Color fill = new Color(factionColor.r, factionColor.g, factionColor.b, 0.35f);
+        Color outline = new Color(factionColor.r, factionColor.g, factionColor.b, 0.9f);
+        DrawFactionMasks(grid, (x, z) => grid.GetPassableFactions(x, z));
         for (int z = 0; z < grid.Depth; z++)
         {
             int x = 0;
             while (x < grid.Width)
             {
-                if ((grid.GetBlockedFactions(x, z) & PaintFaction) == 0)
+                if ((grid.GetBlockedFactions(x, z) & PaintFaction) != 0)
                 {
                     x++;
                     continue;
@@ -314,32 +317,23 @@ public class StageGridEditor
     // 表示をオンにした陣営の、動ける範囲(地形と陣営の制限の両方を見る)を、陣営の色で重ねる
     private static void DrawFactionRanges(WalkableGrid grid)
     {
-        for (int i = 0; i < FactionOrder.Length; i++)
+        bool any = false;
+        for (int i = 0; i < ShowRange.Length; i++) any |= ShowRange[i];
+        if (!any) return;
+
+        MovementProfile[] profiles = new MovementProfile[FactionOrder.Length];
+        for (int i = 0; i < profiles.Length; i++)
+            profiles[i] = new MovementProfile(RangeMove[i], SizeClass.Small, FactionOrder[i]);
+
+        DrawFactionMasks(grid, (x, z) =>
         {
-            if (!ShowRange[i]) continue;
-
-            MovementProfile profile = new MovementProfile(RangeMove[i], SizeClass.Small, FactionOrder[i]);
-            Color color = FactionColor(i);
-            Color fill = new Color(color.r, color.g, color.b, 0.3f);
-            Color outline = new Color(color.r, color.g, color.b, 0.8f);
-
-            for (int z = 0; z < grid.Depth; z++)
+            Faction mask = Faction.None;
+            for (int i = 0; i < profiles.Length; i++)
             {
-                int x = 0;
-                while (x < grid.Width)
-                {
-                    if (!grid.CanEnter(x, z, profile))
-                    {
-                        x++;
-                        continue;
-                    }
-
-                    int start = x;
-                    while (x < grid.Width && grid.CanEnter(x, z, profile)) x++;
-                    DrawRect(grid, start, z, x - start, 1, fill, outline);
-                }
+                if (ShowRange[i] && grid.CanEnter(x, z, profiles[i])) mask |= FactionOrder[i];
             }
-        }
+            return mask;
+        });
     }
 
     // Ground: 緑、Water: 青、Hole: 黒、Wall: 赤
@@ -352,6 +346,59 @@ public class StageGridEditor
             case TerrainType.Hole: return new Color(0f, 0f, 0f, alpha);
             default: return new Color(1f, 0.15f, 0.15f, alpha);
         }
+    }
+
+    private const float AdditiveBaseAlpha = 0.2f;   // 1陣営の時の濃さ = 基本 + 1 × 増分
+    private const float AdditiveAlphaStep = 0.15f;  // 陣営が1つ増えるごとの、濃さの増分
+
+    // マスごとの陣営の集合を、加算した色で塗る。同じ集合が横に続くマスは、まとめて1つの四角にする
+    private static void DrawFactionMasks(WalkableGrid grid, Func<int, int, Faction> maskAt)
+    {
+        for (int z = 0; z < grid.Depth; z++)
+        {
+            int x = 0;
+            while (x < grid.Width)
+            {
+                Faction mask = maskAt(x, z);
+                if (mask == Faction.None)
+                {
+                    x++;
+                    continue;
+                }
+
+                int start = x;
+                while (x < grid.Width && maskAt(x, z) == mask) x++;
+
+                // 混ざった色の境目に、線が入らないよう、枠線は出さない
+                DrawRect(grid, start, z, x - start, 1, AdditiveColor(mask), Color.clear);
+            }
+        }
+    }
+
+    // 陣営の集合から、色を足し合わせる(各色は、1で頭打ち)。陣営が多いほど、濃くなる
+    private static Color AdditiveColor(Faction mask)
+    {
+        float r = 0f;
+        float g = 0f;
+        float b = 0f;
+        int count = 0;
+
+        for (int i = 0; i < FactionOrder.Length; i++)
+        {
+            if ((mask & FactionOrder[i]) == 0) continue;
+
+            Color color = FactionColor(i);
+            r += color.r;
+            g += color.g;
+            b += color.b;
+            count++;
+        }
+
+        return new Color(
+            Mathf.Min(1f, r),
+            Mathf.Min(1f, g),
+            Mathf.Min(1f, b),
+            AdditiveBaseAlpha + AdditiveAlphaStep * count);
     }
 
     private static void DrawOutline(WalkableGrid grid)
@@ -539,6 +586,22 @@ public class StageGridEditor
 
         so.ApplyModifiedProperties();
         StageGroundPreview.Refresh();
+        SceneView.RepaintAll();
+    }
+
+    public static void AllowAllFactions(StageData stage)
+    {
+        SerializedObject so = new SerializedObject(stage);
+        SerializedProperty gridProp = so.FindProperty(StageData.WalkableGridField);
+        int width = gridProp.FindPropertyRelative(WalkableGrid.WidthField).intValue;
+        int depth = gridProp.FindPropertyRelative(WalkableGrid.DepthField).intValue;
+        SerializedProperty cells = gridProp.FindPropertyRelative(WalkableGrid.FactionBlocksField);
+
+        EnsureSize(cells, width * depth, FactionBase);
+        for (int i = 0; i < cells.arraySize; i++)
+            cells.GetArrayElementAtIndex(i).intValue = 0;
+
+        so.ApplyModifiedProperties();
         SceneView.RepaintAll();
     }
 

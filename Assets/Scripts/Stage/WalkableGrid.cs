@@ -11,7 +11,7 @@ public class WalkableGrid
     // 地形の種類(TerrainTypeの値。0 地面、1 壁、2 川、3 崖や穴)
     [SerializeField, HideInInspector] private byte[] _cells = CreateFilled(32 * 32, (byte)TerrainType.Wall);
     // 陣営ごとの、通れないマス(Factionのビットを、マスごとに持つ。0は誰も制限しない)
-    [SerializeField, HideInInspector] private byte[] _factionBlocks = new byte[32 * 32];
+    [SerializeField, HideInInspector] private byte[] _factionBlocks = CreateFilled(32 * 32, (byte)FactionRules.All);
 
     public int Width => _width;
     public int Depth => _depth;
@@ -47,8 +47,10 @@ public class WalkableGrid
     {
         if (x < 0 || z < 0 || x >= Width || z >= _depth) return Faction.None;
 
-        var index = z * Width + x;
-        return index < _factionBlocks.Length ? (Faction)_factionBlocks[index] : Faction.None;
+        int index = z * Width + x;
+        // 変更前: return index < _factionBlocks.Length ? (Faction)_factionBlocks[index] : Faction.None;
+        // 変更後: 配列が足りない時は、下地(全陣営が通れない)として扱う
+        return index < _factionBlocks.Length ? (Faction)_factionBlocks[index] : FactionRules.All;
     }
 
     public Faction GetPassableFactions(int x,int z)
