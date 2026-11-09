@@ -1,4 +1,5 @@
 using System;
+using System.Runtime.InteropServices.WindowsRuntime;
 using UnityEngine;
 
 /// <summary>
@@ -99,10 +100,35 @@ public class FireLight
             return;
         }
 
-        //光量レベルが高いほど、遠くまで・明るくなる。強さは下限を設けて、低いレベルでも見えるようにする
+        // 既存のLightを渡された場合でも、Spotにそろえる
+        _light.type = LightType.Spot;
+
         float rate = Mathf.Lerp(_config.MinIntensityRate, 1f, (float)LightLevel / MaxLightLevel);
-        _light.range = VisualRange;
         _light.intensity = _config.MaxIntensity * rate;
+
+        // 地面に出る円の半径 = VisualRange になるように、角度と届く距離を決める
+        float height = Mathf.Max(0.1f, _config.Height);
+        float groundRadius = VisualRange;
+        float spotAngle = Mathf.Clamp(2f * Mathf.Atan(groundRadius / height) * Mathf.Rad2Deg, 1f, 170f);
+
+        _light.spotAngle = spotAngle;
+        _light.innerSpotAngle = spotAngle * 0.5f;   // 縁をなだらかにする
+        _light.range = Mathf.Sqrt(height * height + groundRadius * groundRadius) * 1.05f;
+
+        UpdatePose();
+    }
+
+    /// <summary>Lightを、火の真上に置いて真下へ向ける（火の回転がカメラに追従するため、毎フレーム呼ぶ）</summary>
+    public void UpdatePose()
+    {
+        if (_light == null || _owner == null)
+        {
+            return;
+        }
+
+        Transform t = _light.transform;
+        t.position = _owner.position + Vector3.up * _config.Height;
+        t.rotation = Quaternion.Euler(90f, 0f, 0f);
     }
 
     /// <summary>
@@ -148,12 +174,13 @@ public class FireLight
     {
         GameObject obj = new GameObject("Object_FireLight");
         obj.transform.SetParent(owner, false);
-        obj.transform.localPosition = Vector3.up * config.Height;
 
         Light light = obj.AddComponent<Light>();
-        light.type = LightType.Point;
+        light.type = LightType.Spot;
         light.color = TypeManager.ToUnityColor(color);
+        light.intensity = 250f;
         light.shadows = LightShadows.None;
+
         return light;
     }
     #endregion

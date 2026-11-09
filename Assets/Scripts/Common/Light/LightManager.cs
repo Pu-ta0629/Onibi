@@ -90,7 +90,10 @@ public class LightManager : MonoBehaviour
     {
         foreach (FireLight light in _lights.Values)
         {
-            light.Refresh();
+            light.UpdatePose();
+#if UNITY_EDITOR
+            light.Refresh();   // Ä¶’†‚ÉInspector‚Ì’l‚ğG‚Á‚Ä‚à”½‰f‚·‚é
+#endif
         }
     }
 
