@@ -260,7 +260,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c89e5c3b9d0e5a0429d630f2e680404b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::StageNavMeshTest
-  _stage: {fileID: 11400000, guid: 0003d2a8319f92e45a96cb1d65875b9e, type: 2}
+  _stage: {fileID: 11400000, guid: a143009ce3393644eb33060eec58cb6a, type: 2}
   _extraProfiles:
   - _moveType: 2
     _size: 0
@@ -273,7 +273,7 @@ MonoBehaviour:
     _faction: 4
   - _moveType: 0
     _size: 0
-    _faction: 6
+    _faction: 2
   _agentsPerProfile: 2
   _moveSpeed: 3
   _repathInterval: 3
@@ -731,7 +731,7 @@ Transform:
   m_GameObject: {fileID: 1132406365}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 14.48, y: 0, z: 18.09253}
+  m_LocalPosition: {x: 14.48, y: 0, z: 20.2}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
