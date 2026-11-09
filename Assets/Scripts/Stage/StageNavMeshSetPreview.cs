@@ -19,7 +19,7 @@ public class StageNavMeshSetPreview : MonoBehaviour
 
         // 注意: CalculateTriangulationは、存在するすべてのNavMeshをまとめて返す。
         // このプレビューは1つのプロファイルだけを作るので、他でNavMeshを作っていなければ、そのプロファイルだけが描かれる
-        if (_set.GetAgentTypeId(profile) >= 0)
+        if (_set.TryGetAgentTypeId(profile,out int _))
             _triangulation = NavMesh.CalculateTriangulation();
     }
 

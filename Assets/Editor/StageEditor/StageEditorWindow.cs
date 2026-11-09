@@ -24,7 +24,7 @@ public class StageEditorWindow : EditorWindow
     {
         StageSceneEditor.Target = null;
 
-        StageGridEditor.CurrentTool = StageGridEditor.PaintTool.Off;
+        StageGridEditor.PenEnabled = false;
     }
 
     private void CreateGUI()
@@ -42,9 +42,24 @@ public class StageEditorWindow : EditorWindow
         var placeBar = new Toolbar();
         placeBar.Add(new ToolbarButton(StageSceneEditor.SetStartHere) { text = "Start設置" });
         placeBar.Add(new ToolbarButton(StageSceneEditor.AddGoal) { text = "ゴール追加" });
+        placeBar.Add(new ToolbarButton(StageSceneEditor.AddSpawnSpot) { text = "湧きスポット追加" });
         placeBar.Add(new ToolbarButton(StageSceneEditor.AddEnemy) { text = "エネミー追加" });
         placeBar.Add(new ToolbarButton(StageSceneEditor.RemoveSelected) { text = "削除" });
+
+        ToolbarToggle snap = new ToolbarToggle { text = "Enemyと湧きスポットをマスに合わせる", value = StageSceneEditor.SnapToGrid };
+        snap.RegisterValueChangedCallback(e => StageSceneEditor.SnapToGrid = e.newValue);
+        placeBar.Add(snap);
+        placeBar.Add(new ToolbarButton(StageSceneEditor.SnapAll) { text = "全部合わせる" });
+        
         root.Add(placeBar);
+
+        Toolbar visibleBar = new Toolbar();
+        visibleBar.Add(new Label("表示:"));
+        visibleBar.Add(CreateVisibleToggle("Start", StageSceneEditor.ObjectKind.Start));
+        visibleBar.Add(CreateVisibleToggle("Goal", StageSceneEditor.ObjectKind.Goal));
+        visibleBar.Add(CreateVisibleToggle("Enemy", StageSceneEditor.ObjectKind.Enemy));
+        visibleBar.Add(CreateVisibleToggle("Spot", StageSceneEditor.ObjectKind.Spot));
+        root.Add(visibleBar);
 
         _gridPanel = new StageGridPanel();
         root.Add(_gridPanel);
@@ -219,5 +234,16 @@ public class StageEditorWindow : EditorWindow
         var parent = Path.GetDirectoryName(path).Replace('\\', '/');
         EnsureFolder(parent);
         AssetDatabase.CreateFolder(parent, Path.GetFileName(path));
+    }
+
+    private static ToolbarToggle CreateVisibleToggle(string text, StageSceneEditor.ObjectKind objectKind)
+    {
+        ToolbarToggle toggle = new ToolbarToggle
+        {
+            text = text,
+            value = (StageSceneEditor.VisibleKinds & objectKind) != 0,
+        };
+        toggle.RegisterValueChangedCallback(e => StageSceneEditor.SetVisible(objectKind, e.newValue));
+        return toggle;
     }
 }

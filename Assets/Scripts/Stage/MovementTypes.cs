@@ -6,7 +6,7 @@ public enum TerrainType : byte
     Ground = 0,
     Wall = 1,
     Water = 2,
-    Pit = 3,
+    Hole = 3,
 }
 
 public enum MoveType : byte
@@ -31,6 +31,12 @@ public enum Faction : byte
     LostChild = 2,
     Enemy = 4,
 }
+
+public static class FactionRules
+{
+    public const Faction All = Faction.Fire | Faction.LostChild | Faction.Enemy;
+}
+
 
 [Serializable]
 public struct MovementProfile : IEquatable<MovementProfile>
@@ -72,7 +78,7 @@ public static class TerrainRules
                 return true;
             case TerrainType.Water:
                 return move == MoveType.Swim || move == MoveType.Fly;
-            case TerrainType.Pit:
+            case TerrainType.Hole:
                 return move == MoveType.Fly;
             default: 
                 return false;

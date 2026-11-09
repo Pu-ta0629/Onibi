@@ -231,6 +231,69 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &75985076
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 75985078}
+  - component: {fileID: 75985077}
+  m_Layer: 0
+  m_Name: StageTester
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &75985077
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 75985076}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c89e5c3b9d0e5a0429d630f2e680404b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::StageNavMeshTest
+  _stage: {fileID: 11400000, guid: 0003d2a8319f92e45a96cb1d65875b9e, type: 2}
+  _extraProfiles:
+  - _moveType: 2
+    _size: 0
+    _faction: 1
+  - _moveType: 1
+    _size: 1
+    _faction: 4
+  - _moveType: 1
+    _size: 1
+    _faction: 4
+  - _moveType: 0
+    _size: 0
+    _faction: 6
+  _agentsPerProfile: 2
+  _moveSpeed: 3
+  _repathInterval: 3
+  _moveRandomly: 1
+  _showGround: 1
+--- !u!4 &75985078
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 75985076}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 10.76572, y: -0, z: 10.55488}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &668395704
 GameObject:
   m_ObjectHideFlags: 0
@@ -1018,3 +1081,4 @@ SceneRoots:
   - {fileID: 2021916346}
   - {fileID: 668395708}
   - {fileID: 812774152}
+  - {fileID: 75985078}

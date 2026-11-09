@@ -306,7 +306,8 @@ public class Mover
         if (ReferenceEquals(set, _typeSet)) return true;
         if (!NavAgentProfile.ConfigureType(_agent, set, _profile.Value)) return false;
 
-        _typeId = set.GetAgentTypeId(_profile.Value);
+        set.TryGetAgentTypeId(_profile.Value,out int typeId);
+        _typeId = typeId;
         _typeSet = set;
         _hasDestination = false;
         return true;
