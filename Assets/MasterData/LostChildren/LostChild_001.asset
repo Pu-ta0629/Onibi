@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 5fcf8ffdcd28d734f850529e0bac9775, type: 3}
-  m_Name: LostChilde_001
+  m_Name: LostChild_001
   m_EditorClassIdentifier: Assembly-CSharp::LostChilde
   _id: 1
   _displayName: "\u8FF7\u5B50\u3067\u3059"

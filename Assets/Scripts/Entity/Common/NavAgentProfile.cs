@@ -48,7 +48,11 @@ public static class NavAgentProfile
         // 設定を変えるので、一旦無効
         agent.enabled = false;
 
-        if (!ConfigureType(agent, navSet, profile)) return false;
+        if (!ConfigureType(agent, navSet, profile))
+        {
+            Debug.LogWarning($"[NavAgentProfile] {agent.name} : {profile}のNavMeshがありません（通れるマスがないか、作成に失敗しています）");
+            return false; 
+        }
 
         //NavMEshは格子の高さにあるので、高さを合わせてから探す
         var prode = new Vector3(position.x, navSet.GroundY, position.z);

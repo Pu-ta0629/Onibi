@@ -21,6 +21,7 @@ public class FireController : MonoBehaviour
     [Header("FireConfig")]
     [Tooltip("この火の色。FireManagerの所持リスト・ラジアルと対応する（None == NULL）")]
     [SerializeField] private FireColor _color;
+    [SerializeField] private GameObject _sprite;
 
     [Tooltip("移動速度。Initialize時にMoverへ反映する")]
     [SerializeField, Range(0.1f, 20f)] private float _moveSpeed = 5f;
@@ -151,7 +152,7 @@ public class FireController : MonoBehaviour
         }
 
         //カメラと完全に同じ向きにそろえ、スプライトがカメラに正対するようにする
-        transform.rotation = _billboardCamera.transform.rotation;
+        _sprite.transform.rotation = _billboardCamera.transform.rotation;
     }
 
     private void OnDestroy()

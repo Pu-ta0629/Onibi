@@ -15,20 +15,10 @@ public class LostChildController : MonoBehaviour, IDamageable
 {
     private static readonly SearchResult[] EmptyResults = new SearchResult[0];
 
-    [Header("MoveConfig")]
-    [SerializeField, Tooltip("移動速度。Initialize時にMoverへ反映する"), Range(0.1f, 20f)] private float _moveSpeed = 5f;
-    [SerializeField, Tooltip("目的地の近くのNavMeshを探す距離"), Range(0.1f, 10f)] private float _navMeshSampleDistance = 2f;
-
-    [Header("Ground")]
-    [SerializeField, Tooltip("地面のLayer。NavMeshを使わない移動で、地形の高さに合わせるのに使う")] private LayerMask _groundMask;
-
-    [Header("FollowConfig")]
-    [SerializeField, Tooltip("追従先がこの距離以上動いたら目的地を更新する"), Range(0.1f, 5f)] private float _repathDistance = 0.5f;
-    [SerializeField, Tooltip("追従先にこの距離（水平）まで近づいたら止まる。離れたら再び動く"), Range(0.1f, 20f)] private float _stopDistance = 2f;
-
-    [Header("Combat")]
     [SerializeField, Tooltip("迷子のマスターデータ（コライダーを読む）")] private LostChild _data;
-    [SerializeField, Tooltip("ライフの数。敵の攻撃が1回当たるたびに、1つ減る"), Range(1, 20)] private int _maxLife = 3;
+
+    [Space(10)]
+    [SerializeField] private int _currentLife;
 
     private NavMeshAgent _agent;
 
@@ -58,14 +48,16 @@ public class LostChildController : MonoBehaviour, IDamageable
             return;
         }
 
-        _mover = new Mover(agent, _moveSpeed, _groundMask, _navMeshSampleDistance, _repathDistance, _data.MovementProfile);
+        _mover = new Mover(agent, _data.MoveSpeed, _data.GroundMask, _data.NavMsehSampleDistance, _data.RepathDistance, _data.MovementProfile);
 
         //体のコライダーはHitWorldへ登録され、敵の攻撃が当たる。Searchのコライダーで敵を探す
         _hit = new HitDetector(world, this, Faction.LostChild, _data.Colliders);
         _search = new WeightedSearch<EnemyController>(_hit);
 
+
         _agent = agent;
-        _life = new Health(_maxLife);
+        _life = new Health(_data.MaxLife);
+        _currentLife = _life.current;
         _life.OnDead += HandleDead;
         _isInitialized = true;
     }
@@ -111,7 +103,7 @@ public class LostChildController : MonoBehaviour, IDamageable
         //追従先に近づいたら止まる（高さは無視して、XZ平面での距離で決める）
         Vector3 delta = targetPosition - transform.position;
         delta.y = 0f;
-        if (delta.sqrMagnitude <= _stopDistance * _stopDistance)
+        if (delta.sqrMagnitude <= _data.StopDistance * _data.StopDistance)
         {
             _mover.Stop();
             return;
