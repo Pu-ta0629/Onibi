@@ -103,7 +103,7 @@ public static class StageNavMeshCheckTool
     // Fireのスタートから、ゴールとアイテムへ、NavMeshで経路が引けるかを調べる
     private static void CheckReach(StageData stage, StageNavMeshSet set)
     {
-        MovementProfile profile = MovementProfile.Fire;
+        MovementProfile profile = FireStateData.Fire;
         if (!set.TryGetAgentTypeId(profile,out int agentTypeId))
         {
             Debug.LogWarning("[NavMeshCheck] Fireの NavMesh がありません");
@@ -144,7 +144,7 @@ public static class StageNavMeshCheckTool
 
     private static bool CanReach(StageNavMeshSet set, NavMeshQueryFilter filter, Vector3 start, Vector3 target)
     {
-        if (!set.TrySamplePosition(MovementProfile.Fire, target, 1f, out Vector3 goal)) return false;
+        if (!set.TrySamplePosition(FireStateData.Fire, target, 1f, out Vector3 goal)) return false;
 
         NavMeshPath path = new NavMeshPath();
         return NavMesh.CalculatePath(start, goal, filter, path) && path.status == NavMeshPathStatus.PathComplete;

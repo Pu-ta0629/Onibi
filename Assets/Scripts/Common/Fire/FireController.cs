@@ -94,7 +94,7 @@ public class FireController : MonoBehaviour
         }
 
         _syncedBrightness = _initialBrightness;
-        _mover = new Mover(_agent, _moveSpeed, _groundMask, _navMeshSampleDistance, _destinationUpdateDistance, MovementProfile.Fire);
+        _mover = new Mover(_agent, _moveSpeed, _groundMask, _navMeshSampleDistance, _destinationUpdateDistance, FireStateData.Fire);
         _agent.updateRotation = false;   //向きはビルボードで決めるので、Agentの回転は切る
         _orbit = new FireOrbit((int)_color * 360f / MaxFireCount);   //火ごとに角度をずらして重ならないようにする
         _isInitialized = true;

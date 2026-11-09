@@ -4,7 +4,7 @@ using UnityEngine;
 public static class StageValidator
 {
     // Unit(Fire)は、移動領域が共通でFly、大きさは最小のSmall
-    private static readonly MovementProfile FireProfile = MovementProfile.Fire;
+    private static readonly MovementProfile FireProfile = FireStateData.Fire;
 
     public static List<string> Validate(StageData stage)
     {
