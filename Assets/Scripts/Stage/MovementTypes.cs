@@ -56,8 +56,6 @@ public struct MovementProfile : IEquatable<MovementProfile>
     public SizeClass Size => _size;
     public Faction Side => _faction;
 
-    public static readonly MovementProfile Fire = new(MoveType.Fly, SizeClass.Small, Faction.Fire);
-
     public bool Equals(MovementProfile other) => 
         _moveType == other._moveType && _size == other._size && _faction == other._faction;
 

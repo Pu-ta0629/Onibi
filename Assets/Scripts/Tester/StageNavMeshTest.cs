@@ -78,7 +78,7 @@ public class StageNavMeshTest : MonoBehaviour
     {
         // Unit(Fire)の1体目だけ、スタート位置。それ以外は、そのプロファイルで通れるマスのどこか
         Vector3 position;
-        if (profile.Equals(MovementProfile.Fire) && number == 0)
+        if (profile.Equals(FireStateData.Fire) && number == 0)
         {
             position = _stage.Start.Position;
         }

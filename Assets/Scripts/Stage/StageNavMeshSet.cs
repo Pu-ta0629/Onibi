@@ -50,7 +50,7 @@ public sealed class StageNavMeshSet : IDisposable
     public static HashSet<MovementProfile> CollectProfiles(StageData stage, params MovementProfile[] extraProfiles)
     {
         var profiles = new HashSet<MovementProfile>(extraProfiles);
-        profiles.Add(MovementProfile.Fire); // Fireは、全ステージで必要
+        profiles.Add(FireStateData.Fire); // Fireは、全ステージで必要
         foreach (EnemyPlacement placement in stage.Enemies)
             profiles.Add(placement.Profile);
 
