@@ -290,28 +290,7 @@ public class StageGridEditor
 
         if (CurrentLayer != PaintLayer.Faction) return;
 
-        // 陣営の層: 選んでいる陣営が、通れないマスを、黄色で出す
-        int factionIndex = Array.IndexOf(FactionOrder, PaintFaction);
-        Color factionColor = FactionColor(factionIndex < 0 ? 0 : factionIndex);
-        Color fill = new Color(factionColor.r, factionColor.g, factionColor.b, 0.35f);
-        Color outline = new Color(factionColor.r, factionColor.g, factionColor.b, 0.9f);
         DrawFactionMasks(grid, (x, z) => grid.GetPassableFactions(x, z));
-        for (int z = 0; z < grid.Depth; z++)
-        {
-            int x = 0;
-            while (x < grid.Width)
-            {
-                if ((grid.GetBlockedFactions(x, z) & PaintFaction) != 0)
-                {
-                    x++;
-                    continue;
-                }
-
-                int start = x;
-                while (x < grid.Width && (grid.GetBlockedFactions(x, z) & PaintFaction) != 0) x++;
-                DrawRect(grid, start, z, x - start, 1, fill, outline);
-            }
-        }
     }
 
     // 表示をオンにした陣営の、動ける範囲(地形と陣営の制限の両方を見る)を、陣営の色で重ねる

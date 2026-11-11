@@ -16,11 +16,36 @@ public enum FireColor
     White
 }
 
+public enum FireKind
+{
+    Tanebi = 0,
+    Kagaribi,
+    Nobi,
+    Ininebi,
+    Kitsunebi,
+    Kakurebi,
+    Onibi,
+}
+
 public enum FireBrightness
 {
     Level1 = 0,
     Level2,
     Level3
+}
+
+public enum SpawnKind : byte
+{
+    Kodama = 0, //木霊
+    Enemy = 1,  //Enemy
+    SpecialKodama = 2,  //特殊木霊
+}
+
+public enum SpecialKodamaKind : byte
+{
+    Oni = 0,
+    Kitsune = 1,
+    Kakure = 2,
 }
 
 /// <summary>迷子の追従先更新モード</summary>

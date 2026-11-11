@@ -1,5 +1,7 @@
+using JetBrains.Annotations;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 [System.Serializable]
 public class PlacementData
@@ -17,6 +19,16 @@ public class PlacementData
 [System.Serializable]
 public class GoalPlacement : RadiusPlacement
 {
+}
+
+[System.Serializable]
+public class FirePlacement : PlacementData
+{
+    [SerializeField] private FireKind _kind;
+    [SerializeField] private FireColor _color;
+
+    public FireKind Kind => _kind;
+    public FireColor Color => _color;
 }
 
 [System.Serializable]
@@ -45,19 +57,7 @@ public class RadiusPlacement : PlacementData
     public const string RadiusField = nameof(_radius);
 }
 
-public enum SpawnKind : byte
-{
-    Kodama = 0, //木霊
-    Enemy = 1,  //Enemy
-    SpecialKodama = 2,  //特殊木霊
-}
 
-public enum SpecialKodamaKind : byte
-{ 
-    Oni = 0,
-    Kitsune= 1,
-    Kakure = 2,
-}
 
 [System.Serializable]
 public class SpecialKodamaChance
@@ -142,8 +142,6 @@ public class SpawnSpotPlacement : RadiusPlacement
 
 
 
-
-
 [CreateAssetMenu(menuName = "Scriptable Objects/StageData")]
 public class StageData : ScriptableObject
 {
@@ -152,6 +150,7 @@ public class StageData : ScriptableObject
 
     [SerializeField] PlacementData _start;
     [SerializeField] List<GoalPlacement> _goals = new();
+    [SerializeField] List<FirePlacement> _fires = new();
     [SerializeField] List<SpawnSpotPlacement> _spawnSpots = new();
     [SerializeField] List<EnemyPlacement> _enemies = new();
     [SerializeField] WalkableGrid _walkableGrid = new();

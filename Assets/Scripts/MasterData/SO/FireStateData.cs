@@ -7,7 +7,7 @@ public class FireStateData : MasterData
     public static readonly MovementProfile Fire = new(MoveType.Fly, SizeClass.Small, Faction.Fire);
 
     [Tooltip("種類(火の状態の名前)")]
-    [SerializeField] private string _fireState;
+    [SerializeField] private FireKind _fireKind = FireKind.Tanebi;
 
     [Tooltip("ランク(火のレベル)")]
     [SerializeField] private int _rank;
@@ -55,7 +55,7 @@ public class FireStateData : MasterData
     [Tooltip("固有行動の当たり判定の名前(コライダーの一覧にある、Key)")]
     [SerializeField] private string _specialAttackKey = "special";
 
-    public string FireState => _fireState;
+    public FireKind FireKind => _fireKind;
     public int Rank => _rank;
     public float MoveSpeed => _moveSpeed;
     public float LightRadius => _lightRadius;

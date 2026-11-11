@@ -70,14 +70,14 @@ public sealed class EntityEditorWindow : EditorWindow
         new EntityKind(
             "敵",
             () => ToMasterList(MasterDataTools.LoadAll<EnemyData>()),
-            asset => ((EnemyData)asset).DisplayName,
+            asset => ((EnemyData)asset).Type.enemyType.ToString(),
             asset => ((EnemyData)asset).Colliders,
             new[]{"_colliders","_attack1","_attack2"}),
 
         new EntityKind(
             "火",
             () => ToMasterList(MasterDataTools.LoadAll<FireStateData>()),
-            asset => ((FireStateData)asset).FireState,
+            asset => ((FireStateData)asset).FireKind.ToString(),
             asset => ((FireStateData)asset).Colliders,
             new[] { "_colliders", "_normalAttackKey", "_specialAttackKey", "_normalCooldown", "_specialCooldown" }),
 

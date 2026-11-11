@@ -110,7 +110,7 @@ public static class MasterDataTools
         {
             var label = fire.name;
 
-            if (string.IsNullOrWhiteSpace(fire.FireState)) issues.Add(($"{label}: 火の状態(名前)が空です", fire));
+            if (string.IsNullOrWhiteSpace(fire.FireKind.ToString())) issues.Add(($"{label}: 火の状態(名前)が空です", fire));
             if (fire.Rank < 0) issues.Add(($"{label}: ランクが、マイナスです", fire));
             if (fire.MoveSpeed < 0) issues.Add(($"{label}: 移動速度が、マイナスです", fire));
             if (fire.LightRadius < 0) issues.Add(($"{label}: 明るさが、マイナスです", fire));
