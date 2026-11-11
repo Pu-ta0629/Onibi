@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 using UnityEngine.Serialization;
@@ -53,6 +54,13 @@ public class FireController : MonoBehaviour
     [Tooltip("この火のマスターデータ（コライダー・木霊の消費量・クールタイム・火傷威力を読む）")]
     [SerializeField] private FireStateData _data;
 
+    [Header("Light")]
+    [Tooltip("明るさ判定＋見た目用のSpotLight。CullingMaskコードでGroundのみにする。迷子用のPointLight。未設定なら自動で作る")]
+    [SerializeField] private Light _spotLight;
+    [Tooltip("迷子用のPointLight。未設定なら自動で作る")]
+    [SerializeField] private Light _pointLight;
+    
+
     private NavMeshAgent _agent;
     private Mover _mover;
     private Camera _billboardCamera;
@@ -70,13 +78,15 @@ public class FireController : MonoBehaviour
     /// <summary>再生中にInspectorで明るさレベルが変えられたときに通知する（デバッグ用）</summary>
     public event Action<FireColor, FireBrightness> OnBrightnessEdited;
 
-    public FireColor color => _color;
-    public Vector3 position => transform.position;
-    public FireAIPermission aiPermission => _aiPermission;
-    public FireBrightness brightness => _state.Brightness;
+    public FireColor Color => _color;
+    public Vector3 Position => transform.position;
+    public FireAIPermission AIPermission => _aiPermission;
+    public FireBrightness Brightness => _state.Brightness;
 
     /// <summary>Inspectorで設定した、最初の明るさレベル</summary>
     public FireBrightness initialBrightness => _initialBrightness;
+    public Light SpotLight => _spotLight;
+    public Light PointLight => _pointLight;
     #endregion
 
     #region Initialize

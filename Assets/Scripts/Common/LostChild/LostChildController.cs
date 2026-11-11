@@ -146,7 +146,7 @@ public class LostChildController : MonoBehaviour, IHitable
             return;
         }
 
-        _life.TakeDamage(1);
+        _life.TakeDamage(damage);
         Debug.Log($"[LostChildController] TakeDamage : life = {_life.current}/{_life.max}");
     }
 

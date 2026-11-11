@@ -221,7 +221,10 @@ public class DebugOverlay : MonoBehaviour
         DarknessSensor darkness = _fireManager.darkness;
         if (darkness != null)
         {
-            GUILayout.Label($"周りの光量 : {darkness.LightLevel:F1}（{(darkness.IsDark ? "<color=#FF6666>暗い：追従停止</color>" : "<color=#66FF66>明るい</color>")}）", _labelStyle);
+            string state = darkness.IsDark ? "<color=#FF6666>暗い:ダメージ</color>"
+                         : darkness.IsBright ? "<color=#FFDD66>明るい:迷子停止</color>"
+                         : "<color=#66FF66>ふつう</color>";
+            GUILayout.Label($"周りの光量 : {darkness.LightLevel:F1}({state})", _labelStyle);
         }
 
         bool isFlash = Time.unscaledTime - _followChangedTime < FlashSeconds;

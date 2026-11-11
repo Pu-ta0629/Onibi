@@ -28,7 +28,7 @@ public class LostChildFollowLink : IDisposable
     /// </summary>
     public void Tick()
     {
-        if (_darkness.IsDark)
+        if (_darkness.IsBright)
         {
             return;
         }
@@ -41,7 +41,7 @@ public class LostChildFollowLink : IDisposable
 
         if (_registry.TryGet(color, out FireController fire))
         {
-            _lostChild.Tick(fire.position);
+            _lostChild.Tick(fire.Position);
         }
     }
 

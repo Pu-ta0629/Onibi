@@ -25,7 +25,7 @@ public class AttackProcessor
     }
 
     /// <summary>
-    /// 当たった相手のうち、まだ当てていないIDamageableへダメージを与える。与えた数を返す
+    /// 当たった相手のうち、まだ当てていないIHitableへダメージを与える。与えた数を返す
     /// </summary>
     public int Apply(IReadOnlyList<HitInfo> hits, int damage)
     {

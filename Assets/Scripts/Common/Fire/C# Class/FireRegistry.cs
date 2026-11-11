@@ -59,30 +59,30 @@ public class FireRegistry : IDisposable
             return false;
         }
 
-        if (fire.color == FireColor.None)
+        if (fire.Color == FireColor.None)
         {
             Debug.LogError($"[FireRegistry] Register : FireColor is None!!! name = {fire.name}");
             return false;
         }
 
-        if (_fires.ContainsKey(fire.color))
+        if (_fires.ContainsKey(fire.Color))
         {
-            Debug.LogWarning($"[FireRegistry] Register : {fire.color} is already registered!!");
+            Debug.LogWarning($"[FireRegistry] Register : {fire.Color} is already registered!!");
             return false;
         }
 
         fire.Initialize(_mainCamera);
         fire.InitializeCombat(_hitWorld, _lostChild, _kodamaStock);   //当たり判定・索敵・突進の準備
-        _fires.Add(fire.color, fire);
+        _fires.Add(fire.Color, fire);
         _list.Add(fire);
-        _lightManager.Register(fire.color, fire.transform);           //火にLightを付ける
         fire.OnBrightnessEdited += HandleBrightnessEdited;
 
         //Inspectorの明るさレベルを最初のStateにする。値が変わらなくても反映されるよう、Stateを読んで直接渡す
-        _typeManager.ChangeBrightness(fire.color, fire.initialBrightness);
-        FireState state = _typeManager.GetFireState(fire.color);
+        _typeManager.ChangeBrightness(fire.Color, fire.initialBrightness);
+        FireState state = _typeManager.GetFireState(fire.Color);
         fire.ApplyState(state);
-        _lightManager.SetBrightness(fire.color, state.Brightness);
+        _lightManager.Register(fire.Color, fire.transform, fire.SpotLight, fire.PointLight);
+        _lightManager.SetBrightness(fire.Color, state.Brightness);
         return true;
     }
 
