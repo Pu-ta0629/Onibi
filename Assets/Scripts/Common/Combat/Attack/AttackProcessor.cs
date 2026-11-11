@@ -3,7 +3,7 @@ using System.Collections.Generic;
 /// <summary>
 /// ダメージを受けられるもの（敵・迷子）。攻撃処理は、この口に対してダメージを渡す
 /// </summary>
-public interface IDamageable
+public interface IHitable
 {
     void TakeDamage(int damage);
 }
@@ -33,7 +33,7 @@ public class AttackProcessor
         for (int i = 0; i < hits.Count; i++)
         {
             object owner = hits[i].Owner;
-            if (!(owner is IDamageable target) || _hitOwners.Contains(owner))
+            if (!(owner is IHitable target) || _hitOwners.Contains(owner))
             {
                 continue;
             }

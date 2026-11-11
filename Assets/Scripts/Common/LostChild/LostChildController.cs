@@ -11,7 +11,7 @@ using UnityEngine.AI;
 /// ü‚è‚Ì“G‚ğd‚İ•t‚«õ“G‚µ‚ÄAŒ‹‰Ê‚ğ‰Î‚Ö“n‚·i‰Î‚ÌUŒ‚‘ÎÛ‚É‚È‚éj
 /// </summary>
 [RequireComponent(typeof(NavMeshAgent))]
-public class LostChildController : MonoBehaviour, IDamageable
+public class LostChildController : MonoBehaviour, IHitable
 {
     private static readonly SearchResult[] EmptyResults = new SearchResult[0];
 

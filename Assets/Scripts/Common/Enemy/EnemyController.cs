@@ -29,7 +29,7 @@ public class EnemyMoveConfig
 /// 移動は迷子・火と共通のMover、HPはHealth、当たり判定はHitDetector、ダメージ処理はAttackProcessorに任せる
 /// 攻撃対象は迷子だけ。迷子に近づいたら止まり、Attack1をAttackTimelineの時間どおりに出す
 /// </summary>
-public abstract class EnemyController : IDamageable, IDisposable
+public abstract class EnemyController : IHitable, IDisposable
 {
     /// <summary>HPが0になったときに通知する（EnemyPoolが受け取って、プールへ戻す）</summary>
     public event Action<EnemyController> OnDead;
