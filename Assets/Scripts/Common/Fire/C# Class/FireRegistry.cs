@@ -81,7 +81,9 @@ public class FireRegistry : IDisposable
         _typeManager.ChangeBrightness(fire.Color, fire.initialBrightness);
         FireState state = _typeManager.GetFireState(fire.Color);
         fire.ApplyState(state);
-        _lightManager.Register(fire.Color, fire.transform, fire.SpotLight, fire.PointLight);
+
+        bool isLit = _typeManager.SelectedColor == fire.Color || _typeManager.FollowTarget == fire.Color;
+        _lightManager.Register(fire.Color, fire.transform, fire.SpotLight, fire.PointLight, isLit);
         _lightManager.SetBrightness(fire.Color, state.Brightness);
         return true;
     }

@@ -24,6 +24,8 @@ public class FireController : MonoBehaviour
     [SerializeField] private FireColor _color;
     [SerializeField] private GameObject _sprite;
 
+    [Tooltip("選択中のマウス追従移動速度")]
+    [SerializeField, Range(0.1f, 40f)] private float _mouseFollowSpeed = 10f; 
     [Tooltip("移動速度。Initialize時にMoverへ反映する")]
     [SerializeField, Range(0.1f, 20f)] private float _moveSpeed = 5f;
 
@@ -105,6 +107,7 @@ public class FireController : MonoBehaviour
 
         _syncedBrightness = _initialBrightness;
         _mover = new Mover(_agent, _moveSpeed, _groundMask, _navMeshSampleDistance, _destinationUpdateDistance, FireStateData.Fire);
+        _mover.SetFollowSpeed(_mouseFollowSpeed);
         _agent.updateRotation = false;   //向きはビルボードで決めるので、Agentの回転は切る
         _orbit = new FireOrbit((int)_color * 360f / MaxFireCount);   //火ごとに角度をずらして重ならないようにする
         _isInitialized = true;

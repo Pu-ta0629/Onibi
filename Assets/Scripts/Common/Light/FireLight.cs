@@ -139,7 +139,7 @@ public class FireLight
     private readonly Light _point;
     private readonly Color _color;
     private FireBrightness _brightness = FireBrightness.Level1;
-
+    private bool _isLit;   // 初期は消灯
     private FireLightLevel Level => _config.GetLevel((int)_brightness);
 
     /// <summary>今のレベルのOuter角(度)。この外側は光量0</summary>
@@ -213,7 +213,7 @@ public class FireLight
             _spot.intensity = SpotIntensity;
             _spot.cullingMask = _config.ResolveSpotMask();
             _spot.shadows = LightShadows.None;
-            _spot.enabled = true;
+            _spot.enabled = _isLit;
         }
 
         //PointLight: 迷子用。Type=Point、Intensity・Rangeはレベルごと
@@ -225,7 +225,7 @@ public class FireLight
             _point.range = _config.GetPointRange(index);
             _point.cullingMask = _config.ResolvePointMask();
             _point.shadows = LightShadows.None;
-            _point.enabled = true;
+            _point.enabled = _isLit;
         }
 
         UpdatePose();
@@ -261,6 +261,7 @@ public class FireLight
     /// </summary>
     public float GetLightLevelAt(Vector3 point)
     {
+        if (!_isLit) return 0f;
         Vector3 lightPosition = _owner.position + Vector3.up * _config.YOffset;
         float down = lightPosition.y - point.y;   //Lightから地点までの、真下方向の距離
         if (down <= 0f)
@@ -342,6 +343,13 @@ public class FireLight
         }
 
         return Mathf.Clamp(1f / luminance, 1f, _config.MaxLuminanceScale);
+    }
+
+    public void SetLit(bool isLit)
+    {
+        if (_isLit == isLit) return;
+        _isLit = isLit;
+        Refresh();
     }
     #endregion
 }

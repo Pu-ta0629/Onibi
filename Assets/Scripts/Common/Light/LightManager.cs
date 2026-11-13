@@ -34,7 +34,7 @@ public class LightManager : MonoBehaviour
     /// </summary>
     /// <param name="spotLight">明るさ判定＋見た目用（必須）</param>
     /// <param name="pointLight">迷子用。nullなら自動で作る</param>
-    public bool Register(FireColor color, Transform owner, Light spotLight, Light pointLight)
+    public bool Register(FireColor color, Transform owner, Light spotLight, Light pointLight, bool isLit)
     {
         if (!_isInitialized || owner == null || color == FireColor.None)
         {
@@ -48,7 +48,9 @@ public class LightManager : MonoBehaviour
             return false;
         }
 
-        _lights.Add(color, new FireLight(owner, color, _config, spotLight, pointLight));
+        FireLight fireLight = new FireLight(owner, color, _config, spotLight, pointLight);
+        fireLight.SetLit(isLit);
+        _lights.Add(color , fireLight);
         return true;
     }
 
@@ -62,7 +64,13 @@ public class LightManager : MonoBehaviour
             light.SetBrightness(brightness);
         }
     }
-
+    public void SetLit(FireColor color, bool isLit)
+    {
+        if(_lights.TryGetValue(color, out FireLight light))
+        {
+            light.SetLit(isLit);
+        }
+    }
     /// <summary>
     /// 指定した地点の光量。登録されている全ての火のうち、最も明るい値を返す
     /// </summary>

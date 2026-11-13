@@ -33,6 +33,7 @@ public class Mover
     private Vector3 _lastPoint;       //追従の最後の目的地
     private Vector3 _straightPoint;   //対象有りの直進の目標
     private float _nextTryTime;       //次にNavMeshを探してよい時刻
+    private  float _followSpeed;               //Follow系(Agent)で使う速度
     private int _typeId = int.MinValue;   // プロファイルから決めたAgentTypeID(Agentの読み取り値に頼らない)
     private bool _hasDestination;
     private bool _canMove = true;
@@ -55,6 +56,7 @@ public class Mover
         _agent = agent;
         _transform = agent.transform;
         _speed = speed;
+        _followSpeed = speed;
         _groundMask = groundMask;
         _hoverHeight = agent.baseOffset;
         _sampleDistance = sampleDistance;
@@ -106,6 +108,13 @@ public class Mover
     #endregion
 
     #region Follow
+    /// <summary>Follow(navMeshAgent)で使う速度を変える。直進系の速度には影響しない</summary>
+    /// <param name="speed">Follow Speed</param>
+    public void SetFollowSpeed(float speed)
+    {
+        _followSpeed = speed;
+        _agent.speed = speed;
+    }
     /// <summary>
     /// 対象の追従（毎フレーム呼んでよい）。NavMeshで向かえていればtrue
     /// 近くにNavMeshがない間は、Agentを使わず直進で向かい、falseを返す
