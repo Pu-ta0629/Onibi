@@ -3,9 +3,9 @@ using System.Collections.Generic;
 /// <summary>
 /// ダメージを受けられるもの（敵・迷子）。攻撃処理は、この口に対してダメージを渡す
 /// </summary>
-public interface IHitable
+public interface IHittable
 {
-    void TakeDamage(int damage);
+    void OnHit(AttackHit hit);
 }
 
 /// <summary>
@@ -25,24 +25,42 @@ public class AttackProcessor
     }
 
     /// <summary>
-    /// 当たった相手のうち、まだ当てていないIDamageableへダメージを与える。与えた数を返す
+    /// 当たった相手のうち、まだ当てていないIHittableへ、命中情報を渡す。渡した数を返す
     /// </summary>
-    public int Apply(IReadOnlyList<HitInfo> hits, int damage)
+    public int Apply(IReadOnlyList<HitInfo> hits, AttackHit attackHit)
+    {
+        return ApplyCore(hits,attackHit,0);
+    }
+
+    /// <summary>
+    /// 直接ダメージだけの攻撃用。既存の呼び出し側は、そのまま使える
+    /// </summary>
+    public int Apply(IReadOnlyList<HitInfo> hits,int damage)
+    {
+        return ApplyCore(hits, null, damage);
+    }
+
+    private int ApplyCore(IReadOnlyList<HitInfo> hits,AttackHit attackHit,int damage)
     {
         int count = 0;
-        for (int i = 0; i < hits.Count; i++)
+        for(int i = 0;i<hits.Count;i++)
         {
             object owner = hits[i].Owner;
-            if (!(owner is IHitable target) || _hitOwners.Contains(owner))
+            if(!(owner is IHittable target) || _hitOwners.Contains(owner))
             {
                 continue;
             }
 
             _hitOwners.Add(owner);
-            target.TakeDamage(damage);
+
+            if(attackHit == null)
+            {
+                attackHit = AttackHit.Direct(damage);
+            }
+
+            target.OnHit(attackHit);
             count++;
         }
-
         return count;
     }
 }
