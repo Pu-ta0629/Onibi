@@ -3,7 +3,7 @@ using System;
 /// <summary>
 /// 迷子へ「どの火を追うか」を渡す純粋なC#クラス
 /// 追従先（TypeManagerのFollowTarget）の火の座標を、毎フレーム迷子のTickへ渡す
-/// 暗い場所にいる間は追従先を渡さない（迷子は動かない）。追従先が切り替わったら、迷子の経路を捨てる
+/// 明るい場所にいる間は追従先を渡さない（迷子は動かない）。追従先が切り替わったら、迷子の経路を捨てる
 /// </summary>
 public class LostChildFollowLink : IDisposable
 {
