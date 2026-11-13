@@ -13,10 +13,10 @@ TagManager:
   - UI
   - Ground
   - 
-  - 
-  - 
-  - 
-  - 
+  - Terrain_Ground
+  - Terrain_Wall
+  - Terrain_Water
+  - Terrain_Hole
   - 
   - 
   - 

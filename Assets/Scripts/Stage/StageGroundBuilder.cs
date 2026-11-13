@@ -20,7 +20,7 @@ public sealed class StageGroundBuilder
     
     public GameObject Root {  get; private set; }
 
-    public void Build(WalkableGrid grid,StageTerrainColors colors,HideFlags flags)
+    public void Build(WalkableGrid grid,StageTerrainColors colors,HideFlags flags,System.Func<TerrainType,int> layerOf = null)
     {
         Clear();
 
@@ -36,6 +36,7 @@ public sealed class StageGroundBuilder
             GameObject plane = GameObject.CreatePrimitive(PrimitiveType.Plane);
             plane.name = $"{block.Terrain}_{block.X}_{block.Z}";
             plane.hideFlags = flags;
+            plane.layer = layerOf != null ? layerOf(block.Terrain) : 0;
 
             //見た目だけ
             DestoryObject(plane.GetComponent<MeshCollider>());
