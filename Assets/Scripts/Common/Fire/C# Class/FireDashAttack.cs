@@ -19,6 +19,8 @@ public class FireDashAttack : IDisposable
     private readonly HitDetector _hit;
     private readonly FireTargetSearch _targetSearch;
 
+  //  private readonly AttackHit _burnHit;
+
     private float _cooldown;      //次の突進までの残り時間（秒）
     private float _facingYaw;     //突進の向き（度）。攻撃のコライダーの向きに使う
     private bool _isDashing;
@@ -33,7 +35,7 @@ public class FireDashAttack : IDisposable
     /// <param name="world">全員で共有するHitWorld</param>
     /// <param name="lostChild">索敵結果を借りる迷子</param>
     /// <param name="kodama">突進で消費する木霊</param>
-    public FireDashAttack(object owner, Transform transform, FireStateData data, Mover mover, HitWorld world, LostChildController lostChild, KodamaStock kodama)
+    public FireDashAttack(object owner, Transform transform, FireStateData data, Mover mover, HitWorld world, LostChildController lostChild, KodamaStock kodama/*,FireColor color*/)
     {
         _transform = transform;
         _data = data;
@@ -42,6 +44,8 @@ public class FireDashAttack : IDisposable
 
         _hit = new HitDetector(world, owner, Faction.Fire, data.Colliders);
         _targetSearch = new FireTargetSearch(new WeightedSearch<EnemyController>(_hit), lostChild);
+
+      //  _burnHit = new AttackHit(owner, new BurnApplyEffect(color, data.BurnCount, data.BurnPotency));
     }
 
     #region Public
@@ -119,10 +123,10 @@ public class FireDashAttack : IDisposable
         bool isMoving = _mover.MoveStraightToTarget();
         _hit.SetTransform(_transform.position, _facingYaw);
 
-        if (_hit.Detect<EnemyController>(_data.NormalAttackKey, _hits))
+       /* if (_hit.Detect<EnemyController>(_data.NormalAttackKey, _hits))
         {
-            _attackProcessor.Apply(_hits, _data.BurnPotency);
-        }
+            _attackProcessor.Apply(_hits, _burnHit);
+        }*/
 
         if (!isMoving)
         {

@@ -11,7 +11,7 @@ using UnityEngine.AI;
 /// 周りの敵を重み付き索敵して、結果を火へ渡す（火の攻撃対象になる）
 /// </summary>
 [RequireComponent(typeof(NavMeshAgent))]
-public class LostChildController : MonoBehaviour, IHitable
+public class LostChildController : MonoBehaviour, IHittable,IHitTarget
 {
     private static readonly SearchResult[] EmptyResults = new SearchResult[0];
 
@@ -35,6 +35,8 @@ public class LostChildController : MonoBehaviour, IHitable
     /// <summary>迷子が見つけた敵（近い順に重み付き）。火の攻撃対象の索敵に使われる</summary>
     public IReadOnlyList<SearchResult> searchResults => _search != null ? _search.results : EmptyResults;
     public LostChild LostChild => _data;
+
+    public BurnState Burn => null;
 
     #region Initialize
     /// <summary>
@@ -136,6 +138,11 @@ public class LostChildController : MonoBehaviour, IHitable
         _search.Tick(transform.position);
     }
 
+    public void OnHit(AttackHit hit)
+    {
+        hit.ApplyTo(this);
+    }
+
     /// <summary>
     /// 敵の攻撃を受ける。ライフ型なので、ダメージの大きさに関わらず、ライフが1つ減る
     /// </summary>
@@ -146,7 +153,7 @@ public class LostChildController : MonoBehaviour, IHitable
             return;
         }
 
-        _life.TakeDamage(1);
+        _life.TakeDamage(damage);
         Debug.Log($"[LostChildController] TakeDamage : life = {_life.current}/{_life.max}");
     }
 
