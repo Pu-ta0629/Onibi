@@ -59,7 +59,7 @@ public class EnemyPool : PoolBase<EnemyController>
         agent.gameObject.SetActive(false);
 
         EnemyController enemy = EnemyFactory.Create(_entry.type);
-        enemy.Initialize(agent, _entry.data, _config, _world);
+        enemy.Initialize(agent, _entry.data, _config, _world,new BurnState(BurnConfig.Default));
         enemy.OnDead += Release;   //倒れたら自動でプールへ戻る
         return enemy;
     }

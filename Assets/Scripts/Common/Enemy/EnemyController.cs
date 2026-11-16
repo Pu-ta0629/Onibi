@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using Unity.VisualScripting;
-using UnityEditor.PackageManager;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -29,7 +28,7 @@ public class EnemyMoveConfig
 /// 移動は迷子・火と共通のMover、HPはHealth、当たり判定はHitDetector、ダメージ処理はAttackProcessorに任せる
 /// 攻撃対象は迷子だけ。迷子に近づいたら止まり、Attack1をAttackTimelineの時間どおりに出す
 /// </summary>
-public abstract class EnemyController : IHitable, IDisposable
+public abstract class EnemyController : IHittable,IHitTarget, IDisposable
 {
     /// <summary>HPが0になったときに通知する（EnemyPoolが受け取って、プールへ戻す）</summary>
     public event Action<EnemyController> OnDead;
@@ -44,6 +43,9 @@ public abstract class EnemyController : IHitable, IDisposable
     private Transform _transform;
     private HitDetector _hit;
     private Health _health;
+
+    private BurnState _burn;
+
     private AttackTimeline _timeline;
     private float _stopDistance;
     private bool _isInitialized;
@@ -53,6 +55,9 @@ public abstract class EnemyController : IHitable, IDisposable
     public Transform transform => _transform;
     public int hp => _health != null ? _health.current : 0;
     public bool isDead => _health == null || _health.isDead;
+
+    /// <summary>IHitTarget: 火傷の状態</summary>
+    public BurnState Burn => _burn;
 
     /// <summary>ステージに出ていて、動いているか（プールに戻っている間はfalse）</summary>
     public bool isActive => _isActive;
@@ -64,7 +69,13 @@ public abstract class EnemyController : IHitable, IDisposable
     /// <summary>
     /// 敵を生成する側（EnemyPool）から、一度だけ呼ぶ。この時点では、まだステージに出ていない（Spawnで出す）
     /// </summary>
-    public void Initialize(NavMeshAgent agent, EnemyData data, EnemyMoveConfig config, HitWorld world)
+    public void Initialize(
+        NavMeshAgent agent,
+        EnemyData data,
+        EnemyMoveConfig config,
+        HitWorld world,
+        BurnState burn = null
+        )
     {
         if (agent == null || data == null || config == null || world == null)
         {
@@ -80,6 +91,8 @@ public abstract class EnemyController : IHitable, IDisposable
         _mover = new Mover(agent, data.MoveSpeed, config.GroundMask, config.NavMeshSampleDistance, config.RepathDistance, new MovementProfile(data.MoveType, SizeClass.Medium, Faction.Enemy));
         _hit = new HitDetector(world, this, Faction.Enemy, data.Colliders);
         _hit.SetActive(false);
+
+        _burn = burn;
 
         _health = new Health(data.MaxHP);
         _health.OnDead += HandleDead;
@@ -101,6 +114,7 @@ public abstract class EnemyController : IHitable, IDisposable
         }
 
         _health.Reset();
+        _burn?.Reset();
         _attackSequence.Reset();
         _mover.Stop();
         _transform.gameObject.SetActive(true);
@@ -162,6 +176,12 @@ public abstract class EnemyController : IHitable, IDisposable
             return;
         }
 
+        _burn?.Tick(Time.deltaTime, this);
+        if(!_isActive)
+        {
+            return;
+        }
+
         _hit.SetTransform(_transform.position, _transform.eulerAngles.y);
         _attackSequence.Tick(Time.deltaTime);
 
@@ -191,6 +211,19 @@ public abstract class EnemyController : IHitable, IDisposable
         }
 
         _mover.Follow(targetPosition);
+    }
+
+    /// <summary>
+    /// IHittable: 命中情報を受け取り、効果を順に適用する
+    /// </summary>
+    public void OnHit(AttackHit hit)
+    {
+        if(!_isInitialized || !isDead)
+        {
+            return;
+        }
+
+        hit.ApplyTo(this);
     }
 
     /// <summary>
