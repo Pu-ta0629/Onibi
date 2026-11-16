@@ -70,7 +70,7 @@ public static class StageValidator
                 case SpawnKind.Enemy:
                     if (spot.EnemyList.Count == 0)
                         issues.Add($"{stageName}: {label}に、湧く敵(EnemyData)が1つもありません");
-                    foreach (EnemyData enemy in spot.EnemyList)
+                    foreach (var enemy in spot.EnemyList)
                     {
                         if (enemy == null) issues.Add($"{stageName}: {label}の敵の候補に、未設定の項目があります");
                     }

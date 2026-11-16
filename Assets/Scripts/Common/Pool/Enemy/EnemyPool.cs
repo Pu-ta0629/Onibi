@@ -1,83 +1,62 @@
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.AI;
 
 /// <summary>
-/// 1つの種族の敵のプール（純粋なC#クラス）。Prefab・Data・数はEnemyPoolEntryから受け取る
-/// 最初にpoolCount体ぶんを作って非表示にしておき、出すときに取り出す。倒れた敵は、自動でプールへ戻る
-/// 敵のクラス（Enemy_???）は、種族からEnemyFactoryが選ぶ
+/// IDを振った箱。EnemyFactoryから出荷された敵を保管する。追加生産はしない
+/// 
 /// </summary>
-public class EnemyPool : PoolBase<EnemyController>
+public class EnemyPool
 {
-    private readonly EnemyPoolEntry _entry;
-    private readonly Transform _parent;
-    private readonly EnemyMoveConfig _config;
-    private readonly HitWorld _world;
+    private readonly int _poolId;
+    private readonly int _resumeThreshold;
+    private readonly List<EnemyController> _stock = new();
+    private readonly List<EnemyController> _all = new();
 
-    /// <summary>このプールの種族</summary>
-    public EnemyType type => _entry.type;
+    public int poolId => _poolId;
+    public int Stock => _stock.Count;
 
-    /// <param name="entry">Prefab・Data・数の設定</param>
-    /// <param name="parent">生成した敵を入れる親</param>
-    /// <param name="config">敵の移動の調整値（全ての敵で共通）</param>
-    /// <param name="world">全員で共有するHitWorld</param>
-    public EnemyPool(EnemyPoolEntry entry, Transform parent, EnemyMoveConfig config, HitWorld world)
+    ///<summary>この在庫数まで戻ったら生産開始を通知する</summary>
+    public int ResumeThreshold => Mathf.Clamp(_resumeThreshold, 1, Mathf.Max(1, _all.Count));
+
+    ///<summary>在庫切れでfalseを返した状態</summary>
+    public bool IsStopped { get; set; }
+
+    public IReadOnlyList<EnemyController> All => _all;
+
+    public EnemyPool(int poolId,int resumeThreshoId)
     {
-        _entry = entry;
-        _parent = parent;
-        _config = config;
-        _world = world;
-
-        Fill(entry.poolCount);
+        _poolId = poolId;
+        _resumeThreshold = resumeThreshoId;
     }
 
-    #region Public
-    /// <summary>
-    /// 出ている全ての敵を、1フレーム進める。迷子の座標は、呼ぶ側が1回だけ読んで渡す
-    /// </summary>
-    public void Tick(Vector3 targetPosition)
+    ///<summary>出荷された敵を、在庫として登録する</summary>
+    public void Add(EnemyController enemy)
     {
-        IReadOnlyList<EnemyController> items = activeItems;
-        for (int i = items.Count - 1; i >= 0; i--)
+        _all.Add(enemy);
+        _stock.Add(enemy);
+    }
+
+    ///<summary>在庫からランダムに1体出す。在庫がなければfalse</summary>
+    public bool TryTake(out EnemyController enemy)
+    {
+        enemy = null;
+        if(_stock.Count == 0)
         {
-            //Tickの中で他の敵が戻された場合に、範囲外を読まない
-            if (i >= items.Count)
-            {
-                continue;
-            }
-
-            items[i].Tick(targetPosition);
+            return false;
         }
-    }
-    #endregion
 
-    #region Override
-    protected override EnemyController Create(int index)
+        int index = Random.Range(0, _stock.Count);
+        enemy = _stock[index];
+        _stock[index] = _stock[_stock.Count - 1];
+        _stock.RemoveAt(_stock.Count - 1);
+        return true;
+    }
+
+    ///<summary>在庫に戻す。Despwanで非表示、次のSpawnでHPなどがリセット</summary>
+    public void Return(EnemyController enemy)
     {
-        NavMeshAgent agent = Object.Instantiate(_entry.prefab, _parent);
-        agent.gameObject.name = $"Object_Enemy_{_entry.type}_{index}";
-        agent.gameObject.SetActive(false);
-
-        EnemyController enemy = EnemyFactory.Create(_entry.type);
-        enemy.Initialize(agent, _entry.data, _config, _world,new BurnState(BurnConfig.Default));
-        enemy.OnDead += Release;   //倒れたら自動でプールへ戻る
-        return enemy;
+        enemy.Despawn();
+        _stock.Add(enemy);
     }
-
-    protected override void OnSpawn(EnemyController item, Vector3 position)
-    {
-        item.Spawn(position);
-    }
-
-    protected override void OnRelease(EnemyController item)
-    {
-        item.Despawn();
-    }
-
-    protected override void OnDisposeItem(EnemyController item)
-    {
-        item.OnDead -= Release;
-        item.Dispose();
-    }
-    #endregion
 }
+

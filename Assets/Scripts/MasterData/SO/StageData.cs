@@ -69,25 +69,41 @@ public class SpecialKodamaChance
     public float Probability => _probability;
 }
 
+[System.Serializable]
+public class EnemyCount
+{
+    [SerializeField]private EnemyData _enemyData;
+    [SerializeField,Min(1)]private int _count = 1;
+
+    public EnemyData EnemyData => _enemyData;
+    public int Count => _count;
+
+    public const string EnemyDataField = nameof(_enemyData);
+    public const string CountField = nameof(_count);
+}
 
 [System.Serializable]
 public class SpawnSpotPlacement : RadiusPlacement
 {
+    [SerializeField] private int _id;
+
     [SerializeField] private SpawnKind _kind = SpawnKind.Kodama;
 
-    [SerializeField] private List<EnemyData> _enemyList = new();
+    [SerializeField] private List<EnemyCount> _enemyList = new();
     [SerializeField] private SizeClass _enemySize = SizeClass.Medium;
 
     [SerializeField] private List<SpecialKodamaChance> _specialKodamas = new();
 
     [SerializeField, Min(0.1f)] private float _spawnInterval = 5f;
 
+    public int Id => _id;
     public SpawnKind Kind => _kind;
-    public IReadOnlyList<EnemyData> EnemyList => _enemyList;
+    public IReadOnlyList<EnemyCount> EnemyList => _enemyList;
     public SizeClass EnemySize => _enemySize;
     public IReadOnlyList<SpecialKodamaChance> SpecialKodamas => _specialKodamas;
     public float SpawnInterval => _spawnInterval;
 
+    public const string IdField = nameof(_id);
     public const string KindField = nameof(_kind);
     public const string EnemyListField = nameof(_enemyList);
     public const string EnemySizeField = nameof(_enemySize);
@@ -105,9 +121,9 @@ public class SpawnSpotPlacement : RadiusPlacement
     {
         get
         {
-            foreach(EnemyData enemy in _enemyList)
+            foreach(var enemy in _enemyList)
             {
-                if (enemy != null) yield return new MovementProfile(enemy.MoveType, _enemySize, Faction.Enemy);
+                if (enemy != null && enemy.EnemyData != null) yield return new MovementProfile(enemy.EnemyData.MoveType, _enemySize, Faction.Enemy);
             }
         }
     }

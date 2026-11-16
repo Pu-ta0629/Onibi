@@ -1,4 +1,4 @@
-using UnityEngine;
+/*using UnityEngine;
 using UnityEngine.AI;
 
 /// <summary>敵を出すときの種族の選び方</summary>
@@ -17,9 +17,6 @@ public enum SpawnMode
 /// </summary>
 public class EntitySpawner : MonoBehaviour, IStageSpawner
 {
-    [Header("Pool")]
-    [Tooltip("種族ごとの敵のプール。Initialize時に、ここの初期化もまとめて行う")]
-    [SerializeField] private EnemyPoolManager _enemyPoolManager;
 
     [Header("Spawn")]
     [Tooltip("Random=出せる種族からランダム / Specified=下のSpecified Typeだけ")]
@@ -190,4 +187,4 @@ public class EntitySpawner : MonoBehaviour, IStageSpawner
         return true;
     }
     #endregion
-}
+}*/
