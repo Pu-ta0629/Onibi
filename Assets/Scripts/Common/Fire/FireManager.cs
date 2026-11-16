@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+using System.Runtime.InteropServices.WindowsRuntime;
 using UnityEngine;
 
 /// <summary>
@@ -39,6 +41,7 @@ public class FireManager : MonoBehaviour
     private LostChildFollowLink _followLink;
     private FireRadialMenuBinder _radialMenuBinder;
     private DarknessSensor _darkness;
+    private DarkDamageReaction _darkDamage;
     private bool _isInitialized;
 
     /// <summary>ラジアルのMenu項目が選ばれたときに通知する（Menu画面を開く側が購読する）</summary>
@@ -69,9 +72,11 @@ public class FireManager : MonoBehaviour
         _lightManager.Initialize();
         _lightManager.SetDarkThreshold(_darknessConfig.DarkThreshold);
 
-        //迷子の周りの暗さを検知する。暗いときの処理は、ここにAddReactionで足していく
+        //迷子の周りの明るさを検知する。明るいと停止、暗いとダメージ。やりたいことが増えたら、ここにReactionを足す
         _darkness = new DarknessSensor(_lostChild.transform, _lightManager.GetLightLevelAt, _darknessConfig);
-        _darkness.AddReaction(new StopFollowReaction(_lostChild));
+        _darkness.AddBrightReaction(new StopFollowReaction(_lostChild));
+        _darkDamage = new DarkDamageReaction(_lostChild, _darknessConfig);
+        _darkness.AddReaction(_darkDamage);
 
         _registry = new FireRegistry(_typeManager, _lightManager, mainCamera, hitWorld, _lostChild, kodamaStock);
         _stateBinder = new FireStateBinder(_typeManager, _registry, _lightManager);
@@ -97,7 +102,7 @@ public class FireManager : MonoBehaviour
 
         for (int i = 0; i < _sceneFires.Length; i++)
         {
-            if (_sceneFires[i] != null && _fireInventory.Has(_sceneFires[i].color))
+            if (_sceneFires[i] != null && _fireInventory.Has(_sceneFires[i].Color))
             {
                 _registry.Register(_sceneFires[i]);
             }
@@ -126,9 +131,9 @@ public class FireManager : MonoBehaviour
             return false;
         }
 
-        if (!_fireInventory.TryAdd(fire.color))
+        if (!_fireInventory.TryAdd(fire.Color))
         {
-            Debug.LogWarning($"[FireManager] AcquireFire : {fire.color} is already owned!!");
+            Debug.LogWarning($"[FireManager] AcquireFire : {fire.Color} is already owned!!");
             return false;
         }
 
@@ -186,6 +191,7 @@ public class FireManager : MonoBehaviour
 
         _inputHandler.Tick();            //選択中の火のマウス追従
         _darkness.Tick();                //迷子の周りの暗さの判定
+        _darkDamage.Tick(Time.deltaTime);//慈姑間のダメージ
         _followLink.Tick();              //迷子へ追従先を渡す
         _lostChild.UpdateCombat();       //火が迷子の索敵結果を読むので、火のTickより先に更新する
         TickFires();

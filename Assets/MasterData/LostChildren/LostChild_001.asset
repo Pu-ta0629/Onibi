@@ -44,3 +44,11 @@ MonoBehaviour:
     _moveType: 0
     _size: 1
     _faction: 2
+  _moveSpeed: 5
+  _navMeshSampleDistance: 2
+  _groundMask:
+    serializedVersion: 2
+    m_Bits: 0
+  _repathDistance: 0.5
+  _stopDistance: 2
+  _maxLife: 20

@@ -21,7 +21,24 @@ MonoBehaviour:
   - _position: {x: 11.577327, y: 0, z: 11.647157}
     _rotationY: 0
     _radius: 2
-  _enemies: []
+  _fires: []
+  _spawnSpots:
+  - _position: {x: 0, y: 0, z: 0}
+    _rotationY: 0
+    _radius: 0
+    _kind: 1
+    _enemyList:
+    - {fileID: 0}
+    - {fileID: 0}
+    - {fileID: 0}
+    _enemySize: 0
+    _specialKodamas: []
+    _spawnInterval: 0
+  _enemies:
+  - _position: {x: 0, y: 0, z: 0}
+    _rotationY: 0
+    _enemy: {fileID: 0}
+    _size: 0
   _walkableGrid:
     _width: 32
     _depth: 32

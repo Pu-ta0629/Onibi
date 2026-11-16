@@ -2,6 +2,7 @@ using UnityEngine;
 
 public class StageGroundProvider
 {
+
     private static StageGroundBuilder _builder;
     
     // ステージの読み込み時に1回呼ぶ
@@ -11,8 +12,10 @@ public class StageGroundProvider
         if (stage == null) return;
 
         _builder = new StageGroundBuilder();
-        _builder.Build(stage.WalkableGrid, new StageTerrainColors(), HideFlags.None);
+        _builder.Build(stage.WalkableGrid, new StageTerrainColors(), HideFlags.None,StageLayers.GetLayer);
     }
+
+    
 
     // ステージの終了時に1回呼ぶ
     public static void Unload()

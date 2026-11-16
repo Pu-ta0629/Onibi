@@ -17,6 +17,7 @@ public class FireStateBinder : IDisposable
         _lightManager = lightManager;
 
         _typeManager.OnFireStateChanged += HandleFireStateChanged;
+        _typeManager.OnFollowTargetChanged += HandleFollowTargetChanged;
     }
 
     /// <summary>
@@ -25,6 +26,7 @@ public class FireStateBinder : IDisposable
     public void Dispose()
     {
         _typeManager.OnFireStateChanged -= HandleFireStateChanged;
+        _typeManager.OnFollowTargetChanged -= HandleFollowTargetChanged;
     }
 
     private void HandleFireStateChanged(FireColor color, FireState state)
@@ -33,6 +35,23 @@ public class FireStateBinder : IDisposable
         {
             fire.ApplyState(state);
             _lightManager.SetBrightness(color, state.Brightness);
+        }
+        RefreshLit();
+    }
+
+    private void HandleFollowTargetChanged(FireColor color) => RefreshLit();
+
+    // 選択中 かつ 追従先 の火だけ点灯する
+    private void RefreshLit()
+    {
+        FireColor selected = _typeManager.SelectedColor;
+        FireColor follow = _typeManager.FollowTarget;
+
+        for (int i = 0; i < _registry.all.Count; i++)
+        {
+            FireColor color = _registry.all[i].Color;
+            bool isLit = color == selected || color == follow;
+            _lightManager.SetLit(color,isLit);
         }
     }
 }
