@@ -1,0 +1,18 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8172bd9b12c25a940a88e959943bb676, type: 3}
+  m_Name: FireEffectCatalog
+  m_EditorClassIdentifier: Assembly-CSharp::FireEffectCatalog
+  _colors:
+  - {fileID: 11400000, guid: 19b3648fa7d50b8438f2935fa74c5712, type: 2}
+  - {fileID: 11400000, guid: 18cf4dc5d082da94b948e067d24a41b8, type: 2}
+  - {fileID: 11400000, guid: 27329f1665e84e1469f9fd9984f80847, type: 2}

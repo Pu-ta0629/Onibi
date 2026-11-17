@@ -20,7 +20,7 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: Red_PixelArtShader
+  m_Name: Kagaribi_PixelArtShader
   m_Shader: {fileID: -6465566751694194690, guid: 4078d2c06e0f5ec4ea77ca03676fed8c, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0

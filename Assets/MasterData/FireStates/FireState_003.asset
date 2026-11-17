@@ -1,0 +1,77 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e7ab89715e1a38447aba52820ab03f3b, type: 3}
+  m_Name: FireState_003
+  m_EditorClassIdentifier: Assembly-CSharp::FireStateData
+  _id: 3
+  _fireKind: 2
+  _rank: 3
+  _moveSpeed: 5
+  _followSpeed: 10
+  _lightRadius: 5
+  _navMeshSampleDistance: 2
+  _destinationUpdateDistance: 0.3
+  _groundMask:
+    serializedVersion: 2
+    m_Bits: 3904
+  _orbitRadius: 3
+  _orbitSpeed: 60
+  _initialBrightness: 2
+  _effectPrefab: {fileID: 7945986024432464922, guid: 22d4d4ca28136f6468d835930e8f63f7, type: 3}
+  _kodamaCount: 100
+  _requiredSpecial: 0
+  _normalCost: 0
+  _specialCost: 0
+  _normalCooldown: 0
+  _specialCooldown: 0
+  _burnPotency: 1
+  _burnCount: 1
+  _colliders:
+    _colliders:
+    - _key: hit
+      _role: 0
+      _shape:
+        _kind: 0
+        _radius: 0.5
+        _length: 0
+        _width: 0
+        _angle: 0
+        _innerRange: 0
+      _offset: {x: 0, y: 0}
+      _yawOffset: 0
+      _targets: 0
+    - _key: normal
+      _role: 1
+      _shape:
+        _kind: 2
+        _radius: 2.31
+        _length: 2.31
+        _width: 2.31
+        _angle: 0
+        _innerRange: 2.31
+      _offset: {x: 0, y: 0}
+      _yawOffset: 0
+      _targets: 4
+    - _key: search
+      _role: 2
+      _shape:
+        _kind: 0
+        _radius: 5
+        _length: 0
+        _width: 0
+        _angle: 0
+        _innerRange: 0
+      _offset: {x: 0, y: 0}
+      _yawOffset: 0
+      _targets: 4
+  _normalAttackKey: normal
+  _specialAttackKey: special

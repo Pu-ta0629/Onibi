@@ -9,6 +9,7 @@ using UnityEngine.AI;
 /// ・NavMesh専用の追従（FollowOnNavMesh）：NavMeshがない間は、直進に切り替えず、動かない（迷子など）
 ///   追従先がNavMeshの外にあるときは、広めに探した最寄りのNavMesh上の点へ向かう
 /// NavMeshAgentは普段は無効にしておき、追従できるときだけ有効にする
+/// 火は進化・退化で移動速度などが変わるので、Configureで設定を入れ替えられる
 /// </summary>
 public class Mover
 {
@@ -23,17 +24,19 @@ public class Mover
     [Header("Read Only")]
     private readonly NavMeshAgent _agent;
     private readonly Transform _transform;
-    private readonly LayerMask _groundMask;
-    private readonly float _speed;
     private readonly float _hoverHeight;      //地面から軸までの高さ（AgentのBaseOffset）
-    private readonly float _sampleDistance;   //この距離の中にNavMeshがあれば「近くにある」とみなす
-    private readonly float _repathDistance;
     private readonly MovementProfile? _profile;   //if(_profile == null)  {AgentTypeはそのまま}
+
+    //進化・退化で入れ替わる値（Configureで変える）
+    private LayerMask _groundMask;
+    private float _speed;
+    private float _followSpeed;      //Followで追うときの速さ（周回など直進の速さ_speedとは別）
+    private float _sampleDistance;   //この距離の中にNavMeshがあれば「近くにある」とみなす
+    private float _repathDistance;
 
     private Vector3 _lastPoint;       //追従の最後の目的地
     private Vector3 _straightPoint;   //対象有りの直進の目標
     private float _nextTryTime;       //次にNavMeshを探してよい時刻
-    private  float _followSpeed;               //Follow系(Agent)で使う速度
     private int _typeId = int.MinValue;   // プロファイルから決めたAgentTypeID(Agentの読み取り値に頼らない)
     private bool _hasDestination;
     private bool _canMove = true;
@@ -50,20 +53,31 @@ public class Mover
     /// <param name="sampleDistance">NavMeshを探す範囲</param>
     /// <param name="repathDistance">追従先がこの距離動いたら経路を更新する</param>
     /// <param name="profile">nullならそのままのType</param>>
-    public Mover(NavMeshAgent agent, float speed, LayerMask groundMask, float sampleDistance, float repathDistance, MovementProfile? profile = null)
+    /// <param name="followSpeed">追従（Follow）の速度。0以下ならspeedと同じ</param>
+    public Mover(NavMeshAgent agent, float speed, LayerMask groundMask, float sampleDistance, float repathDistance, MovementProfile? profile = null, float followSpeed = 0f)
     {
         _profile = profile;
         _agent = agent;
         _transform = agent.transform;
-        _speed = speed;
-        _followSpeed = speed;
-        _groundMask = groundMask;
         _hoverHeight = agent.baseOffset;
+
+        Configure(speed, groundMask, sampleDistance, repathDistance, followSpeed);
+        _agent.enabled = false;   //追従できるときだけ有効にする（NavMesh外での有効化エラーを防ぐ）
+    }
+
+    /// <summary>
+    /// 移動の設定を入れ替える（火の進化・退化で、FireStateDataが変わったときに呼ぶ）
+    /// 今の経路は、新しい設定で引き直すために捨てる
+    /// </summary>
+    public void Configure(float speed, LayerMask groundMask, float sampleDistance, float repathDistance, float followSpeed = 0f)
+    {
+        _speed = speed;
+        _followSpeed = followSpeed > 0f ? followSpeed : speed;
+        _groundMask = groundMask;
         _sampleDistance = sampleDistance;
         _repathDistance = repathDistance;
-
-        _agent.speed = speed;
-        _agent.enabled = false;   //追従できるときだけ有効にする（NavMesh外での有効化エラーを防ぐ）
+        _agent.speed = _followSpeed;   //Agentを使うのはFollowのときだけ。直進はAgentを止めて_speedで動かす
+        _hasDestination = false;
     }
     #endregion
 
@@ -81,6 +95,12 @@ public class Mover
     /// <summary>指定座標へ1フレーム分向かう（毎フレーム呼ぶ）。着いたらfalse</summary>
     public bool MoveTowards(Vector3 point)
     {
+        return MoveTowards(point, _speed);
+    }
+
+    //速さを指定して、指定座標へ1フレーム分向かう（Followの直進フォールバックは、追従の速さで動かす）
+    private bool MoveTowards(Vector3 point, float speed)
+    {
         Vector3 delta = point - _transform.position;
         delta.y = 0f;
 
@@ -90,8 +110,8 @@ public class Mover
             return false;
         }
 
-        Step(delta / distance, distance);
-        return distance > _speed * Time.deltaTime;
+        Step(delta / distance, distance, speed);
+        return distance > speed * Time.deltaTime;
     }
 
     /// <summary>対象有りの直進の開始。呼んだ瞬間の対象の位置を目標にする（以降、対象が動いても目標は変えない）</summary>
@@ -108,13 +128,6 @@ public class Mover
     #endregion
 
     #region Follow
-    /// <summary>Follow(navMeshAgent)で使う速度を変える。直進系の速度には影響しない</summary>
-    /// <param name="speed">Follow Speed</param>
-    public void SetFollowSpeed(float speed)
-    {
-        _followSpeed = speed;
-        _agent.speed = speed;
-    }
     /// <summary>
     /// 対象の追従（毎フレーム呼んでよい）。NavMeshで向かえていればtrue
     /// 近くにNavMeshがない間は、Agentを使わず直進で向かい、falseを返す
@@ -123,7 +136,7 @@ public class Mover
     {
         if (!TryEnableAgent())
         {
-            MoveTowards(point);
+            MoveTowards(point, _followSpeed);   //近くにNavMeshがない間も、追従の速さで向かう
             return false;
         }
 
@@ -219,6 +232,11 @@ public class Mover
     //向きと最大距離を指定して1フレーム分進む。Agentを止めて、位置を直接動かす
     private void Step(Vector3 direction, float maxDistance)
     {
+        Step(direction, maxDistance, _speed);
+    }
+
+    private void Step(Vector3 direction, float maxDistance, float speed)
+    {
         if (!_canMove)
         {
             return;
@@ -226,7 +244,7 @@ public class Mover
 
         SetAgentEnabled(false);
 
-        Vector3 position = _transform.position + direction * Mathf.Min(_speed * Time.deltaTime, maxDistance);
+        Vector3 position = _transform.position + direction * Mathf.Min(speed * Time.deltaTime, maxDistance);
         position.y = GetGroundY(position);
         _transform.position = position;
     }
@@ -243,7 +261,7 @@ public class Mover
     //近くにNavMeshがあればAgentを有効にして乗せる。なければfalse（探し直しは一定間隔をあける）
     private bool TryEnableAgent()
     {
-        if(!EnsureAgentType()) return false;
+        if (!EnsureAgentType()) return false;
         if (_agent.enabled && _agent.isOnNavMesh)
         {
             return true;
@@ -289,7 +307,7 @@ public class Mover
 
     private bool TrySamplePosition(Vector3 point, out Vector3 result, float maxDistance)
     {
-        if(!EnsureAgentType())
+        if (!EnsureAgentType())
         {
             result = point;
             return false;
@@ -308,14 +326,14 @@ public class Mover
     //ステージ読み込み後に、Agentの種類を、プロファイルのNavMeshに合わせる(ステージがかわったら合わせなおす)
     private bool EnsureAgentType()
     {
-        if(!_profile.HasValue) return true;
+        if (!_profile.HasValue) return true;
 
         var set = StageNavMeshProvider.Current;
         if (set == null) return false;
         if (ReferenceEquals(set, _typeSet)) return true;
         if (!NavAgentProfile.ConfigureType(_agent, set, _profile.Value)) return false;
 
-        set.TryGetAgentTypeId(_profile.Value,out int typeId);
+        set.TryGetAgentTypeId(_profile.Value, out int typeId);
         _typeId = typeId;
         _typeSet = set;
         _hasDestination = false;

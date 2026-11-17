@@ -7,19 +7,22 @@ using UnityEngine;
 /// 体の位置の更新・索敵・突進の開始と進行・木霊の消費・クールタイムを担当する
 /// 攻撃対象は、迷子の索敵結果と火自身の索敵結果を合わせた中で、一番重みが大きい敵
 /// 移動はMoverに任せる。FireControllerが生成して、毎フレームTickを呼ぶ
+/// 進化・退化でコライダーが変わるので、ChangeDataでFireStateDataとHitDetectorを入れ替える
 /// </summary>
 public class FireDashAttack : IDisposable
 {
     private readonly List<HitInfo> _hits = new List<HitInfo>();
     private readonly AttackProcessor _attackProcessor = new AttackProcessor();
+    private readonly object _owner;
     private readonly Transform _transform;
-    private readonly FireStateData _data;
     private readonly Mover _mover;
     private readonly KodamaStock _kodama;
-    private readonly HitDetector _hit;
-    private readonly FireTargetSearch _targetSearch;
+    private readonly HitWorld _world;
+    private readonly LostChildController _lostChild;
 
-  //  private readonly AttackHit _burnHit;
+    private FireStateData _data;
+    private HitDetector _hit;
+    private FireTargetSearch _targetSearch;
 
     private float _cooldown;      //次の突進までの残り時間（秒）
     private float _facingYaw;     //突進の向き（度）。攻撃のコライダーの向きに使う
@@ -35,17 +38,17 @@ public class FireDashAttack : IDisposable
     /// <param name="world">全員で共有するHitWorld</param>
     /// <param name="lostChild">索敵結果を借りる迷子</param>
     /// <param name="kodama">突進で消費する木霊</param>
-    public FireDashAttack(object owner, Transform transform, FireStateData data, Mover mover, HitWorld world, LostChildController lostChild, KodamaStock kodama/*,FireColor color*/)
+    public FireDashAttack(object owner, Transform transform, FireStateData data, Mover mover, HitWorld world, LostChildController lostChild, KodamaStock kodama)
     {
+        _owner = owner;
         _transform = transform;
         _data = data;
         _mover = mover;
+        _world = world;
+        _lostChild = lostChild;
         _kodama = kodama;
 
-        _hit = new HitDetector(world, owner, Faction.Fire, data.Colliders);
-        _targetSearch = new FireTargetSearch(new WeightedSearch<EnemyController>(_hit), lostChild);
-
-      //  _burnHit = new AttackHit(owner, new BurnApplyEffect(color, data.BurnCount, data.BurnPotency));
+        CreateCombat();
     }
 
     #region Public
@@ -77,6 +80,22 @@ public class FireDashAttack : IDisposable
     }
 
     /// <summary>
+    /// 進化・退化で、データとコライダーを入れ替える。突進中なら中断して、次のTickから新しいコライダーで判定する
+    /// </summary>
+    public void ChangeData(FireStateData data)
+    {
+        if (data == null || data == _data)
+        {
+            return;
+        }
+
+        _hit.Dispose();
+        _data = data;
+        _isDashing = false;
+        CreateCombat();
+    }
+
+    /// <summary>
     /// 当たり判定を外す（火が消えるときに必ず呼ぶ）
     /// </summary>
     public void Dispose()
@@ -86,6 +105,13 @@ public class FireDashAttack : IDisposable
     #endregion
 
     #region Private
+    //今のデータのコライダーで、当たり判定と索敵を作る
+    private void CreateCombat()
+    {
+        _hit = new HitDetector(_world, _owner, Faction.Fire, _data.Colliders);
+        _targetSearch = new FireTargetSearch(new WeightedSearch<EnemyController>(_hit), _lostChild);
+    }
+
     //攻撃対象がいて、木霊が足りるなら、突進を始める
     private void TryBeginDash()
     {
@@ -123,10 +149,10 @@ public class FireDashAttack : IDisposable
         bool isMoving = _mover.MoveStraightToTarget();
         _hit.SetTransform(_transform.position, _facingYaw);
 
-       /* if (_hit.Detect<EnemyController>(_data.NormalAttackKey, _hits))
+        if (_hit.Detect<EnemyController>(_data.NormalAttackKey, _hits))
         {
-            _attackProcessor.Apply(_hits, _burnHit);
-        }*/
+            _attackProcessor.Apply(_hits, _data.BurnPotency);
+        }
 
         if (!isMoving)
         {
