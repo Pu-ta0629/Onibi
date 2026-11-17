@@ -15,7 +15,7 @@ public class StageGenerator : MonoBehaviour
     [Tooltip("地形（フィールド）の生成")]
     [SerializeField] private FieldSpawner _fieldSpawner;
     [Tooltip("敵などの生成")]
-    [SerializeField] private EntitySpawner _entitySpawner;
+    //[SerializeField] private EntitySpawner _entitySpawner;
 
     private StageContext _context;
 
@@ -27,7 +27,7 @@ public class StageGenerator : MonoBehaviour
     /// </summary>
     public void Initialize(HitWorld world, LostChildController lostChild, Camera mainCamera)
     {
-        if (world == null || lostChild == null || mainCamera == null || _fieldSpawner == null || _entitySpawner == null)
+        if (world == null || lostChild == null || mainCamera == null || _fieldSpawner == null/* || _entitySpawner == null*/)
         {
             Debug.LogError("[StageGenerator] Initialize : Reference is Null!!! ");
             return;
@@ -44,7 +44,7 @@ public class StageGenerator : MonoBehaviour
         //地形が先、迷子はNavMeshができてから置く、その後に敵などを出す
         _fieldSpawner.Initialize(_context);
         SpawnLostChild();
-        _entitySpawner.Initialize(_context);
+       // _entitySpawner.Initialize(_context);
     }
 
     //迷子をStageDataのStartの位置へ置く（Stage未設定のときは、Scene上の位置のまま）

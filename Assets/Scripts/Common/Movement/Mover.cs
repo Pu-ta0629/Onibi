@@ -184,6 +184,18 @@ public class Mover
             _agent.isStopped = !canMove;
         }
     }
+
+    public bool TryFindSpawnPosition(Vector3 point, out Vector3 result)
+    {
+        if (TrySamplePosition(point, out Vector3 onNavMesh))
+        {
+            result = onNavMesh + Vector3.up * _hoverHeight;
+            return true;
+        }
+
+        result = point;
+        return false;
+    }
     #endregion
 
     #region Debug

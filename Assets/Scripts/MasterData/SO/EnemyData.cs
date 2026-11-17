@@ -42,6 +42,11 @@ public class EnemyData : MasterData
     [Tooltip("種族")]
     [SerializeField] private EnemyTypeData _type;
 
+    [Tooltip("画像")]
+    [SerializeField] private Sprite _sprite;
+
+    [SerializeField] private string _behaviourTypeName;
+
     [Tooltip("HP")]
     [SerializeField] private int _maxHP;
 
@@ -74,6 +79,7 @@ public class EnemyData : MasterData
 
     public string DisplayName => _displayName;
     public EnemyTypeData Type => _type;
+    public Sprite Sprite => _sprite;
     public int MaxHP => _maxHP;
     public int BaseAttack => _baseAttack;
     public float MoveSpeed => _moveSpeed;
