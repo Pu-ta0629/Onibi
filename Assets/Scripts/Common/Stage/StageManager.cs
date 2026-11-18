@@ -5,17 +5,17 @@ using UnityEngine;
 /// 各Spawnerが共通で必要な参照（HitWorld・迷子・カメラ）は、ここでStageContextにまとめて渡す
 /// 生成するものの種類を増やすときは、IStageSpawnerを実装したクラスを足して、ここで呼ぶ
 /// </summary>
-public class StageGenerator : MonoBehaviour
+public class StageManager : MonoBehaviour
 {
     [Header("Stage")]
     [Tooltip("生成するステージ情報格納変数　各SpawnerでStageContext経由で渡す")]
     [SerializeField] private StageData _stage;
 
-    [Header("Spawner")]
+    [Header("SpawnerManager")]
     [Tooltip("地形（フィールド）の生成")]
-    [SerializeField] private FieldSpawner _fieldSpawner;
+    [SerializeField] private FieldSpawnManager _fieldSpawnManager;
     [Tooltip("敵などの生成")]
-    //[SerializeField] private EntitySpawner _entitySpawner;
+    [SerializeField] private EntitySpawnManager _entitySpawnManager;
 
     private StageContext _context;
 
@@ -27,7 +27,7 @@ public class StageGenerator : MonoBehaviour
     /// </summary>
     public void Initialize(HitWorld world, LostChildController lostChild, Camera mainCamera)
     {
-        if (world == null || lostChild == null || mainCamera == null || _fieldSpawner == null/* || _entitySpawner == null*/)
+        if (world == null || lostChild == null || mainCamera == null || _fieldSpawnManager == null || _entitySpawnManager == null)
         {
             Debug.LogError("[StageGenerator] Initialize : Reference is Null!!! ");
             return;
@@ -42,11 +42,13 @@ public class StageGenerator : MonoBehaviour
         _context = new StageContext(_stage, world, lostChild, mainCamera, transform);
 
         //地形が先、迷子はNavMeshができてから置く、その後に敵などを出す
-        _fieldSpawner.Initialize(_context);
+        _fieldSpawnManager.Initialize(_context);
         SpawnLostChild();
-       // _entitySpawner.Initialize(_context);
+        _entitySpawnManager.Initialize(_context);
     }
+    #endregion
 
+    #region private
     //迷子をStageDataのStartの位置へ置く（Stage未設定のときは、Scene上の位置のまま）
     private void SpawnLostChild()
     {

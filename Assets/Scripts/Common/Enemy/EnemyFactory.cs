@@ -9,12 +9,10 @@ using UnityEngine.AI;
 /// </summary>
 public class EnemyFactory
 {
-    private readonly EnemyMoveConfig _config;
     private readonly HitWorld _world;
     private readonly Transform _parent;
-    public EnemyFactory(EnemyMoveConfig config,HitWorld world,Transform parent)
+    public EnemyFactory(HitWorld world,Transform parent)
     {
-        _config = config;
         _world = world;
         _parent = parent;
     }
@@ -41,7 +39,7 @@ public class EnemyFactory
         EnemyController enemy = obj.AddComponent<EnemyController>();
 
         NavMeshAgent agent = obj.GetComponent<NavMeshAgent>();
-        enemy.Initialize(agent, data,size, _config, _world);
+        enemy.Initialize(agent, data,size, _world);
 
         return enemy;
     }

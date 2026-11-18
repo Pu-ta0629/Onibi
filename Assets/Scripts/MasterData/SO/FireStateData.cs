@@ -13,10 +13,11 @@ public class FireStateData : MasterData
     [SerializeField] private int _rank;
 
     [Tooltip("移動速度")]
-    [SerializeField] private float _moveSpeed;
+    [SerializeField] private float _moveSpeed = 5f;
 
     [Tooltip("マウス追従速度(ラジアルで選択中の火が、マウスを追う速さ)。0以下なら、移動速度と同じになる")]
-    [SerializeField] private float _followSpeed;
+    [SerializeField] private float _followSpeed = 10;
+    [SerializeField, Min(0)] private float _acceleration = 100f; 
 
     [Tooltip("明るさ(自身を中心に照らせる範囲。(半径))")]
     [SerializeField] private float _lightRadius;
@@ -86,6 +87,7 @@ public class FireStateData : MasterData
     public int Rank => _rank;
     public float MoveSpeed => _moveSpeed;
     public float FollowSpeed => _followSpeed > 0f ? _followSpeed : _moveSpeed;
+    public float Acceleration => _acceleration;
     public float LightRadius => _lightRadius;
     public float NavMeshSampleDistance => _navMeshSampleDistance;
     public float DestinationUpdateDistance => _destinationUpdateDistance;

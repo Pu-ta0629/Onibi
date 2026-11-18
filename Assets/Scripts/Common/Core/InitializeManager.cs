@@ -12,7 +12,8 @@ public class InitializeManager : MonoBehaviour
     [SerializeField] private InputManager _inputManager;
     [SerializeField] private LostChildController _lostChildController;
     [SerializeField] private FireManager _fireManager;
-    [SerializeField] private StageGenerator _stageGenerator;
+    [SerializeField] private StageManager _stageManager;
+    
 
     [Header("Battle")]
     [Tooltip("ステージ開始時の木霊の量。火が突進するたびに消費する")]
@@ -27,7 +28,7 @@ public class InitializeManager : MonoBehaviour
     #region UnityLifeCycle
     private void Awake()
     {
-        if (_inputManager == null || _lostChildController == null || _fireManager == null || _stageGenerator == null)
+        if (_inputManager == null || _lostChildController == null || _fireManager == null || _stageManager == null)
         {
             Debug.LogError("[InitializeManager] Awake : Reference is Null!!! ");
             return;
@@ -47,15 +48,13 @@ public class InitializeManager : MonoBehaviour
         _hitWorld = new HitWorld();
         _kodamaStock = new KodamaStock(_initialKodama);
 
-        //入力→迷子→火→ステージ（敵など）の順で初期化する（FireManagerは他の参照を使うため、ステージより前）
+        //入力→迷子→ステージ（地形・迷子の配置・敵）→火の順で初期化する
+        //迷子は、ステージ内のSpawnAtで置かれるので、必ずステージより前にInitializeする
+        //（後ろだとSpawnAtが何もせず戻り、迷子がStartに置かれず、敵の追従先がNavMeshの外になる）
         _inputManager.Initialize(mainCamera);
-        Debug.Log("is Ok");
-        _stageGenerator.Initialize(_hitWorld, _lostChildController, mainCamera);
-        Debug.Log("is Ok");
         _lostChildController.Initialize(_hitWorld);
-        Debug.Log("is Ok");
+        _stageManager.Initialize(_hitWorld, _lostChildController, mainCamera);
         _fireManager.Initialize(_typeManager, _inputManager, _lostChildController, mainCamera, _hitWorld, _kodamaStock);
-        Debug.Log("is Ok");
     }
     #endregion
 }

@@ -231,6 +231,12 @@ public class FireManager : MonoBehaviour
         _morph.MarkDirty();
         return true;
     }
+
+    public bool TryGetFire(FireColor color, out FireController fire)
+    {
+        fire = null;
+        return _isInitialized && _registry.TryGet(color, out fire);
+    }
     #endregion
 
     #region UnityLifeCycle

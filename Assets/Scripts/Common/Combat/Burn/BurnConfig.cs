@@ -22,7 +22,7 @@ public class BurnConfig
     {
         Cooldown = Mathf.Max(MinCooldown, cooldown);
         MaxCount = Mathf.Max(1, maxCount);
-        maxCount = Mathf.Max(1, maxCount);
+        MaxPotency = Mathf.Max(1, maxPotency);
     }
 
 }

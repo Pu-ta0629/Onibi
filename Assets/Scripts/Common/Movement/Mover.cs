@@ -31,6 +31,7 @@ public class Mover
     private LayerMask _groundMask;
     private float _speed;
     private float _followSpeed;      //Followで追うときの速さ（周回など直進の速さ_speedとは別）
+    private float _acceleration;
     private float _sampleDistance;   //この距離の中にNavMeshがあれば「近くにある」とみなす
     private float _repathDistance;
 
@@ -54,14 +55,14 @@ public class Mover
     /// <param name="repathDistance">追従先がこの距離動いたら経路を更新する</param>
     /// <param name="profile">nullならそのままのType</param>>
     /// <param name="followSpeed">追従（Follow）の速度。0以下ならspeedと同じ</param>
-    public Mover(NavMeshAgent agent, float speed, LayerMask groundMask, float sampleDistance, float repathDistance, MovementProfile? profile = null, float followSpeed = 0f)
+    public Mover(NavMeshAgent agent, float speed, LayerMask groundMask, float sampleDistance, float repathDistance, MovementProfile? profile = null, float followSpeed = 0f, float acceleration = 0f)
     {
         _profile = profile;
         _agent = agent;
         _transform = agent.transform;
         _hoverHeight = agent.baseOffset;
 
-        Configure(speed, groundMask, sampleDistance, repathDistance, followSpeed);
+        Configure(speed, groundMask, sampleDistance, repathDistance, followSpeed, acceleration);
         _agent.enabled = false;   //追従できるときだけ有効にする（NavMesh外での有効化エラーを防ぐ）
     }
 
@@ -69,14 +70,16 @@ public class Mover
     /// 移動の設定を入れ替える（火の進化・退化で、FireStateDataが変わったときに呼ぶ）
     /// 今の経路は、新しい設定で引き直すために捨てる
     /// </summary>
-    public void Configure(float speed, LayerMask groundMask, float sampleDistance, float repathDistance, float followSpeed = 0f)
+    public void Configure(float speed, LayerMask groundMask, float sampleDistance, float repathDistance, float followSpeed = 0f, float acceleration = 0f)
     {
         _speed = speed;
         _followSpeed = followSpeed > 0f ? followSpeed : speed;
+        _acceleration = acceleration;
         _groundMask = groundMask;
         _sampleDistance = sampleDistance;
         _repathDistance = repathDistance;
         _agent.speed = _followSpeed;   //Agentを使うのはFollowのときだけ。直進はAgentを止めて_speedで動かす
+        _agent.acceleration = _acceleration;
         _hasDestination = false;
     }
     #endregion
@@ -141,6 +144,23 @@ public class Mover
         }
 
         return SetAgentDestination(point, _sampleDistance);
+    }
+
+    private const float NearestSearchDistance = 100f;   //自分のNavMeshの上で、追従先に一番近い点を探す範囲
+
+    /// <summary>
+    /// 追従先が自分のNavMeshの外にあっても、自分のNavMesh上で追従先に一番近い点まで向かう（毎フレーム呼んでよい）
+    /// 自分の近くにNavMeshがない間は、Followと同じく直進で向かい、falseを返す
+    /// </summary>
+    public bool FollowNearest(Vector3 point)
+    {
+        if (!TryEnableAgent())
+        {
+            MoveTowards(point, _followSpeed);
+            return false;
+        }
+
+        return SetAgentDestination(point, NearestSearchDistance);
     }
 
     /// <summary>

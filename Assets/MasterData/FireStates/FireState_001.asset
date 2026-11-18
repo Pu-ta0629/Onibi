@@ -61,13 +61,13 @@ MonoBehaviour:
       _offset: {x: 0, y: 0}
       _yawOffset: 0
       _targets: 4
-    - _key: Special
+    - _key: special
       _role: 1
       _shape:
         _kind: 2
         _radius: 2.31
-        _length: 0
-        _width: 0
+        _length: 2.31
+        _width: 2.31
         _angle: 0
         _innerRange: 2.31
       _offset: {x: 0, y: 0}

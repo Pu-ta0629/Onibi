@@ -255,7 +255,7 @@ public class FireController : MonoBehaviour
         }
 
         _data = data;
-        _mover.Configure(data.MoveSpeed, data.GroundMask, data.NavMeshSampleDistance, data.DestinationUpdateDistance, data.FollowSpeed);
+        _mover.Configure(data.MoveSpeed, data.GroundMask, data.NavMeshSampleDistance, data.DestinationUpdateDistance, data.FollowSpeed, data.Acceleration);
         _dash?.ChangeData(data);
         _effect?.Apply(data);
     }

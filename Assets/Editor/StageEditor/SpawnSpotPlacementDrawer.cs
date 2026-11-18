@@ -13,6 +13,7 @@ public class SpawnSpotPlacementDrawer : PropertyDrawer
         SerializedProperty kindProp = property.FindPropertyRelative(SpawnSpotPlacement.KindField);
 
         // 常に表示する項目
+        root.Add(new PropertyField(property.FindPropertyRelative(SpawnSpotPlacement.IdField))); ;
         root.Add(new PropertyField(kindProp));
         root.Add(new PropertyField(property.FindPropertyRelative(PlacementData.PositionField)));
         root.Add(new PropertyField(property.FindPropertyRelative(RadiusPlacement.RadiusField)));

@@ -85,8 +85,8 @@ public class EnemyCount
 [System.Serializable]
 public class SpawnSpotPlacement : RadiusPlacement
 {
-    [SerializeField] private int _id;
 
+    [SerializeField] private int _id;
     [SerializeField] private SpawnKind _kind = SpawnKind.Kodama;
 
     [SerializeField] private List<EnemyCount> _enemyList = new();
@@ -171,6 +171,7 @@ public class StageData : ScriptableObject
     [SerializeField] List<EnemyPlacement> _enemies = new();
     [SerializeField] WalkableGrid _walkableGrid = new();
 
+
     public int StageId => _stageId;
     public string StageName => _stageName;
 
@@ -188,6 +189,7 @@ public class StageData : ScriptableObject
     public const string SpawnSpotsField = nameof(_spawnSpots);
     public const string EnemiesField = nameof(_enemies);
     public const string WalkableGridField = nameof(_walkableGrid);
+
 
 
 }

@@ -5,7 +5,7 @@ using UnityEngine;
 /// ステージの地形（NavMesh・地面）とゴールを、StageDataから生成するクラス
 /// StageDataはStageGeneratorからStageContext経由で受け取る
 /// </summary>
-public class FieldSpawner : MonoBehaviour, IStageSpawner
+public class FieldSpawnManager : MonoBehaviour, IStageSpawner
 {
     [Header("Goal")]
     [Tooltip("ゴールのPrefab（直径1の見た目を想定。StageDataのGoalごとに生成する）")]
