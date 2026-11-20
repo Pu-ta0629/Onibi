@@ -1,11 +1,4 @@
-using PlasticGui.WorkspaceWindow.Locks;
-using System.CodeDom;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
-using TMPro;
-using Unity.Plastic.Antlr3.Runtime;
-using Unity.VisualScripting;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 public readonly struct TestFrame

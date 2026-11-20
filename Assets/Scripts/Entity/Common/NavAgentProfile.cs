@@ -1,5 +1,4 @@
-using Mono.Cecil;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.AI;
 
 public static class NavAgentProfile

@@ -1,27 +1,28 @@
-using System.Runtime.InteropServices.WindowsRuntime;
+ï»¿using System.Runtime.InteropServices.WindowsRuntime;
 using Unity.Cinemachine;
 using Unity.VisualScripting;
 using UnityEngine;
 
 /// <summary>
-/// ƒJƒƒ‰‚Ì’Ç]æ‚ğŠÇ—‚·‚é(MonoBehaviour)B–Àq‚ÆAƒ‰ƒWƒAƒ‹‚Å‘I‘ğ’†‚Ì‰Î‚ğTargetGroup‚É‚Ü‚Æ‚ßA
-/// CinemaChineCamera‚Í‚»‚ÌTargetGroup‚ğFollow‚·‚é
-/// ƒfƒbƒhƒ][ƒ“Eƒn[ƒhƒŠƒ~ƒbƒg‚ÍCinemaChineCamera‚ÌPosition Composer(Inspecter‚Åİ’è‚¢‚·‚é)
-/// ‰Î‚ª‘I‘ğ‚³‚ê‚Ä‚¢‚È‚¢ŠÔ‚ÍA–Àq‚¾‚¯‚ğ‚¨‚¤B‘I‘ğ‚ªØ‚è‘Ö‚í‚Á‚½‚çA’Ç]æ‚Ì‰Î‚à“ü‚ê‘Ö‚¦‚é
+/// ã‚«ãƒ¡ãƒ©ã®è¿½å¾“å…ˆã‚’ç®¡ç†ã™ã‚‹(MonoBehaviour)ã€‚è¿·å­ã¨ã€ãƒ©ã‚¸ã‚¢ãƒ«ã§é¸æŠä¸­ã®ç«ã‚’TargetGroupã«ã¾ã¨ã‚ã€
+/// CinemaChineCameraã¯ãã®TargetGroupã‚’Followã™ã‚‹
+/// ãƒ‡ãƒƒãƒ‰ã‚¾ãƒ¼ãƒ³ãƒ»ãƒãƒ¼ãƒ‰ãƒªãƒŸãƒƒãƒˆã¯CinemaChineCameraã®Position Composer(Inspecterã§è¨­å®šã„ã™ã‚‹)
+/// ç«ãŒé¸æŠã•ã‚Œã¦ã„ãªã„é–“ã¯ã€è¿·å­ã ã‘ã‚’ãŠã†ã€‚é¸æŠãŒåˆ‡ã‚Šæ›¿ã‚ã£ãŸã‚‰ã€è¿½å¾“å…ˆã®ç«ã‚‚å…¥ã‚Œæ›¿ãˆã‚‹
 /// </summary>
 public class CameraManager : MonoBehaviour
 {
-    [Header("Cinemachine")]
+    [Header("Camera")]
+    [SerializeField] private Camera _mainCamera; 
     [SerializeField] private CinemachineCamera _cinemachineCamera;
-    [Tooltip("’Ç]æ‚ğ‚Ü‚Æ‚ß‚é targetGroupi•Ê‚ÌGameObject‚É‚Â‚¯‚éj")]
+    [Tooltip("è¿½å¾“å…ˆã‚’ã¾ã¨ã‚ã‚‹ targetGroupï¼ˆåˆ¥ã®GameObjectã«ã¤ã‘ã‚‹ï¼‰")]
     [SerializeField] private CinemachineTargetGroup _targetGroup;
 
     [Header("Weight")]
-    [Tooltip("–Àq‚Ìd‚İB‘å‚«‚¢‚Ù‚ÇA‰æ–Ê‚Ì’†S‚É–Àq‚ª‚æ‚é")]
+    [Tooltip("è¿·å­ã®é‡ã¿ã€‚å¤§ãã„ã»ã©ã€ç”»é¢ã®ä¸­å¿ƒã«è¿·å­ãŒã‚ˆã‚‹")]
     [SerializeField, Range(0.1f, 10f)] private float _lostChildWeight = 1f;
-    [Tooltip("‘I‘ğ’†‚Ì‰Î‚Ìd‚İ")]
+    [Tooltip("é¸æŠä¸­ã®ç«ã®é‡ã¿")]
     [SerializeField, Range(0.1f, 10f)] private float _fireWeight = 1f;
-    [Tooltip("TargetGroupã‚Ì”¼ŒaiGroup@Framing‚ğg‚¤‚Æ‚«‚Ì—]”’j")]
+    [Tooltip("TargetGroupä¸Šã®åŠå¾„ï¼ˆGroupã€€Framingã‚’ä½¿ã†ã¨ãã®ä½™ç™½ï¼‰")]
     [SerializeField, Range(0.1f, 10f)] private float _memberRadius = 1f;
 
     private TypeManager _typeManager;
@@ -30,9 +31,11 @@ public class CameraManager : MonoBehaviour
     private Transform _currentFire;
     private bool _isInitialized;
 
+    public Camera MainCamera => _mainCamera;
+
     #region Initialize
     /// <summary>
-    /// InitializeManager‚©‚çˆê“x‚¾‚¯ŒÄ‚ÔBFireManager.Initialize‚ÌŒã‚ÉŒÄ‚Ôi‘I‘ğ’†‚Ì‰Î‚ªŒˆ‚Ü‚Á‚Ä‚¢‚é‚½‚ßj
+    /// InitializeManagerã‹ã‚‰ä¸€åº¦ã ã‘å‘¼ã¶ã€‚FireManager.Initializeã®å¾Œã«å‘¼ã¶ï¼ˆé¸æŠä¸­ã®ç«ãŒæ±ºã¾ã£ã¦ã„ã‚‹ãŸã‚ï¼‰
     /// </summary>
     public void Initialize(TypeManager typeManager, FireManager fireManager, LostChildController lostChild)
     {

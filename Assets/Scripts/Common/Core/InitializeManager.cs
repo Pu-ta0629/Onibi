@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 /// <summary>
 /// 各Managerの生成・初期化の呼び出しと、参照の配布を担当する
@@ -8,11 +8,11 @@ using UnityEngine;
 public class InitializeManager : MonoBehaviour
 {
     [Header("SceneReferences")]
-    [SerializeField] private Camera _mainCamera;
     [SerializeField] private InputManager _inputManager;
     [SerializeField] private LostChildController _lostChildController;
-    [SerializeField] private FireManager _fireManager;
     [SerializeField] private StageManager _stageManager;
+    [SerializeField] private FireManager _fireManager;
+    [SerializeField] private CameraManager _cameraManager;
 
 
     [Header("Battle")]
@@ -35,7 +35,7 @@ public class InitializeManager : MonoBehaviour
         }
 
         //Inspectorで未設定ならCamera.mainを使う。以降はここで決めたカメラを想定
-        Camera mainCamera = _mainCamera != null ? _mainCamera : Camera.main;
+        Camera mainCamera = _cameraManager.MainCamera != null ? _cameraManager.MainCamera : Camera.main;
         if (mainCamera == null)
         {
             Debug.LogError("[InitializeManager] Awake : MainCamera is Null!!! ");
@@ -55,6 +55,7 @@ public class InitializeManager : MonoBehaviour
         _lostChildController.Initialize(_hitWorld);
         _stageManager.Initialize(_hitWorld, _lostChildController, mainCamera);
         _fireManager.Initialize(_typeManager, _inputManager, _lostChildController, mainCamera, _hitWorld, _kodamaStock);
+        _cameraManager.Initialize(_typeManager, _fireManager, _lostChildController);
     }
     #endregion
 }
