@@ -1,4 +1,4 @@
-using UnityEditor;
+﻿using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine.UIElements;
 
@@ -23,6 +23,7 @@ public class SpawnSpotPlacementDrawer : PropertyDrawer
         PropertyField enemySize = new PropertyField(property.FindPropertyRelative(SpawnSpotPlacement.EnemySizeField));
         PropertyField specialKodamas = new PropertyField(property.FindPropertyRelative(SpawnSpotPlacement.SpecialKodamasField));
         PropertyField spawnInterval = new PropertyField(property.FindPropertyRelative(SpawnSpotPlacement.SpawnIntervalField));
+       // PropertyField KodamaData = new PropertyField(property.FindPropertyRelative(SpawnSpotPlacement.))
         root.Add(enemyList);
         root.Add(enemySize);
         root.Add(specialKodamas);

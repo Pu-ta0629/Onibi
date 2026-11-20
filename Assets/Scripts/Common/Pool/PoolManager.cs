@@ -401,7 +401,7 @@ public class PoolManager : MonoBehaviour
 
                 var data = kodama.Data;
                 pool.Return(kodama);
-             //   toucher.CollectKodama(data);
+                toucher.CollectKodama(data);
 
                 if(pool.IsStopped && pool.Stock >= KodamaResumeThreshoId)
                 {

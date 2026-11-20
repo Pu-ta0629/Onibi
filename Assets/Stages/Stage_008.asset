@@ -34,6 +34,7 @@ MonoBehaviour:
     - _enemyData: {fileID: 11400000, guid: 91f1ebfe0b856dd47a1979577ca89db6, type: 2}
       _count: 3
     _enemySize: 0
+    _kodamaData: {fileID: 0}
     _specialKodamas: []
     _spawnInterval: 2
   - _position: {x: 13.5, y: 0, z: 4.5}
@@ -47,8 +48,23 @@ MonoBehaviour:
     - _enemyData: {fileID: 11400000, guid: 4aabda7de63b643488a0eb9210829cfd, type: 2}
       _count: 3
     _enemySize: 0
+    _kodamaData: {fileID: 0}
     _specialKodamas: []
     _spawnInterval: 2
+  - _position: {x: 4.2, y: 0, z: 4.5}
+    _rotationY: 0
+    _radius: 1.74
+    _id: 3
+    _kind: 0
+    _enemyList:
+    - _enemyData: {fileID: 11400000, guid: 91f1ebfe0b856dd47a1979577ca89db6, type: 2}
+      _count: 5
+    - _enemyData: {fileID: 11400000, guid: 4aabda7de63b643488a0eb9210829cfd, type: 2}
+      _count: 3
+    _enemySize: 0
+    _kodamaData: {fileID: 0}
+    _specialKodamas: []
+    _spawnInterval: 3.25
   _enemies:
   - _position: {x: 10.5, y: 0, z: -10.5}
     _rotationY: 0

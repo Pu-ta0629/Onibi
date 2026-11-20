@@ -1,4 +1,4 @@
-using JetBrains.Annotations;
+﻿using JetBrains.Annotations;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -99,6 +99,8 @@ public class SpawnSpotPlacement : RadiusPlacement
     [SerializeField] private List<EnemyCount> _enemyList = new();
     [SerializeField] private SizeClass _enemySize = SizeClass.Medium;
 
+    [SerializeField] private KodamaData _kodamaData;
+
     [SerializeField] private List<SpecialKodamaChance> _specialKodamas = new();
 
     [SerializeField, Min(0.1f)] private float _spawnInterval = 5f;
@@ -106,6 +108,7 @@ public class SpawnSpotPlacement : RadiusPlacement
     public int Id => _id;
     public SpawnKind Kind => _kind;
     public IReadOnlyList<EnemyCount> EnemyList => _enemyList;
+    public KodamaData KodamaDat => _kodamaData;
     public SizeClass EnemySize => _enemySize;
     public IReadOnlyList<SpecialKodamaChance> SpecialKodamas => _specialKodamas;
     public float SpawnInterval => _spawnInterval;
@@ -114,8 +117,10 @@ public class SpawnSpotPlacement : RadiusPlacement
     public const string KindField = nameof(_kind);
     public const string EnemyListField = nameof(_enemyList);
     public const string EnemySizeField = nameof(_enemySize);
+    public const string KodamaDataField = nameof(_kodamaData);
     public const string SpecialKodamasField = nameof(_specialKodamas);
     public const string SpawnIntervalField = nameof(_spawnInterval);
+
 
     
 
