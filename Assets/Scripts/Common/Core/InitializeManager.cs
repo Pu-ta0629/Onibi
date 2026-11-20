@@ -50,7 +50,7 @@ public class InitializeManager : MonoBehaviour
         //入力→迷子→火→ステージ（敵など）の順で初期化する（FireManagerは他の参照を使うため、ステージより前）
         _inputManager.Initialize(mainCamera);
         Debug.Log("is Ok");
-        _stageGenerator.Initialize(_hitWorld, _lostChildController, mainCamera);
+    //    _stageGenerator.Initialize(_hitWorld, _lostChildController, mainCamera);
         Debug.Log("is Ok");
         _lostChildController.Initialize(_hitWorld);
         Debug.Log("is Ok");

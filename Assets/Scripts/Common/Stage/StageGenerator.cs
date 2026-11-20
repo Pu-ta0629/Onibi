@@ -5,9 +5,59 @@ using UnityEngine;
 /// 各Spawnerが共通で必要な参照（HitWorld・迷子・カメラ）は、ここでStageContextにまとめて渡す
 /// 生成するものの種類を増やすときは、IStageSpawnerを実装したクラスを足して、ここで呼ぶ
 /// </summary>
-public class StageGenerator : MonoBehaviour
+public class StageGenerator
 {
-    [Header("Stage")]
+    private HitWorld _hitWorld;
+    private Camera _mainCamera;
+    private StageContext _context;
+    private FieldSpawnManager _fieldSpawnManager;
+    private EntitySpawnManager _entitySpawnManager;
+    
+
+    public StageGenerator(
+        HitWorld hitWorld,
+        Camera mainCamera,
+        StageContext context,
+        FieldSpawnManager fieldSpawnManager,
+        EntitySpawnManager entitySpawnManager)
+    {
+        if(hitWorld == null ||mainCamera == null || context == null || fieldSpawnManager == null || entitySpawnManager == null)
+        {
+            Debug.LogError("[StageGenerator] Initialize : Reference is Null!!!!");
+            return;
+        }
+
+        if(mainCamera == null)
+        {
+            Debug.LogWarning("[StageGenerator] Initialize : Reference Error mainCamera is Null!!!");
+            _mainCamera = Camera.main;
+        }
+
+        _hitWorld = hitWorld;
+        _mainCamera = mainCamera;
+        _context = context;
+        _fieldSpawnManager = fieldSpawnManager;
+        _entitySpawnManager = entitySpawnManager;
+    }
+
+    public void Generate()
+    {
+        _fieldSpawnManager.Initialize(_context);
+        SpawnLostChild();
+        _entitySpawnManager.Build(_context.Stage);
+    }
+    private void SpawnLostChild()
+    {
+        if (_context.Stage.Start == null)
+        {
+            Debug.LogError("StageDataにStart情報がありません");
+            return;
+        }
+
+        _context.LostChildController.SpawnAt(_context.Stage.Start.Position);
+    }
+
+   /* [Header("Stage")]
     [Tooltip("生成するステージ情報格納変数　各SpawnerでStageContext経由で渡す")]
     [SerializeField] private StageData _stage;
 
@@ -27,7 +77,7 @@ public class StageGenerator : MonoBehaviour
     /// </summary>
     public void Initialize(HitWorld world, LostChildController lostChild, Camera mainCamera)
     {
-        if (world == null || lostChild == null || mainCamera == null || _fieldSpawner == null/* || _entitySpawner == null*/)
+        if (world == null || lostChild == null || mainCamera == null || _fieldSpawner == null*//* || _entitySpawner == null*//*)
         {
             Debug.LogError("[StageGenerator] Initialize : Reference is Null!!! ");
             return;
@@ -46,16 +96,6 @@ public class StageGenerator : MonoBehaviour
         SpawnLostChild();
        // _entitySpawner.Initialize(_context);
     }
-
+    */
     //迷子をStageDataのStartの位置へ置く（Stage未設定のときは、Scene上の位置のまま）
-    private void SpawnLostChild()
-    {
-        if (_stage == null)
-        {
-            return;
-        }
-
-        _context.LostChildController.SpawnAt(_stage.Start.Position);
-    }
-    #endregion
 }

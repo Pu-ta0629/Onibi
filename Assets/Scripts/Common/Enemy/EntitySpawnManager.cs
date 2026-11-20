@@ -5,7 +5,7 @@ using UnityEngine;
 /// StageDataのEnemyの湧きスポットごとに、一定間隔でPoolManagerへ申請して敵を出す
 /// 在庫切れでfalseが返ったスポットは止まり、PoolManagerの再開通知で動き出す
 /// </summary>
-public class SpawnManager : MonoBehaviour
+public class EntitySpawnManager : MonoBehaviour
 {
     private class SpawnEntry
     {

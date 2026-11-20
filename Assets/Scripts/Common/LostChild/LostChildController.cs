@@ -27,6 +27,9 @@ public class LostChildController : MonoBehaviour, IHittable,IHitTarget
     private WeightedSearch<EnemyController> _search;
     private Health _life;
     private bool _isInitialized;
+
+    private bool _isFrozen;
+
     private NavFollowResult _lastResult = NavFollowResult.Following;
 
     /// <summary>迷子のライフ</summary>
@@ -97,7 +100,7 @@ public class LostChildController : MonoBehaviour, IHittable,IHitTarget
     /// </summary>
     public void Tick(Vector3 targetPosition)
     {
-        if (!_isInitialized)
+        if (!_isInitialized || _isFrozen)
         {
             return;
         }
@@ -148,7 +151,7 @@ public class LostChildController : MonoBehaviour, IHittable,IHitTarget
     /// </summary>
     public void TakeDamage(int damage)
     {
-        if (!_isInitialized || _life.isDead)
+        if (!_isInitialized || _isFrozen || _life.isDead)
         {
             return;
         }
@@ -174,10 +177,21 @@ public class LostChildController : MonoBehaviour, IHittable,IHitTarget
     /// </summary>
     public void SetCanMove(bool canMove)
     {
-        if (_isInitialized)
+        if (_isInitialized && !_isFrozen)
         {
             _mover.SetCanMove(canMove && !_life.isDead);
         }
+    }
+    /// <summary> ステージクリア時に呼ぶ。以降、動かず、ダメージも受けない</summary>
+    public void Freeze()
+    {
+        if(!_isInitialized)
+        {
+            return;
+        }
+
+        _isFrozen = true;
+        _mover.SetCanMove(false);
     }
     #endregion
 
