@@ -1,18 +1,18 @@
-using System;
+ï»¿using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 
 /// <summary>
-/// “G‚ÌŠî’ê‚Æ‚È‚éMonobehaviourBŠe“G‚Í‚±‚ê‚ğŒp³‚·‚é
-/// EnemyFactory‚ªGameObject‚É•t‚¯‚ÄAEnemyData‚©‚çƒf[ƒ^‚ğˆø‚«Œp‚®
-/// ˆÚ“®‚Í–ÀqE‰Î‚Æ‹¤’Ê‚ÌMoverAHP‚ÍHealthA“–‚½‚è”»’è‚ÍHitDetectorAƒ_ƒ[ƒWˆ—‚ÍAttackProcessor‚É”C‚¹‚é
-/// UŒ‚‘ÎÛ‚Í–Àq‚¾‚¯B–Àq‚É‹ß‚Ã‚¢‚½‚ç~‚Ü‚èAAttack1‚ğAttackTimeline‚ÌŠÔ‚Ç‚¨‚è‚Éo‚·
+/// æ•µã®åŸºåº•ã¨ãªã‚‹Monobehaviourã€‚å„æ•µã¯ã“ã‚Œã‚’ç¶™æ‰¿ã™ã‚‹
+/// EnemyFactoryãŒGameObjectã«ä»˜ã‘ã¦ã€EnemyDataã‹ã‚‰ãƒ‡ãƒ¼ã‚¿ã‚’å¼•ãç¶™ã
+/// ç§»å‹•ã¯è¿·å­ãƒ»ç«ã¨å…±é€šã®Moverã€HPã¯Healthã€å½“ãŸã‚Šåˆ¤å®šã¯HitDetectorã€ãƒ€ãƒ¡ãƒ¼ã‚¸å‡¦ç†ã¯AttackProcessorã«ä»»ã›ã‚‹
+/// æ”»æ’ƒå¯¾è±¡ã¯è¿·å­ã ã‘ã€‚è¿·å­ã«è¿‘ã¥ã„ãŸã‚‰æ­¢ã¾ã‚Šã€Attack1ã‚’AttackTimelineã®æ™‚é–“ã©ãŠã‚Šã«å‡ºã™
 /// </summary>
 [RequireComponent(typeof(NavMeshAgent))]
 public class EnemyController : MonoBehaviour, IHittable, IHitTarget
 {
-    /// <summary>HP‚ª0‚É‚È‚Á‚½‚Æ‚«‚É’Ê’m‚·‚éiPoolManager‚ªó‚¯æ‚Á‚ÄAƒv[ƒ‹‚Ö–ß‚·j</summary>
+    /// <summary>HPãŒ0ã«ãªã£ãŸã¨ãã«é€šçŸ¥ã™ã‚‹ï¼ˆPoolManagerãŒå—ã‘å–ã£ã¦ã€ãƒ—ãƒ¼ãƒ«ã¸æˆ»ã™ï¼‰</summary>
     public event Action<EnemyController> OnDead;
 
     private readonly List<HitInfo> _hits = new List<HitInfo>();
@@ -31,22 +31,22 @@ public class EnemyController : MonoBehaviour, IHittable, IHitTarget
     private float _stopDistance;
     private bool _isInitialized;
     private bool _isActive;
-    private bool _lastFollowOk = true;   //‘O‚ÌƒtƒŒ[ƒ€‚ÉNavMesh‚Å’Ç]‚Å‚«‚Ä‚¢‚½‚©i•Ï‚í‚Á‚½‚Æ‚«‚¾‚¯Œx‚ğo‚·‚½‚ßj
+    private bool _lastFollowOk = true;   //å‰ã®ãƒ•ãƒ¬ãƒ¼ãƒ ã«NavMeshã§è¿½å¾“ã§ãã¦ã„ãŸã‹ï¼ˆå¤‰ã‚ã£ãŸã¨ãã ã‘è­¦å‘Šã‚’å‡ºã™ãŸã‚ï¼‰
 
     public EnemyData data => _data;
     public int hp => _health != null ? _health.current : 0;
     public bool isDead => _health == null || _health.isDead;
 
-    /// <summary>IHitTarget: ‰Î‚Ìó‘Ô</summary>
+    /// <summary>IHitTarget: ç«å‚·ã®çŠ¶æ…‹</summary>
     public BurnState Burn => _burn;
 
-    /// <summary>ƒXƒe[ƒW‚Éo‚Ä‚¢‚ÄA“®‚¢‚Ä‚¢‚é‚©iƒv[ƒ‹‚É–ß‚Á‚Ä‚¢‚éŠÔ‚Ífalsej</summary>
+    /// <summary>ã‚¹ãƒ†ãƒ¼ã‚¸ã«å‡ºã¦ã„ã¦ã€å‹•ã„ã¦ã„ã‚‹ã‹ï¼ˆãƒ—ãƒ¼ãƒ«ã«æˆ»ã£ã¦ã„ã‚‹é–“ã¯falseï¼‰</summary>
     public bool isActive => _isActive;
 
     #region Initialize
     /// <summary>
-    /// “G‚ğ¶¬‚·‚é‘¤iEnemyFactoryj‚©‚çAˆê“x‚¾‚¯ŒÄ‚ÔB‚±‚Ì“_‚Å‚ÍA‚Ü‚¾ƒXƒe[ƒW‚Éo‚Ä‚¢‚È‚¢iSpawn‚Åo‚·j
-    /// ˆÚ“®‚Ì’²®’l‚ÍAdata‚ÌMoveConfig‚©‚ç“Ç‚Ş
+    /// æ•µã‚’ç”Ÿæˆã™ã‚‹å´ï¼ˆEnemyFactoryï¼‰ã‹ã‚‰ã€ä¸€åº¦ã ã‘å‘¼ã¶ã€‚ã“ã®æ™‚ç‚¹ã§ã¯ã€ã¾ã ã‚¹ãƒ†ãƒ¼ã‚¸ã«å‡ºã¦ã„ãªã„ï¼ˆSpawnã§å‡ºã™ï¼‰
+    /// ç§»å‹•ã®èª¿æ•´å€¤ã¯ã€dataã®MoveConfigã‹ã‚‰èª­ã‚€
     /// </summary>
     public void Initialize(
         NavMeshAgent agent,
@@ -85,8 +85,8 @@ public class EnemyController : MonoBehaviour, IHittable, IHitTarget
     }
 
     /// <summary>
-    /// w’è‚µ‚½À•W‚Ì‹ß‚­‚ÅA‚±‚Ì“G‚ª’Ê‚ê‚éNavMesh‚Ìã‚ÌˆÊ’u‚ğ’T‚·
-    /// Œ©‚Â‚©‚ç‚È‚¯‚ê‚ÎfalseBNavMesh‚Ì€”õ‚ª‚Å‚«‚é‘O‚ÍAŒ©‚Â‚©‚ç‚È‚¢
+    /// æŒ‡å®šã—ãŸåº§æ¨™ã®è¿‘ãã§ã€ã“ã®æ•µãŒé€šã‚Œã‚‹NavMeshã®ä¸Šã®ä½ç½®ã‚’æ¢ã™
+    /// è¦‹ã¤ã‹ã‚‰ãªã‘ã‚Œã°falseã€‚NavMeshã®æº–å‚™ãŒã§ãã‚‹å‰ã¯ã€è¦‹ã¤ã‹ã‚‰ãªã„
     /// </summary>
     public bool TryFindSpawnPosition(Vector3 point, out Vector3 result)
     {
@@ -100,8 +100,8 @@ public class EnemyController : MonoBehaviour, IHittable, IHitTarget
     }
 
     /// <summary>
-    /// “G‚ğƒXƒe[ƒW‚Éo‚·BHP‚ÆUŒ‚‚Ìis‚ğ‰Šúó‘Ô‚É–ß‚µ‚ÄAw’è‚µ‚½ˆÊ’u‚©‚ç“®‚«n‚ß‚é
-    /// position‚ÍATryFindSpawnPosition‚ÅŒˆ‚ß‚½ˆÊ’u‚ğ“n‚·‚ÆANavMesh‚Ìã‚©‚çn‚ß‚ç‚ê‚é
+    /// æ•µã‚’ã‚¹ãƒ†ãƒ¼ã‚¸ã«å‡ºã™ã€‚HPã¨æ”»æ’ƒã®é€²è¡Œã‚’åˆæœŸçŠ¶æ…‹ã«æˆ»ã—ã¦ã€æŒ‡å®šã—ãŸä½ç½®ã‹ã‚‰å‹•ãå§‹ã‚ã‚‹
+    /// positionã¯ã€TryFindSpawnPositionã§æ±ºã‚ãŸä½ç½®ã‚’æ¸¡ã™ã¨ã€NavMeshã®ä¸Šã‹ã‚‰å§‹ã‚ã‚‰ã‚Œã‚‹
     /// </summary>
     public void Spawn(Vector3 position, float rotationY = 0f)
     {
@@ -116,8 +116,8 @@ public class EnemyController : MonoBehaviour, IHittable, IHitTarget
         _mover.Stop();
         _lastFollowOk = true;
 
-        // ”ñ•\¦‚Ì‚¤‚¿‚ÉˆÊ’u‚ÆŒü‚«‚ğŒˆ‚ß‚Ä‚©‚çA—LŒø‚É‚·‚é
-        // Agent‚Í–³Œø‚Ì‚Ü‚ÜBÅ‰‚ÌTick‚ÅAMover‚ªANavMesh‚Éæ‚¹‚Ä‚©‚ç—LŒø‚É‚·‚é
+        // éè¡¨ç¤ºã®ã†ã¡ã«ä½ç½®ã¨å‘ãã‚’æ±ºã‚ã¦ã‹ã‚‰ã€æœ‰åŠ¹ã«ã™ã‚‹
+        // Agentã¯ç„¡åŠ¹ã®ã¾ã¾ã€‚æœ€åˆã®Tickã§ã€MoverãŒã€NavMeshã«ä¹—ã›ã¦ã‹ã‚‰æœ‰åŠ¹ã«ã™ã‚‹
         transform.position = position;
         transform.rotation = Quaternion.Euler(0f, rotationY, 0f);
         gameObject.SetActive(true);
@@ -128,7 +128,7 @@ public class EnemyController : MonoBehaviour, IHittable, IHitTarget
     }
 
     /// <summary>
-    /// “G‚ğƒXƒe[ƒW‚©‚çŠO‚·iƒv[ƒ‹‚Ö–ß‚·‚Æ‚«‚ÉAEnemyPool‚ªŒÄ‚Ôj
+    /// æ•µã‚’ã‚¹ãƒ†ãƒ¼ã‚¸ã‹ã‚‰å¤–ã™ï¼ˆãƒ—ãƒ¼ãƒ«ã¸æˆ»ã™ã¨ãã«ã€EnemyPoolãŒå‘¼ã¶ï¼‰
     /// </summary>
     public void Despawn()
     {
@@ -141,13 +141,13 @@ public class EnemyController : MonoBehaviour, IHittable, IHitTarget
         _hit.SetActive(false);
         _mover.Stop();
 
-        // Ÿ‚ÌSpawn‚ÅANavMesh‚ÌŠO‚Å—LŒø‚É‚È‚ç‚È‚¢‚æ‚¤‚ÉAAgent‚ğ–³Œø‚É–ß‚·
+        // æ¬¡ã®Spawnã§ã€NavMeshã®å¤–ã§æœ‰åŠ¹ã«ãªã‚‰ãªã„ã‚ˆã†ã«ã€Agentã‚’ç„¡åŠ¹ã«æˆ»ã™
         _agent.enabled = false;
         gameObject.SetActive(false);
     }
 
     /// <summary>
-    /// “G‚ª”jŠü‚³‚ê‚é‚Æ‚«‚ÉAUnity‚ª©“®‚ÅŒÄ‚Ô
+    /// æ•µãŒç ´æ£„ã•ã‚Œã‚‹ã¨ãã«ã€UnityãŒè‡ªå‹•ã§å‘¼ã¶
     /// </summary>
     private void OnDestroy()
     {
@@ -162,9 +162,9 @@ public class EnemyController : MonoBehaviour, IHittable, IHitTarget
 
     #region Public
     /// <summary>
-    /// –ˆƒtƒŒ[ƒ€ŒÄ‚ÔB–Àq‚ÌÀ•W‚ğó‚¯æ‚èA‹ß‚Ã‚­‚Ü‚ÅMover‚Å’Ç]‚·‚éB‹ß‚Ã‚¢‚½‚çUŒ‚‚·‚é
-    /// À•W‚ÍŒÄ‚Ô‘¤‚ª1‰ñ‚¾‚¯“Ç‚ñ‚Å‘Sˆõ‚É“n‚·i“G‚²‚Æ‚É–Àq‚ÌˆÊ’u‚ğ“Ç‚İæ‚ç‚È‚¢j
-    /// “G‚²‚Æ‚É“®‚«‚ğ•Ï‚¦‚½‚¢‚Æ‚«‚ÍAŒp³æ‚Åoverride‚·‚é
+    /// æ¯ãƒ•ãƒ¬ãƒ¼ãƒ å‘¼ã¶ã€‚è¿·å­ã®åº§æ¨™ã‚’å—ã‘å–ã‚Šã€è¿‘ã¥ãã¾ã§Moverã§è¿½å¾“ã™ã‚‹ã€‚è¿‘ã¥ã„ãŸã‚‰æ”»æ’ƒã™ã‚‹
+    /// åº§æ¨™ã¯å‘¼ã¶å´ãŒ1å›ã ã‘èª­ã‚“ã§å…¨å“¡ã«æ¸¡ã™ï¼ˆæ•µã”ã¨ã«è¿·å­ã®ä½ç½®ã‚’èª­ã¿å–ã‚‰ãªã„ï¼‰
+    /// æ•µã”ã¨ã«å‹•ãã‚’å¤‰ãˆãŸã„ã¨ãã¯ã€ç¶™æ‰¿å…ˆã§overrideã™ã‚‹
     /// </summary>
     public void Tick(Vector3 targetPosition)
     {
@@ -182,7 +182,7 @@ public class EnemyController : MonoBehaviour, IHittable, IHitTarget
         _hit.SetTransform(transform.position, transform.eulerAngles.y);
         _attackSequence.Tick(Time.deltaTime);
 
-        // —­‚ßE—LŒøEd’¼‚ÌŠÔ‚ÍA—§‚¿~‚Ü‚Á‚ÄUŒ‚‚ÉW’†‚·‚é
+        // æºœã‚ãƒ»æœ‰åŠ¹ãƒ»ç¡¬ç›´ã®é–“ã¯ã€ç«‹ã¡æ­¢ã¾ã£ã¦æ”»æ’ƒã«é›†ä¸­ã™ã‚‹
         AttackPhase phase = _attackSequence.phase;
         if (phase == AttackPhase.Charge || phase == AttackPhase.Active || phase == AttackPhase.Recovery)
         {
@@ -194,7 +194,7 @@ public class EnemyController : MonoBehaviour, IHittable, IHitTarget
             return;
         }
 
-        // ‘ÎÛ‚É‹ß‚Ã‚¢‚½‚ç~‚Ü‚éi‚‚³‚Í–³‹‚µ‚ÄAXZ•½–Ê‚Å‚Ì‹——£‚ÅŒˆ‚ß‚éj
+        // å¯¾è±¡ã«è¿‘ã¥ã„ãŸã‚‰æ­¢ã¾ã‚‹ï¼ˆé«˜ã•ã¯ç„¡è¦–ã—ã¦ã€XZå¹³é¢ã§ã®è·é›¢ã§æ±ºã‚ã‚‹ï¼‰
         Vector3 delta = targetPosition - transform.position;
         delta.y = 0f;
         if (delta.sqrMagnitude <= _stopDistance * _stopDistance)
@@ -207,17 +207,17 @@ public class EnemyController : MonoBehaviour, IHittable, IHitTarget
             return;
         }
 
-        //–Àq‚ªA‚±‚Ì“G‚ÌNavMesh‚ÌŠO‚É‚¢‚Ä‚àANavMesh‚Ìã‚Å–Àq‚Éˆê”Ô‹ß‚¢“_‚Ü‚Å‚ÍŒü‚©‚¤
+        //è¿·å­ãŒã€ã“ã®æ•µã®NavMeshã®å¤–ã«ã„ã¦ã‚‚ã€NavMeshã®ä¸Šã§è¿·å­ã«ä¸€ç•ªè¿‘ã„ç‚¹ã¾ã§ã¯å‘ã‹ã†
         bool followOk = _mover.FollowNearest(targetPosition);
         WarnIfCannotFollow(followOk, targetPosition);
     }
 
     /// <summary>
-    /// IHittable: –½’†î•ñ‚ğó‚¯æ‚èAŒø‰Ê‚ğ‡‚É“K—p‚·‚é
+    /// IHittable: å‘½ä¸­æƒ…å ±ã‚’å—ã‘å–ã‚Šã€åŠ¹æœã‚’é †ã«é©ç”¨ã™ã‚‹
     /// </summary>
     public void OnHit(AttackHit hit)
     {
-        // ‰Šú‰»‘O‚ÆA‚·‚Å‚É“|‚ê‚Ä‚¢‚é“G‚É‚ÍAŒø‰Ê‚ğ“K—p‚µ‚È‚¢
+        // åˆæœŸåŒ–å‰ã¨ã€ã™ã§ã«å€’ã‚Œã¦ã„ã‚‹æ•µã«ã¯ã€åŠ¹æœã‚’é©ç”¨ã—ãªã„
         if (!_isInitialized || isDead)
         {
             return;
@@ -227,7 +227,7 @@ public class EnemyController : MonoBehaviour, IHittable, IHitTarget
     }
 
     /// <summary>
-    /// ƒ_ƒ[ƒW‚ğó‚¯‚éBHP‚ª0‚É‚È‚Á‚½‚çAOnDead‚ğ’Ê’m‚·‚é
+    /// ãƒ€ãƒ¡ãƒ¼ã‚¸ã‚’å—ã‘ã‚‹ã€‚HPãŒ0ã«ãªã£ãŸã‚‰ã€OnDeadã‚’é€šçŸ¥ã™ã‚‹
     /// </summary>
     public void TakeDamage(int damage)
     {
@@ -237,16 +237,16 @@ public class EnemyController : MonoBehaviour, IHittable, IHitTarget
         }
 
         _health.TakeDamage(damage);
-        Debug.Log($"[EnemyController] TakeDamage : name = {name}, hp = {_health.current}");
+       // Debug.Log($"[EnemyController] TakeDamage : name = {name}, hp = {_health.current}");
     }
     #endregion
 
 #if UNITY_EDITOR
     #region Debug
     /// <summary>
-    /// NavMeshŠm”F—pB
-    /// Agent‚ª—LŒø‚ÅNavMeshã‚É‚ ‚èAStageData‚©‚çì‚Á‚½©•ª‚Ìƒvƒƒtƒ@ƒCƒ‹‚ÌNavMesh‚Éæ‚Á‚Ä‚¢‚é‚©‚ğŠm”F‚·‚é
-    /// i’¼i‚ÌƒtƒH[ƒ‹ƒoƒbƒN‚Å“®‚¢‚Ä‚¢‚é‚Æ‚«‚ÍAAgent‚ª–³Œø‚É‚È‚é‚Ì‚Åfalsej
+    /// NavMeshç¢ºèªç”¨ã€‚
+    /// AgentãŒæœ‰åŠ¹ã§NavMeshä¸Šã«ã‚ã‚Šã€StageDataã‹ã‚‰ä½œã£ãŸè‡ªåˆ†ã®ãƒ—ãƒ­ãƒ•ã‚¡ã‚¤ãƒ«ã®NavMeshã«ä¹—ã£ã¦ã„ã‚‹ã‹ã‚’ç¢ºèªã™ã‚‹
+    /// ï¼ˆç›´é€²ã®ãƒ•ã‚©ãƒ¼ãƒ«ãƒãƒƒã‚¯ã§å‹•ã„ã¦ã„ã‚‹ã¨ãã¯ã€AgentãŒç„¡åŠ¹ã«ãªã‚‹ã®ã§falseï¼‰
     /// </summary>
     public bool isOnExpectedNavMesh
     {
@@ -263,7 +263,7 @@ public class EnemyController : MonoBehaviour, IHittable, IHitTarget
     }
 
     /// <summary>
-    /// NavMeshŠm”F—pBNavMeshAgent‚Ìó‘Ô‚ğ•¶š—ñ‚É‚·‚éi–ˆƒtƒŒ[ƒ€‚ÍŒÄ‚Î‚È‚¢j
+    /// NavMeshç¢ºèªç”¨ã€‚NavMeshAgentã®çŠ¶æ…‹ã‚’æ–‡å­—åˆ—ã«ã™ã‚‹ï¼ˆæ¯ãƒ•ãƒ¬ãƒ¼ãƒ ã¯å‘¼ã°ãªã„ï¼‰
     /// </summary>
     public string DescribeNavState()
     {
@@ -283,8 +283,8 @@ public class EnemyController : MonoBehaviour, IHittable, IHitTarget
 #endif
 
     #region Private
-    // ‘ÎÛ‚Ì•ûŒü‚ğŒü‚¢‚Ä‚©‚çAUŒ‚‚ğŠJn‚·‚é
-    // ƒRƒ‰ƒCƒ_[‚Í‘O•û‚É‡‚í‚¹‚Ä‚ ‚é‚Ì‚ÅAæ‚ÉŒü‚«‚ğ•Ï‚¦‚é
+    // å¯¾è±¡ã®æ–¹å‘ã‚’å‘ã„ã¦ã‹ã‚‰ã€æ”»æ’ƒã‚’é–‹å§‹ã™ã‚‹
+    // ã‚³ãƒ©ã‚¤ãƒ€ãƒ¼ã¯å‰æ–¹ã«åˆã‚ã›ã¦ã‚ã‚‹ã®ã§ã€å…ˆã«å‘ãã‚’å¤‰ãˆã‚‹
     private void BeginAttack(Vector3 delta)
     {
         if (delta.sqrMagnitude > 1e-6f)
@@ -296,8 +296,8 @@ public class EnemyController : MonoBehaviour, IHittable, IHitTarget
         _attackSequence.Begin(_timeline);
     }
 
-    // UŒ‚—pƒRƒ‰ƒCƒ_[‚Å–Àq‚ÉÚG‚µ‚½‚©‚ğ’²‚×AÚG‚µ‚Ä‚¢‚½‚çƒ_ƒ[ƒW‚ğ“n‚·
-    // i1‰ñ‚ÌUŒ‚‚Å•¡”‰ñƒ_ƒ[ƒW‚ª”­¶‚µ‚È‚¢‚æ‚¤‚É‚·‚éj
+    // æ”»æ’ƒç”¨ã‚³ãƒ©ã‚¤ãƒ€ãƒ¼ã§è¿·å­ã«æ¥è§¦ã—ãŸã‹ã‚’èª¿ã¹ã€æ¥è§¦ã—ã¦ã„ãŸã‚‰ãƒ€ãƒ¡ãƒ¼ã‚¸ã‚’æ¸¡ã™
+    // ï¼ˆ1å›ã®æ”»æ’ƒã§è¤‡æ•°å›ãƒ€ãƒ¡ãƒ¼ã‚¸ãŒç™ºç”Ÿã—ãªã„ã‚ˆã†ã«ã™ã‚‹ï¼‰
     private void ApplyAttack()
     {
         EnemyAttack attack = _data.Attack1;
@@ -307,8 +307,8 @@ public class EnemyController : MonoBehaviour, IHittable, IHitTarget
         }
     }
 
-    // NavMesh‚Å’Ç]‚Å‚«‚È‚­‚È‚Á‚½‚Æ‚«i“G©g‚Ì‹ß‚­‚ÉNavMesh‚ª‚È‚¢j‚ÉA•Ï‚í‚Á‚½uŠÔ‚¾‚¯Œx‚ğo‚·
-    // –Àq‚ªNavMesh‚ÌŠO‚É‚¢‚éê‡‚ÍAFollowNearest‚ªˆê”Ô‹ß‚¢“_‚ÖŒü‚©‚¤‚Ì‚ÅAŒx‚É‚Í‚È‚ç‚È‚¢
+    // NavMeshã§è¿½å¾“ã§ããªããªã£ãŸã¨ãï¼ˆæ•µè‡ªèº«ã®è¿‘ãã«NavMeshãŒãªã„ï¼‰ã«ã€å¤‰ã‚ã£ãŸç¬é–“ã ã‘è­¦å‘Šã‚’å‡ºã™
+    // è¿·å­ãŒNavMeshã®å¤–ã«ã„ã‚‹å ´åˆã¯ã€FollowNearestãŒä¸€ç•ªè¿‘ã„ç‚¹ã¸å‘ã‹ã†ã®ã§ã€è­¦å‘Šã«ã¯ãªã‚‰ãªã„
     private void WarnIfCannotFollow(bool followOk, Vector3 targetPosition)
     {
         if (followOk == _lastFollowOk)

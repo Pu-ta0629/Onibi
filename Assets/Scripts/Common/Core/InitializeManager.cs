@@ -1,9 +1,9 @@
 using UnityEngine;
 
 /// <summary>
-/// �eManager�̐����E�������̌Ăяo���ƁA�Q�Ƃ̔z�z��S������
-/// �Q�Ƃ�Inspector�Ŏ󂯎��AInitialize�̈����Ƃ��Ċe�X�N���v�g�֓n���iInstance�͎g��Ȃ��j
-/// �eManager�̌ŗL�ݒ�i�΂̏��Ȃǁj�́A���ꂼ���Manager��Inspector�Ŏ���
+/// 各Managerの生成・初期化の呼び出しと、参照の配布を担当する
+/// 参照はInspectorで受け取り、Initializeの引数として各スクリプトへ渡す（Instanceは使わない）
+/// 各Managerの固有設定（火の消費量など）は、それぞれのManagerのInspectorで持つ
 /// </summary>
 public class InitializeManager : MonoBehaviour
 {
@@ -13,10 +13,10 @@ public class InitializeManager : MonoBehaviour
     [SerializeField] private LostChildController _lostChildController;
     [SerializeField] private FireManager _fireManager;
     [SerializeField] private StageManager _stageManager;
-    
+
 
     [Header("Battle")]
-    [Tooltip("�X�e�[�W�J�n���̖ؗ�̗ʁB�΂��ːi���邽�тɏ����")]
+    [Tooltip("ステージ開始時の木霊の量。火が突進するたびに消費する")]
     [SerializeField, Range(0, 999)] private int _initialKodama = 30;
 
     private TypeManager _typeManager;
@@ -34,7 +34,7 @@ public class InitializeManager : MonoBehaviour
             return;
         }
 
-        //Inspector�Ŗ��ݒ�Ȃ�Camera.main���g���B�ȍ~�͂����Ō��߂��J������z��
+        //Inspectorで未設定ならCamera.mainを使う。以降はここで決めたカメラを想定
         Camera mainCamera = _mainCamera != null ? _mainCamera : Camera.main;
         if (mainCamera == null)
         {
@@ -42,15 +42,15 @@ public class InitializeManager : MonoBehaviour
             return;
         }
 
-        //������C#�N���X�𐶐����ď���������
+        //ここでC#クラスを生成して初期化する
         _typeManager = new TypeManager();
         _typeManager.Initialize();
         _hitWorld = new HitWorld();
         _kodamaStock = new KodamaStock(_initialKodama);
 
-        //���́����q���X�e�[�W�i�n�`�E���q�̔z�u�E�G�j���΂̏��ŏ���������
-        //���q�́A�X�e�[�W����SpawnAt�Œu�����̂ŁA�K���X�e�[�W���O��Initialize����
-        //�i��낾��SpawnAt�����������߂�A���q��Start�ɒu���ꂸ�A�G�̒Ǐ]�悪NavMesh�̊O�ɂȂ�j
+        //入力→迷子→ステージ（地形・迷子の配置・敵）→火の順で初期化する
+        //迷子は、ステージ内でSpawnAtで置かれるので、必ずステージより前にInitializeする
+        //（後ろだとSpawnAtが先に位置を決めてしまい、迷子がStartに置かれず、敵の追従先がNavMeshの外になる）
         _inputManager.Initialize(mainCamera);
         _lostChildController.Initialize(_hitWorld);
         _stageManager.Initialize(_hitWorld, _lostChildController, mainCamera);

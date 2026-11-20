@@ -159,7 +159,7 @@ public class DarknessSensor
     private void SetBright(bool isBright)
     {
         IsBright = isBright;
-        Debug.Log($"[DarknessSensor] SetBright : isBright = {isBright}, LightLevel = {LightLevel:F1}");
+        //Debug.Log($"[DarknessSensor] SetBright : isBright = {isBright}, LightLevel = {LightLevel:F1}");
 
         for (int i = 0; i < _brightReactions.Count; i++)
         {

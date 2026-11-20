@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 
 /// Stageの生成・進行を管理するクラス
@@ -25,14 +25,14 @@ public class StageManager : MonoBehaviour
     private LostChildController _lostChild;
 
     private StageContext _context;
-    
+
     public StageContext Context => _context;
 
     #region Initialize
 
-    public void Initialize(HitWorld world,LostChildController lostChild,Camera mainCamera)
+    public void Initialize(HitWorld world, LostChildController lostChild, Camera mainCamera)
     {
-        if(world == null || lostChild == null || mainCamera == null || _fieldSpawnManager == null || _entitySpawnManager == null)
+        if (world == null || lostChild == null || mainCamera == null || _fieldSpawnManager == null || _entitySpawnManager == null)
         {
             Debug.LogError("[StageGenerator] Initialize : Reference is Null!!!");
             return;
@@ -40,7 +40,7 @@ public class StageManager : MonoBehaviour
 
 #if UNITY_EDITOR
         // Stage未設定でも、各Spawnerの初期化は続ける
-        if(_stage == null)
+        if (_stage == null)
         {
             Debug.LogWarning("[StageGenerator] Initialize : Stage is not set. Scene field is used");
         }
@@ -52,11 +52,11 @@ public class StageManager : MonoBehaviour
             return;
         }
 #endif
-        _context = new StageContext(_stage,world,lostChild, mainCamera,transform);
+        _context = new StageContext(_stage, world, lostChild, mainCamera, transform);
 
         _lostChild = lostChild;
 
-        _stageGenerator = new StageGenerator(world,mainCamera,_context,_fieldSpawnManager,_entitySpawnManager);
+        _stageGenerator = new StageGenerator(world, mainCamera, _context, _fieldSpawnManager, _entitySpawnManager);
 
         _stageGenerator.Generate();
         CreateController();
@@ -72,7 +72,7 @@ public class StageManager : MonoBehaviour
 
     private void OnDestroy()
     {
-        if(_stageController != null)
+        if (_stageController != null)
         {
             _stageController.StageCleared -= HandleStageCleared;
         }
@@ -84,7 +84,7 @@ public class StageManager : MonoBehaviour
     private void CreateController()
     {
         GoalPlacement goal = _fieldSpawnManager.SelectedGoal;
-        if(goal == null)
+        if (goal == null)
         {
             Debug.LogWarning("[StageManager] CreateController : Goal is selected. Stage clear is not judged");
             return;
@@ -97,8 +97,8 @@ public class StageManager : MonoBehaviour
 
     private void HandleStageCleared()
     {
-        // _lostChild.Freeze();
-       // _entitySpawnManager.Stop();
+        _lostChild.Freeze();
+        _entitySpawnManager.Stop();
     }
     #endregion
 

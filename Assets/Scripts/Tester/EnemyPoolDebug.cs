@@ -5,11 +5,11 @@
 /// <summary>
 /// 敵のPoolの動作確認用。画面のボタンで、Build、敵を倒す、強制回収などを試す
 /// </summary>
-public class EnemyPoolDebug : MonoBehaviour
-{
-    [SerializeField] private StageData _stageData;
-    [SerializeField] private EnemyMoveConfig _config = new EnemyMoveConfig();
-    [SerializeField] private PoolManager _poolManager;
+//public class EnemyPoolDebug : MonoBehaviour
+//{
+//    [SerializeField] private StageData _stageData;
+//    [SerializeField] private EnemyMoveConfig _config = new EnemyMoveConfig();
+//    [SerializeField] private PoolManager _poolManager;
    // [SerializeField] private SpawnManager _spawnManager;
 //    [Tooltip("迷子の代わりに置くオブジェクト。敵はこの位置に向かう")]
 //    [SerializeField] private Transform _target;

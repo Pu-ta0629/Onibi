@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using UnityEngine;
 
 /// <summary>
@@ -60,11 +60,12 @@ public class StageController
 
     #region Private
 
-    // 状態を変えてから通知する。Playingのときしか入らないので、二十発火しない
+    // 状態を変えてから通知する。Playingのときしか入らないので、二重発火しない
     private void Clear()
     {
         _state = StageState.Cleared;
-
+        Debug.Log($"[StageController] : Stage Cleared");
+        StageCleared?.Invoke();
     }
     #endregion
 }

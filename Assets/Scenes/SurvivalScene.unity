@@ -1342,12 +1342,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 1047871147}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: be35c183ff531a94fb6fad161f834839, type: 3}
+  m_Script: {fileID: 11500000, guid: 18925e2004a8e4d4b814603cbfd7d6b8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EntitySpawnManager
   _poolManager: {fileID: 1240344923}
   _pickTryCount: 5
-  _spawnPlacedOnStart: 1
 --- !u!1 &1134866814
 GameObject:
   m_ObjectHideFlags: 0
@@ -1819,7 +1818,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ebed9d850e98e4e49a2047a47e22dd80, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FieldSpawner
-  _goalPrefab: {fileID: 8514146046432380994, guid: f18b38bd2ddcf0447b21a9dc8193d7e6, type: 3}
+  _goalLightColor: {r: 1, g: 0.85, b: 0.5, a: 1}
+  _goalLightIntensity: 2
+  _goalLightRangeScale: 2
+  _goalLightHeight: 2
 --- !u!1 &1588982463
 GameObject:
   m_ObjectHideFlags: 0
@@ -2230,9 +2232,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 1958156128}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 91c6a8e12dd57bb4fb75cb8ea4f2e6d7, type: 3}
+  m_Script: {fileID: 11500000, guid: 72d3454904bcbf0438863ee683ca8779, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::StageGenerator
+  m_EditorClassIdentifier: Assembly-CSharp::StageManager
   _stage: {fileID: 11400000, guid: a143009ce3393644eb33060eec58cb6a, type: 2}
   _fieldSpawnManager: {fileID: 1586453968}
   _entitySpawnManager: {fileID: 1047871150}
