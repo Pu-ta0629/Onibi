@@ -1,21 +1,21 @@
-using System.Collections.Generic;
+ï»¿using System.Collections.Generic;
 using System.Runtime.InteropServices.WindowsRuntime;
 using UnityEngine;
 using UnityEngine.AI;
 
 /// <summary>
-/// –ÀqB“n‚³‚ê‚½’Ç]æ‚ÌÀ•W‚ÖAMover‚ÅŒü‚©‚¤
-/// ’Ç]æ‚É‹ß‚Ã‚¢‚½‚ç~‚Ü‚èA—£‚ê‚½‚çÄ‚Ñ“®‚­
-/// NavMesh‚ª‚È‚¢‚Æ“®‚©‚È‚¢iAgent‚ğg‚í‚È‚¢’¼i‚É‚ÍØ‚è‘Ö‚¦‚È‚¢j
-/// ƒ‰ƒCƒtiƒ‰ƒCƒtŒ^‚ÌHPj‚ğ‚¿A“G‚ÌUŒ‚‚ğó‚¯‚é‚Æƒ‰ƒCƒt‚ª1‚ÂŒ¸‚éBUŒ‚è’i‚Í‚½‚È‚¢
-/// ü‚è‚Ì“G‚ğd‚İ•t‚«õ“G‚µ‚ÄAŒ‹‰Ê‚ğ‰Î‚Ö“n‚·i‰Î‚ÌUŒ‚‘ÎÛ‚É‚È‚éj
+/// è¿·å­ã€‚æ¸¡ã•ã‚ŒãŸè¿½å¾“å…ˆã®åº§æ¨™ã¸ã€Moverã§å‘ã‹ã†
+/// è¿½å¾“å…ˆã«è¿‘ã¥ã„ãŸã‚‰æ­¢ã¾ã‚Šã€é›¢ã‚ŒãŸã‚‰å†ã³å‹•ã
+/// NavMeshãŒãªã„ã¨å‹•ã‹ãªã„ï¼ˆAgentã‚’ä½¿ã‚ãªã„ç›´é€²ã«ã¯åˆ‡ã‚Šæ›¿ãˆãªã„ï¼‰
+/// ãƒ©ã‚¤ãƒ•ï¼ˆãƒ©ã‚¤ãƒ•å‹ã®HPï¼‰ã‚’æŒã¡ã€æ•µã®æ”»æ’ƒã‚’å—ã‘ã‚‹ã¨ãƒ©ã‚¤ãƒ•ãŒ1ã¤æ¸›ã‚‹ã€‚æ”»æ’ƒæ‰‹æ®µã¯æŒãŸãªã„
+/// å‘¨ã‚Šã®æ•µã‚’é‡ã¿ä»˜ãç´¢æ•µã—ã¦ã€çµæœã‚’ç«ã¸æ¸¡ã™ï¼ˆç«ã®æ”»æ’ƒå¯¾è±¡ã«ãªã‚‹ï¼‰
 /// </summary>
 [RequireComponent(typeof(NavMeshAgent))]
 public class LostChildController : MonoBehaviour, IHittable,IHitTarget
 {
     private static readonly SearchResult[] EmptyResults = new SearchResult[0];
 
-    [SerializeField, Tooltip("–Àq‚Ìƒ}ƒXƒ^[ƒf[ƒ^iƒRƒ‰ƒCƒ_[‚ğ“Ç‚Şj")] private LostChild _data;
+    [SerializeField, Tooltip("è¿·å­ã®ãƒã‚¹ã‚¿ãƒ¼ãƒ‡ãƒ¼ã‚¿ï¼ˆã‚³ãƒ©ã‚¤ãƒ€ãƒ¼ã‚’èª­ã‚€ï¼‰")] private LostChild _data;
 
     [Space(10)]
     [SerializeField] private int _currentLife;
@@ -30,18 +30,21 @@ public class LostChildController : MonoBehaviour, IHittable,IHitTarget
     private bool _isFrozen;
     private NavFollowResult _lastResult = NavFollowResult.Following;
 
-    /// <summary>–Àq‚Ìƒ‰ƒCƒt</summary>
+    private readonly KodamaStack _kodamaStack = new KodamaStack();
+
+    /// <summary>è¿·å­ã®ãƒ©ã‚¤ãƒ•</summary>
     public Health life => _life;
 
-    /// <summary>–Àq‚ªŒ©‚Â‚¯‚½“Gi‹ß‚¢‡‚Éd‚İ•t‚«jB‰Î‚ÌUŒ‚‘ÎÛ‚Ìõ“G‚Ég‚í‚ê‚é</summary>
+    /// <summary>è¿·å­ãŒè¦‹ã¤ã‘ãŸæ•µï¼ˆè¿‘ã„é †ã«é‡ã¿ä»˜ãï¼‰ã€‚ç«ã®æ”»æ’ƒå¯¾è±¡ã®ç´¢æ•µã«ä½¿ã‚ã‚Œã‚‹</summary>
     public IReadOnlyList<SearchResult> searchResults => _search != null ? _search.results : EmptyResults;
     public LostChild LostChild => _data;
-
     public BurnState Burn => null;
+    public KodamaStack KodamaStack => _kodamaStack;
+
 
     #region Initialize
     /// <summary>
-    /// InitializeManager‚©‚çˆê“x‚¾‚¯ŒÄ‚ÔBworld: ‘Sˆõ‚Å‹¤—L‚·‚éHitWorld
+    /// InitializeManagerã‹ã‚‰ä¸€åº¦ã ã‘å‘¼ã¶ã€‚world: å…¨å“¡ã§å…±æœ‰ã™ã‚‹HitWorld
     /// </summary>
     public void Initialize(HitWorld world)
     {
@@ -53,7 +56,7 @@ public class LostChildController : MonoBehaviour, IHittable,IHitTarget
 
         _mover = new Mover(agent, _data.MoveSpeed, _data.GroundMask, _data.NavMsehSampleDistance, _data.RepathDistance, _data.MovementProfile);
 
-        //‘Ì‚ÌƒRƒ‰ƒCƒ_[‚ÍHitWorld‚Ö“o˜^‚³‚êA“G‚ÌUŒ‚‚ª“–‚½‚éBSearch‚ÌƒRƒ‰ƒCƒ_[‚Å“G‚ğ’T‚·
+        //ä½“ã®ã‚³ãƒ©ã‚¤ãƒ€ãƒ¼ã¯HitWorldã¸ç™»éŒ²ã•ã‚Œã€æ•µã®æ”»æ’ƒãŒå½“ãŸã‚‹ã€‚Searchã®ã‚³ãƒ©ã‚¤ãƒ€ãƒ¼ã§æ•µã‚’æ¢ã™
         _hit = new HitDetector(world, this, Faction.LostChild, _data.Colliders);
         _search = new WeightedSearch<EnemyController>(_hit);
 
@@ -87,14 +90,14 @@ public class LostChildController : MonoBehaviour, IHittable,IHitTarget
 
         if (!NavAgentProfile.Apply(_agent, _data.MovementProfile, position))
         {
-            //Agent‚Í–³Œø‚Ì‚Ü‚Ü‚É‚È‚éBMover‚ªAŒ³‚ÌAgent‚Ìí—Ş‚ÅA‹ß‚­‚ÌNavMesh‚ğ’T‚·
+            //Agentã¯ç„¡åŠ¹ã®ã¾ã¾ã«ãªã‚‹ã€‚MoverãŒã€å…ƒã®Agentã®ç¨®é¡ã§ã€è¿‘ãã®NavMeshã‚’æ¢ã™
             Debug.LogWarning($"[LostChildController] SpawnAt : NavAgentProfile.Apply failed. position = {position}, profile = {_data.MovementProfile}, StageNavMeshProvider.Current is {(StageNavMeshProvider.Current == null ? "null" : "set")}");
         }
 
         _hit.SetTransform(position, transform.eulerAngles.y);
     }
     /// <summary>
-    /// –ˆƒtƒŒ[ƒ€A’Ç]æ‚ÌÀ•W‚ğ“n‚·
+    /// æ¯ãƒ•ãƒ¬ãƒ¼ãƒ ã€è¿½å¾“å…ˆã®åº§æ¨™ã‚’æ¸¡ã™
     /// </summary>
     public void Tick(Vector3 targetPosition)
     {
@@ -103,7 +106,7 @@ public class LostChildController : MonoBehaviour, IHittable,IHitTarget
             return;
         }
 
-        //’Ç]æ‚É‹ß‚Ã‚¢‚½‚ç~‚Ü‚éi‚‚³‚Í–³‹‚µ‚ÄAXZ•½–Ê‚Å‚Ì‹——£‚ÅŒˆ‚ß‚éj
+        //è¿½å¾“å…ˆã«è¿‘ã¥ã„ãŸã‚‰æ­¢ã¾ã‚‹ï¼ˆé«˜ã•ã¯ç„¡è¦–ã—ã¦ã€XZå¹³é¢ã§ã®è·é›¢ã§æ±ºã‚ã‚‹ï¼‰
         Vector3 delta = targetPosition - transform.position;
         delta.y = 0f;
         if (delta.sqrMagnitude <= _data.StopDistance * _data.StopDistance)
@@ -112,7 +115,7 @@ public class LostChildController : MonoBehaviour, IHittable,IHitTarget
             return;
         }
 
-        //NavMesh‚ª‚È‚¢‚Æ‚«‚ÍA’¼i‚ÉØ‚è‘Ö‚¦‚¸A“®‚©‚È‚¢
+        //NavMeshãŒãªã„ã¨ãã¯ã€ç›´é€²ã«åˆ‡ã‚Šæ›¿ãˆãšã€å‹•ã‹ãªã„
         NavFollowResult result = _mover.FollowOnNavMesh(targetPosition);
         if (result != _lastResult)
         {
@@ -125,8 +128,8 @@ public class LostChildController : MonoBehaviour, IHittable,IHitTarget
     }
 
     /// <summary>
-    /// –ˆƒtƒŒ[ƒ€ŒÄ‚Ôi’Ç]‚Å‚«‚È‚¢‚Æ‚«‚àjB‘Ì‚ÌˆÊ’u‚ğXV‚µ‚ÄAü‚è‚Ì“G‚ğõ“G‚·‚é
-    /// ‰Î‚ªŒ‹‰Ê‚ğ“Ç‚Ş‚Ì‚ÅA‰Î‚ÌTick‚æ‚èæ‚ÉŒÄ‚Ô
+    /// æ¯ãƒ•ãƒ¬ãƒ¼ãƒ å‘¼ã¶ï¼ˆè¿½å¾“ã§ããªã„ã¨ãã‚‚ï¼‰ã€‚ä½“ã®ä½ç½®ã‚’æ›´æ–°ã—ã¦ã€å‘¨ã‚Šã®æ•µã‚’ç´¢æ•µã™ã‚‹
+    /// ç«ãŒçµæœã‚’èª­ã‚€ã®ã§ã€ç«ã®Tickã‚ˆã‚Šå…ˆã«å‘¼ã¶
     /// </summary>
     public void UpdateCombat()
     {
@@ -145,7 +148,7 @@ public class LostChildController : MonoBehaviour, IHittable,IHitTarget
     }
 
     /// <summary>
-    /// “G‚ÌUŒ‚‚ğó‚¯‚éBƒ‰ƒCƒtŒ^‚È‚Ì‚ÅAƒ_ƒ[ƒW‚Ì‘å‚«‚³‚ÉŠÖ‚í‚ç‚¸Aƒ‰ƒCƒt‚ª1‚ÂŒ¸‚é
+    /// æ•µã®æ”»æ’ƒã‚’å—ã‘ã‚‹ã€‚ãƒ©ã‚¤ãƒ•å‹ãªã®ã§ã€ãƒ€ãƒ¡ãƒ¼ã‚¸ã®å¤§ãã•ã«é–¢ã‚ã‚‰ãšã€ãƒ©ã‚¤ãƒ•ãŒ1ã¤æ¸›ã‚‹
     /// </summary>
     public void TakeDamage(int damage)
     {
@@ -159,7 +162,7 @@ public class LostChildController : MonoBehaviour, IHittable,IHitTarget
     }
 
     /// <summary>
-    /// ’Ç]æ‚ªØ‚è‘Ö‚í‚Á‚½‚Æ‚«‚ÉŒÄ‚ÔBŸ‚ÌTick‚Å•K‚¸–Ú“I’n‚ğXV‚·‚é
+    /// è¿½å¾“å…ˆãŒåˆ‡ã‚Šæ›¿ã‚ã£ãŸã¨ãã«å‘¼ã¶ã€‚æ¬¡ã®Tickã§å¿…ãšç›®çš„åœ°ã‚’æ›´æ–°ã™ã‚‹
     /// </summary>
     public void ResetDestination()
     {
@@ -170,8 +173,8 @@ public class LostChildController : MonoBehaviour, IHittable,IHitTarget
     }
 
     /// <summary>
-    /// ˆÚ“®‚ğ‹–‰Â^’â~‚·‚éB~‚ß‚Ä‚¢‚éŠÔ‚ÍATick‚ªŒÄ‚Î‚ê‚Ä‚à“®‚©‚È‚¢iˆÃ‚¢êŠ‚È‚ÇA’Ç]‚ğ‹Ö~‚µ‚½‚¢‚Æ‚«‚Ég‚¤j
-    /// ƒ‰ƒCƒt‚ª0‚Ì‚Æ‚«‚ÍA‹–‰Â‚µ‚Ä‚à“®‚©‚È‚¢
+    /// ç§»å‹•ã‚’è¨±å¯ï¼åœæ­¢ã™ã‚‹ã€‚æ­¢ã‚ã¦ã„ã‚‹é–“ã¯ã€TickãŒå‘¼ã°ã‚Œã¦ã‚‚å‹•ã‹ãªã„ï¼ˆæš—ã„å ´æ‰€ãªã©ã€è¿½å¾“ã‚’ç¦æ­¢ã—ãŸã„ã¨ãã«ä½¿ã†ï¼‰
+    /// ãƒ©ã‚¤ãƒ•ãŒ0ã®ã¨ãã¯ã€è¨±å¯ã—ã¦ã‚‚å‹•ã‹ãªã„
     /// </summary>
     public void SetCanMove(bool canMove)
     {
@@ -180,17 +183,22 @@ public class LostChildController : MonoBehaviour, IHittable,IHitTarget
             _mover.SetCanMove(canMove && !_life.isDead);
         }
     }
-    /// <summary> ƒXƒe[ƒWƒNƒŠƒA‚ÉŒÄ‚ÔBˆÈ~A“®‚©‚¸Aƒ_ƒ[ƒW‚àó‚¯‚È‚¢</summary>
+    /// <summary> ã‚¹ãƒ†ãƒ¼ã‚¸ã‚¯ãƒªã‚¢æ™‚ã«å‘¼ã¶ã€‚ä»¥é™ã€å‹•ã‹ãšã€ãƒ€ãƒ¡ãƒ¼ã‚¸ã‚‚å—ã‘ãªã„</summary>
     public void Freeze()
     {
         if (!_isInitialized) return;
         _isFrozen = true;
         _mover.SetCanMove(false);
     }
+
+    public void CollectKodama(KodamaData data)
+    {
+        _kodamaStack.Add(data);
+    }
     #endregion
 
     #region Private
-    //“®‚¯‚È‚¢——R‚ğAŒ‹‰Ê‚ª•Ï‚í‚Á‚½‚Æ‚«‚¾‚¯Œx‚·‚éi–ˆƒtƒŒ[ƒ€‚Ío‚³‚È‚¢jBó‹µ‚ÌÚ×‚àˆê‚Éo‚·
+    //å‹•ã‘ãªã„ç†ç”±ã‚’ã€çµæœãŒå¤‰ã‚ã£ãŸã¨ãã ã‘è­¦å‘Šã™ã‚‹ï¼ˆæ¯ãƒ•ãƒ¬ãƒ¼ãƒ ã¯å‡ºã•ãªã„ï¼‰ã€‚çŠ¶æ³ã®è©³ç´°ã‚‚ä¸€ç·’ã«å‡ºã™
     private void WarnCannotFollow(NavFollowResult result, Vector3 targetPosition)
     {
         string reason = result == NavFollowResult.SelfOffNavMesh
@@ -200,7 +208,7 @@ public class LostChildController : MonoBehaviour, IHittable,IHitTarget
         Debug.LogWarning($"[LostChildController] Tick : {reason}\n{_mover.DescribeNavState(targetPosition)}");
     }
 
-    //ƒ‰ƒCƒt‚ª0‚É‚È‚Á‚½‚çA“®‚«‚ğ~‚ß‚éiƒQ[ƒ€ƒI[ƒo[‚Ìˆ—‚ÍA‚ ‚Æ‚Å‘«‚·j
+    //ãƒ©ã‚¤ãƒ•ãŒ0ã«ãªã£ãŸã‚‰ã€å‹•ãã‚’æ­¢ã‚ã‚‹ï¼ˆã‚²ãƒ¼ãƒ ã‚ªãƒ¼ãƒãƒ¼ã®å‡¦ç†ã¯ã€ã‚ã¨ã§è¶³ã™ï¼‰
     private void HandleDead()
     {
         Debug.Log("[LostChildController] HandleDead : life is 0");

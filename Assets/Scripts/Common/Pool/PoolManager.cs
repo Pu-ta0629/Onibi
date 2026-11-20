@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -18,6 +18,9 @@ public class PoolManager : MonoBehaviour
     [Tooltip("在庫がこの数まで戻ったら、生産再開を通知する")]
     [SerializeField] private int _resumeThreshoId = 3;
 
+    [Tooltip("木霊の、1つの湧きスポットに同時に出ている上限(Poolの大きさ)")]
+    [SerializeField, Min(1)] private int _maxKodamaPerSpot = 3;
+
     private readonly Dictionary<int, EnemyPool> _pools = new();
     private readonly Dictionary<EnemyController, EnemyPool> _owners = new();
     private readonly List<PlacedEnemy> _placedEnemies = new List<PlacedEnemy>();
@@ -27,8 +30,17 @@ public class PoolManager : MonoBehaviour
 
     private EnemyFactory _factory;
 
+    private const int KodamaResumeThreshoId = 1;
+
+    private readonly Dictionary<int, KodamaPool> _kodamaPools = new();
+    private KodamaData _normalKodamaData;
+    private KodamaFactory _kodamaFactory;
+
     /// <summary>在庫が再開閾値まで戻ったPoolのIDを通知する</summary>
     public event Action<int> Restocked;
+
+    /// <summary>木霊のPoolに空きができたときに、湧きスポットのIDを通知する</summary>
+    public event Action<int> KodamaRestocked;
 
     /// <summary>現在ステージに出現している敵の数（位置指定で配置した敵を含む）</summary>
     public int outCount => _outList.Count;
@@ -116,6 +128,50 @@ public class PoolManager : MonoBehaviour
             enemy.OnDead += HandleDead;
         }
     }
+
+    /// <summary>
+    /// StageDataを読み取り、木霊のスポットごとにPoolを作って、KodamaFactoryへ生成を発注する
+    /// 
+    /// </summary>
+    public void BuildKodama(StageData stageData,KodamaData normalKodamaData,HitWorld world,Transform parent)
+    {
+        if(stageData == null || normalKodamaData == null ||  world == null || parent == null)
+        {
+            Debug.LogError("[PoolManager] BuildKodama : Reference is NULL!!!");
+            return;
+        }
+
+        if(normalKodamaData.IsSpecial)
+        {
+            Debug.LogError($"[PoolManager] BUildKodama : {normalKodamaData.name} is Special. A normal KodamaData is required");
+            return;
+        }
+
+        _normalKodamaData = normalKodamaData;
+        _kodamaFactory = new KodamaFactory(world, parent);
+
+        foreach(var spot in stageData.SpawnSpots)
+        {
+            if(spot.Kind != SpawnKind.Kodama)
+            {
+                continue;
+            }
+
+            if(_kodamaPools.ContainsKey(spot.Id))
+            {
+                Debug.LogError($"[PoolManager] BuildKodama : PoolId is duplicated = {spot.Id}");
+                continue;
+            }
+
+            KodamaPool pool = new KodamaPool(spot.Id);
+            _kodamaPools.Add(spot.Id, pool);
+
+            for(int i = 0;i < _maxKodamaPerSpot;i++)
+            {
+                pool.Add(_kodamaFactory.Create(normalKodamaData));
+            }
+        }
+    }
     #endregion
 
     #region Public
@@ -169,6 +225,28 @@ public class PoolManager : MonoBehaviour
         return true;
     }
 
+    public bool TryRequestKodama(int poolId,Vector3 position)
+    {
+        if(!_kodamaPools.TryGetValue(poolId,out var pool))
+        {
+            return false;
+        }
+
+        if(!pool.TryTake(out var kodama))
+        {
+            pool.IsStopped = true;
+            return false;
+        }
+
+        if(!kodama.Spawn(position))
+        {
+            pool.Return(kodama);
+            return false;
+        }
+
+        return true;
+    }
+
     /// <summary>
     /// 毎フレーム呼び出す。ターゲットの座標を受け取り、出庫中の敵全員のTickへ渡す
     /// </summary>
@@ -184,6 +262,7 @@ public class PoolManager : MonoBehaviour
         }
 
         FlushReturns();
+        CheckKodamaTouch();
     }
 
     /// <summary>
@@ -211,6 +290,14 @@ public class PoolManager : MonoBehaviour
         }
 
         FlushReturns();
+
+        foreach(var pool in _kodamaPools.Values)
+        {
+            for(int i = pool.Active.Count - 1;i >= 0;i--)
+            {
+                pool.Return(pool.Active[i]);
+            }
+        }
     }
 
     /// <summary>
@@ -227,6 +314,21 @@ public class PoolManager : MonoBehaviour
         {
             DestroyEnemy(_placedEnemies[i].Enemy);
         }
+
+        foreach(var pool in _kodamaPools.Values)
+        {
+            for(int i = 0; i <  pool.Active.Count; i++)
+            {
+                if (pool.All[i] != null)
+                {
+                    UnityEngine.Object.Destroy(pool.All[i].gameObject);
+                }
+            }
+        }
+
+        _kodamaPools.Clear();
+        _normalKodamaData = null;
+        _kodamaFactory = null;
 
         _pools.Clear();
         _owners.Clear();
@@ -284,6 +386,31 @@ public class PoolManager : MonoBehaviour
             }
         }
     }
+
+    private void CheckKodamaTouch()
+    {
+        foreach(KodamaPool pool in _kodamaPools.Values)
+        {
+            for(int i = pool.Active.Count -1;i >= 0; i--)
+            {
+                KodamaController kodama = pool.Active[i]; 
+                if(!kodama.TryDetectToucher(out var toucher))
+                {
+                    continue;
+                }
+
+                var data = kodama.Data;
+                pool.Return(kodama);
+             //   toucher.CollectKodama(data);
+
+                if(pool.IsStopped && pool.Stock >= KodamaResumeThreshoId)
+                {
+                    pool.IsStopped = false;
+                    KodamaRestocked?.Invoke(pool.PoolId);
+                }
+            }
+        }
+    }
     #endregion
 
 #if UNITY_EDITOR
@@ -297,6 +424,11 @@ public class PoolManager : MonoBehaviour
         {
             EnemyPool pool = pair.Value;
             builder.AppendLine($"Pool {pair.Key}: 在庫{pool.Stock} / {pool.All.Count}, 停止中={pool.IsStopped}, 再開は在庫{pool.ResumeThreshold}以上");
+        }
+
+        foreach(var pair in _kodamaPools)
+        {
+            builder.AppendLine($"木霊Pool {pair.Key}: 在庫{pair.Value.Stock} / {pair.Value.All.Count}, 停止中={pair.Value.IsStopped}"); ;
         }
 
         builder.Append($"出現中の敵: {_outList.Count}体（位置指定で配置した敵を含む）");

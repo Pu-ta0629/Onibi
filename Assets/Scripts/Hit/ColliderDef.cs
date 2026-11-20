@@ -1,8 +1,6 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.LightTransport;
-using static UnityEngine.EventSystems.EventTrigger;
 
 [System.Serializable]
 public class ColliderDef
