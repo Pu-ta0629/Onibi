@@ -7,30 +7,39 @@ using UnityEngine;
 /// </summary>
 public class FieldSpawnManager : MonoBehaviour, IStageSpawner
 {
-    [Header("Goal")]
-    [Tooltip("ゴールのPrefab（直径1の見た目を想定。StageDataのGoalごとに生成する）")]
-    [SerializeField] private GoalObject _goalPrefab;
 
-    private readonly List<GoalObject> _goals = new List<GoalObject>();
+    [Header("Goal Light")]
+    [Tooltip("Goalの光の色 ")]
+    [SerializeField] private Color _goalLightColor = new Color(1f, 0.85f, 0.5f);
 
-    public IReadOnlyList<GoalObject> goals => _goals;
+    [Tooltip("Goalの光の強さ")]
+    [SerializeField, Min(0f)] private float _goalLightIntensity = 2f;
+
+    [Tooltip("光の範囲の倍率")]
+    [SerializeField, Min(0.1f)] private float _goalLightRangeScale = 2f;
+
+    [Tooltip("Goalの位置から、光を浮かせる高さ")]
+    [SerializeField, Min(0f)] private float _goalLightHeight = 2f;
+
+    private GameObject _goalObject;
+
+    /// <summary>Initializeで選ばれたGoal</summary>
+    public GoalPlacement SelectedGoal { get; private set; }
 
     #region Initialize
-    /// <summary>
-    /// StageGeneratorから一度だけ呼ぶ
+    ///<summary>
+    ///StageGeneratorから一度だけ呼ぶ
     /// </summary>
     public void Initialize(StageContext context)
     {
-        if (context == null)
+        if(context == null)
         {
-            Debug.LogError("[FieldSpawner] Initialize : StageContext is Null!!! ");
-            return;
+            Debug.LogError("[FieldSpawnManager] Initialize : StageContext is Null!!!");
         }
-
         StageData stage = context.Stage;
-        if (stage == null)
+        if(stage == null)
         {
-            Debug.Log("[FieldSpawner] Initialize : Stage is not set. Scene field is used");
+            Debug.LogError("[FieldSpawnManager] Initialize : stage is not set. Scene field is used");
             return;
         }
 
@@ -39,55 +48,56 @@ public class FieldSpawnManager : MonoBehaviour, IStageSpawner
         StageNavMeshProvider.Load(stage, context.LostChildController.LostChild.MovementProfile);
         StageGroundProvider.Load(stage);
 
-        SpawnGoals(stage, context.Root);
+        SpawnGoal(stage, context.Root);
     }
     #endregion
 
     #region UnityLifeCycle
     private void OnDestroy()
     {
-        ClearGoals();
+        ClearGoal();
     }
     #endregion
 
     #region Private
-    //StageDataのGoalごとに、GoalObjectを生成する
-    private void SpawnGoals(StageData stage, Transform parent)
+
+    private void SpawnGoal(StageData stage,Transform parent)
     {
-        ClearGoals();
+        ClearGoal();
 
-        if (stage.Goals.Count == 0)
+        if(stage.Goals.Count == 0)
         {
+            Debug.LogWarning("[FieldSpawnManager] SpawnGoal : StageData has no Goals!!");
             return;
         }
 
-        if (_goalPrefab == null)
-        {
-            Debug.LogWarning("[FieldSpawner] SpawnGoals : GoalPrefab is Null!!");
-            return;
-        }
+        int index = Random.Range(0, stage.Goals.Count);
+        GoalPlacement placement = stage.Goals[index];
 
-        for (int i = 0; i < stage.Goals.Count; i++)
-        {
-            GoalPlacement placement = stage.Goals[i];
-            GoalObject goal = Instantiate(_goalPrefab, placement.Position, Quaternion.Euler(0f, placement.RotationY, 0f), parent);
-            goal.name = $"Object_Goal_{i + 1}";
-            goal.Setup(placement.Radius);
-            _goals.Add(goal);
-        }
+        //判定に使うので、見た目より先に、選んだ結果をもっておく
+        SelectedGoal = placement;
+
+        // 見た目は、光だけ。GameObjectを一から組み立てる
+        _goalObject = new GameObject($"Object_Goal_{index + 1}");
+        _goalObject.transform.SetParent(parent);
+        _goalObject.transform.position = placement.Position + Vector3.up * _goalLightHeight;
+
+        Light goalLight = _goalObject.AddComponent<Light>();
+        goalLight.type = LightType.Point;
+        goalLight.color = _goalLightColor;
+        goalLight.intensity = _goalLightIntensity;
+        goalLight.range = placement.Radius * _goalLightRangeScale;
     }
 
-    private void ClearGoals()
+    private void ClearGoal()
     {
-        for (int i = 0; i < _goals.Count; i++)
+        if(_goalObject != null)
         {
-            if (_goals[i] != null)
-            {
-                Destroy(_goals[i].gameObject);
-            }
+            Destroy(_goalObject);
         }
 
-        _goals.Clear();
+        _goalObject = null;
+        SelectedGoal = null;
     }
     #endregion
 }

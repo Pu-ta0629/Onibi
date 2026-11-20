@@ -1,63 +1,105 @@
 using UnityEngine;
 
-/// <summary>
-/// ステージの生成をまとめるクラス。FieldSpawner（地形）→ EntitySpawner（敵など）の順にInitializeを呼ぶ
-/// 各Spawnerが共通で必要な参照（HitWorld・迷子・カメラ）は、ここでStageContextにまとめて渡す
-/// 生成するものの種類を増やすときは、IStageSpawnerを実装したクラスを足して、ここで呼ぶ
+
+/// Stageの生成・進行を管理するクラス
+/// ここを中継して、進行は生成からデータを受け取る
 /// </summary>
 public class StageManager : MonoBehaviour
 {
     [Header("Stage")]
-    [Tooltip("生成するステージ情報格納変数　各SpawnerでStageContext経由で渡す")]
+    [Tooltip("生成するStage情報格納変数 各SpawnerでStageContext軽油で渡す")]
     [SerializeField] private StageData _stage;
 
-    [Header("SpawnerManager")]
-    [Tooltip("地形（フィールド）の生成")]
+
+    [Header("Generator")]
+    [Tooltip("地形の生成実行を担当")]
     [SerializeField] private FieldSpawnManager _fieldSpawnManager;
-    [Tooltip("敵などの生成")]
+
+    [Tooltip("Entityの生成実行を担当")]
     [SerializeField] private EntitySpawnManager _entitySpawnManager;
 
-    private StageContext _context;
+    // Stageの生成を実行する Initializeで初期化
+    private StageGenerator _stageGenerator;
 
-    public StageContext context => _context;
+    private StageController _stageController;
+    private LostChildController _lostChild;
+
+    private StageContext _context;
+    
+    public StageContext Context => _context;
 
     #region Initialize
-    /// <summary>
-    /// InitializeManagerから一度だけ呼ぶ。共通の参照をまとめて、各Spawnerを初期化する
-    /// </summary>
-    public void Initialize(HitWorld world, LostChildController lostChild, Camera mainCamera)
+
+    public void Initialize(HitWorld world,LostChildController lostChild,Camera mainCamera)
     {
-        if (world == null || lostChild == null || mainCamera == null || _fieldSpawnManager == null || _entitySpawnManager == null)
+        if(world == null || lostChild == null || mainCamera == null || _fieldSpawnManager == null || _entitySpawnManager == null)
         {
-            Debug.LogError("[StageGenerator] Initialize : Reference is Null!!! ");
+            Debug.LogError("[StageGenerator] Initialize : Reference is Null!!!");
             return;
         }
 
-        //Stage未設定でも、各Spawnerの初期化は続ける（Scene上の地形と、デバッグ用の湧きポイントを使う）
-        if (_stage == null)
+#if UNITY_EDITOR
+        // Stage未設定でも、各Spawnerの初期化は続ける
+        if(_stage == null)
         {
             Debug.LogWarning("[StageGenerator] Initialize : Stage is not set. Scene field is used");
         }
+#else
+ // Stage未設定の場合
+        if(_stage == null)
+        {
+            Debug.LogWarning("[StageGenerator] Initialize : Stage is not set. Scene field is used");
+            return;
+        }
+#endif
+        _context = new StageContext(_stage,world,lostChild, mainCamera,transform);
 
-        _context = new StageContext(_stage, world, lostChild, mainCamera, transform);
+        _lostChild = lostChild;
 
-        //地形が先、迷子はNavMeshができてから置く、その後に敵などを出す
-        _fieldSpawnManager.Initialize(_context);
-        SpawnLostChild();
-        _entitySpawnManager.Initialize(_context);
+        _stageGenerator = new StageGenerator(world,mainCamera,_context,_fieldSpawnManager,_entitySpawnManager);
+
+        _stageGenerator.Generate();
+        CreateController();
     }
     #endregion
 
-    #region private
-    //迷子をStageDataのStartの位置へ置く（Stage未設定のときは、Scene上の位置のまま）
-    private void SpawnLostChild()
+    #region UnityLifeCycle
+
+    private void Update()
     {
-        if (_stage == null)
+        _stageController?.Tick();
+    }
+
+    private void OnDestroy()
+    {
+        if(_stageController != null)
         {
+            _stageController.StageCleared -= HandleStageCleared;
+        }
+    }
+    #endregion
+
+    #region Private
+    // 選ばれたGoalをStageConrollerへ渡して、判定を始める
+    private void CreateController()
+    {
+        GoalPlacement goal = _fieldSpawnManager.SelectedGoal;
+        if(goal == null)
+        {
+            Debug.LogWarning("[StageManager] CreateController : Goal is selected. Stage clear is not judged");
             return;
         }
 
-        _context.LostChildController.SpawnAt(_stage.Start.Position);
+        _stageController = new StageController(_lostChild, goal);
+        _stageController.StageCleared += HandleStageCleared;
+        _stageController.Begin();
+    }
+
+    private void HandleStageCleared()
+    {
+        // _lostChild.Freeze();
+       // _entitySpawnManager.Stop();
     }
     #endregion
+
 }

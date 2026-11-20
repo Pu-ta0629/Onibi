@@ -55,6 +55,13 @@ public class RadiusPlacement : PlacementData
     public float Radius => _radius;
 
     public const string RadiusField = nameof(_radius);
+
+    public bool Contains(Vector3 point)
+    {
+        float dx = point.x - Position.x;
+        float dz = point.z - Position.z;
+        return dx * dx + dz * dz <= Radius * Radius;
+    }
 }
 
 
@@ -110,12 +117,7 @@ public class SpawnSpotPlacement : RadiusPlacement
     public const string SpecialKodamasField = nameof(_specialKodamas);
     public const string SpawnIntervalField = nameof(_spawnInterval);
 
-    public bool Contains(Vector3 point)
-    {
-        float dx = point.x - Position.x;
-        float dz = point.z - Position.z;
-        return dx * dx + dz * dz <= Radius * Radius; 
-    }
+    
 
     public IEnumerable<MovementProfile> EnemyProfiles
     {

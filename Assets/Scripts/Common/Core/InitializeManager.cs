@@ -1,9 +1,9 @@
 using UnityEngine;
 
 /// <summary>
-/// ŠeManager‚Ì¶¬E‰Šú‰»‚ÌŒÄ‚Ño‚µ‚ÆAQÆ‚Ì”z•z‚ğ’S“–‚·‚é
-/// QÆ‚ÍInspector‚Åó‚¯æ‚èAInitialize‚Ìˆø”‚Æ‚µ‚ÄŠeƒXƒNƒŠƒvƒg‚Ö“n‚·iInstance‚Íg‚í‚È‚¢j
-/// ŠeManager‚ÌŒÅ—Lİ’èi‰Î‚Ìî•ñ‚È‚Çj‚ÍA‚»‚ê‚¼‚ê‚ÌManager‚ªInspector‚Å‚Â
+/// ï¿½eManagerï¿½Ìï¿½ï¿½ï¿½ï¿½Eï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ÌŒÄ‚Ñoï¿½ï¿½ï¿½ÆAï¿½Qï¿½Æ‚Ì”zï¿½zï¿½ï¿½Sï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+/// ï¿½Qï¿½Æ‚ï¿½Inspectorï¿½Åó‚¯ï¿½ï¿½AInitializeï¿½Ìˆï¿½ï¿½ï¿½ï¿½Æ‚ï¿½ï¿½ÄŠeï¿½Xï¿½Nï¿½ï¿½ï¿½vï¿½gï¿½Ö“nï¿½ï¿½ï¿½iInstanceï¿½Ígï¿½ï¿½È‚ï¿½ï¿½j
+/// ï¿½eManagerï¿½ÌŒÅ—Lï¿½İ’ï¿½iï¿½Î‚Ìï¿½ï¿½È‚Çjï¿½ÍAï¿½ï¿½ï¿½ê‚¼ï¿½ï¿½ï¿½Managerï¿½ï¿½Inspectorï¿½Åï¿½ï¿½ï¿½
 /// </summary>
 public class InitializeManager : MonoBehaviour
 {
@@ -16,7 +16,7 @@ public class InitializeManager : MonoBehaviour
     
 
     [Header("Battle")]
-    [Tooltip("ƒXƒe[ƒWŠJn‚Ì–Ø—ì‚Ì—ÊB‰Î‚ª“Ëi‚·‚é‚½‚Ñ‚ÉÁ”ï‚·‚é")]
+    [Tooltip("ï¿½Xï¿½eï¿½[ï¿½Wï¿½Jï¿½nï¿½ï¿½ï¿½Ì–Ø—ï¿½Ì—ÊBï¿½Î‚ï¿½ï¿½Ëiï¿½ï¿½ï¿½é‚½ï¿½Ñ‚Éï¿½ï¿½ï‚·ï¿½ï¿½")]
     [SerializeField, Range(0, 999)] private int _initialKodama = 30;
 
     private TypeManager _typeManager;
@@ -34,7 +34,7 @@ public class InitializeManager : MonoBehaviour
             return;
         }
 
-        //Inspector‚Å–¢İ’è‚È‚çCamera.main‚ğg‚¤BˆÈ~‚Í‚±‚±‚ÅŒˆ‚ß‚½ƒJƒƒ‰‚ğ”z‚é
+        //Inspectorï¿½Å–ï¿½ï¿½İ’ï¿½È‚ï¿½Camera.mainï¿½ï¿½ï¿½gï¿½ï¿½ï¿½Bï¿½È~ï¿½Í‚ï¿½ï¿½ï¿½ï¿½ÅŒï¿½ï¿½ß‚ï¿½ï¿½Jï¿½ï¿½ï¿½ï¿½ï¿½ï¿½zï¿½ï¿½
         Camera mainCamera = _mainCamera != null ? _mainCamera : Camera.main;
         if (mainCamera == null)
         {
@@ -42,15 +42,15 @@ public class InitializeManager : MonoBehaviour
             return;
         }
 
-        //ƒˆ‚ÈC#ƒNƒ‰ƒX‚ğ¶¬‚µ‚Ä‰Šú‰»‚·‚é
+        //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½C#ï¿½Nï¿½ï¿½ï¿½Xï¿½ğ¶ï¿½ï¿½ï¿½ï¿½Äï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
         _typeManager = new TypeManager();
         _typeManager.Initialize();
         _hitWorld = new HitWorld();
         _kodamaStock = new KodamaStock(_initialKodama);
 
-        //“ü—Í¨–Àq¨ƒXƒe[ƒWi’nŒ`E–Àq‚Ì”z’uE“Gj¨‰Î‚Ì‡‚Å‰Šú‰»‚·‚é
-        //–Àq‚ÍAƒXƒe[ƒW“à‚ÌSpawnAt‚Å’u‚©‚ê‚é‚Ì‚ÅA•K‚¸ƒXƒe[ƒW‚æ‚è‘O‚ÉInitialize‚·‚é
-        //iŒã‚ë‚¾‚ÆSpawnAt‚ª‰½‚à‚¹‚¸–ß‚èA–Àq‚ªStart‚É’u‚©‚ê‚¸A“G‚Ì’Ç]æ‚ªNavMesh‚ÌŠO‚É‚È‚éj
+        //ï¿½ï¿½ï¿½Íï¿½ï¿½ï¿½ï¿½qï¿½ï¿½ï¿½Xï¿½eï¿½[ï¿½Wï¿½iï¿½nï¿½`ï¿½Eï¿½ï¿½ï¿½qï¿½Ì”zï¿½uï¿½Eï¿½Gï¿½jï¿½ï¿½ï¿½Î‚Ìï¿½ï¿½Åï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+        //ï¿½ï¿½ï¿½qï¿½ÍAï¿½Xï¿½eï¿½[ï¿½Wï¿½ï¿½ï¿½ï¿½SpawnAtï¿½Å’uï¿½ï¿½ï¿½ï¿½ï¿½Ì‚ÅAï¿½Kï¿½ï¿½ï¿½Xï¿½eï¿½[ï¿½Wï¿½ï¿½ï¿½Oï¿½ï¿½Initializeï¿½ï¿½ï¿½ï¿½
+        //ï¿½iï¿½ï¿½ë‚¾ï¿½ï¿½SpawnAtï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ß‚ï¿½Aï¿½ï¿½ï¿½qï¿½ï¿½Startï¿½É’uï¿½ï¿½ï¿½ê‚¸ï¿½Aï¿½Gï¿½Ì’Ç]ï¿½æ‚ªNavMeshï¿½ÌŠOï¿½É‚È‚ï¿½j
         _inputManager.Initialize(mainCamera);
         _lostChildController.Initialize(_hitWorld);
         _stageManager.Initialize(_hitWorld, _lostChildController, mainCamera);

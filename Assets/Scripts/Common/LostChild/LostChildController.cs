@@ -180,6 +180,7 @@ public class LostChildController : MonoBehaviour, IHittable,IHitTarget
             _mover.SetCanMove(canMove && !_life.isDead);
         }
     }
+    /// <summary> ステージクリア時に呼ぶ。以降、動かず、ダメージも受けない</summary>
     public void Freeze()
     {
         if (!_isInitialized) return;
