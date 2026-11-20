@@ -55,7 +55,7 @@ public class Mover
     /// <param name="repathDistance">追従先がこの距離動いたら経路を更新する</param>
     /// <param name="profile">nullならそのままのType</param>>
     /// <param name="followSpeed">追従（Follow）の速度。0以下ならspeedと同じ</param>
-    public Mover(NavMeshAgent agent, float speed, LayerMask groundMask, float sampleDistance, float repathDistance, MovementProfile? profile = null, float followSpeed = 0f, float acceleration = 0f)
+    public Mover(NavMeshAgent agent, float speed, LayerMask groundMask, float sampleDistance, float repathDistance, MovementProfile? profile = null, float followSpeed = 0f, float acceleration = 8f)
     {
         _profile = profile;
         _agent = agent;
@@ -70,7 +70,7 @@ public class Mover
     /// 移動の設定を入れ替える（火の進化・退化で、FireStateDataが変わったときに呼ぶ）
     /// 今の経路は、新しい設定で引き直すために捨てる
     /// </summary>
-    public void Configure(float speed, LayerMask groundMask, float sampleDistance, float repathDistance, float followSpeed = 0f, float acceleration = 0f)
+    public void Configure(float speed, LayerMask groundMask, float sampleDistance, float repathDistance, float followSpeed = 0f, float acceleration = 8f)
     {
         _speed = speed;
         _followSpeed = followSpeed > 0f ? followSpeed : speed;

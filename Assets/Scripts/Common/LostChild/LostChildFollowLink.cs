@@ -1,4 +1,5 @@
 using System;
+using UnityEngine;
 
 /// <summary>
 /// 迷子へ「どの火を追うか」を渡す純粋なC#クラス
