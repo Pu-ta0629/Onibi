@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
@@ -17,12 +17,16 @@ public class EntitySpawnManager : MonoBehaviour
         public float Interval;
         public float Timer;
         public bool Stopped;
+        public bool IsKodama;
     }
 
     [SerializeField] private PoolManager _poolManager;
 
     [Tooltip("湧く位置を決めるとき、スポットの円の中で通れる場所を探す回数")]
     [SerializeField, Min(1)] private int _pickTryCount = 5;
+
+    [Tooltip("通常の木霊のKodamaData。MasterDataの読み込み先が決まるまでの、仮のInspector設定")]
+    [SerializeField] private KodamaData _normalKodamaData;
 
     private readonly List<SpawnEntry> _entries = new();
     private LostChildController _lostChild;
@@ -48,10 +52,13 @@ public class EntitySpawnManager : MonoBehaviour
 
         // 敵を生成してPoolに仕分ける（これを呼ばないと、敵が1体も作られない）
         _poolManager.Build(context.Stage, context.World, context.Root);
+        _poolManager.BuildKodama(context.Stage,_normalKodamaData,context.World,context.Root);
 
         foreach (SpawnSpotPlacement spot in context.Stage.SpawnSpots)
         {
-            if (spot.Kind != SpawnKind.Enemy)
+            bool isEnemy = spot.Kind == SpawnKind.Enemy;
+            bool isKodama = spot.Kind == SpawnKind.Kodama;
+            if(!isEnemy && !isKodama)
             {
                 continue;
             }
@@ -61,6 +68,7 @@ public class EntitySpawnManager : MonoBehaviour
             entry.Center = spot.Position;
             entry.Radius = spot.Radius;
             entry.Interval = spot.SpawnInterval;
+            entry.IsKodama = isKodama;
             _entries.Add(entry);
         }
 
@@ -81,11 +89,13 @@ public class EntitySpawnManager : MonoBehaviour
     private void OnEnable()
     {
         _poolManager.Restocked += OnRestocked;
+        _poolManager.KodamaRestocked += OnKodamaRestocked;
     }
 
     private void OnDisable()
     {
         _poolManager.Restocked -= OnRestocked;
+        _poolManager.KodamaRestocked -= OnKodamaRestocked;
     }
 
     private void OnDestroy()
@@ -132,6 +142,12 @@ public class EntitySpawnManager : MonoBehaviour
     #region Private
     private void Spawn(SpawnEntry entry)
     {
+        if(entry.IsKodama)
+        {
+            SpawnKodama(entry);
+            return;
+        }
+
         if (!_poolManager.TryRequest(entry.PoolId, out EnemyController enemy))
         {
             entry.Stopped = true;
@@ -140,6 +156,17 @@ public class EntitySpawnManager : MonoBehaviour
 
         // 出てきた敵が通れる場所を、スポットの円の中から選ぶ
         enemy.Spawn(PickSpawnPosition(entry, enemy));
+    }
+
+    private void SpawnKodama(SpawnEntry entry)
+    {
+        Vector2 offset = Random.insideUnitCircle * entry.Radius;
+        Vector2 position = entry.Center + new Vector3(offset.x,0f,offset.y);
+
+        if(!_poolManager.TryRequestKodama(entry.PoolId,position))
+        {
+            entry.Stopped =true;
+        }
     }
 
     private Vector3 PickSpawnPosition(SpawnEntry entry, EnemyController enemy)
@@ -163,7 +190,18 @@ public class EntitySpawnManager : MonoBehaviour
     {
         for (int i = 0; i < _entries.Count; i++)
         {
-            if (_entries[i].PoolId == poolId)
+            if (!_entries[i].IsKodama && _entries[i].PoolId == poolId)
+            {
+                _entries[i].Stopped = false;
+            }
+        }
+    }
+
+    private void OnKodamaRestocked(int poolId)
+    {
+        for(int i = 0;i < _entries.Count;i++)
+        {
+            if (_entries[i].IsKodama && _entries[i].PoolId == poolId)
             {
                 _entries[i].Stopped = false;
             }
