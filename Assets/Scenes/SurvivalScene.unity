@@ -1106,7 +1106,7 @@ GameObject:
   - component: {fileID: 915321619}
   - component: {fileID: 915321618}
   m_Layer: 0
-  m_Name: GameManager
+  m_Name: InitializeManager
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1141,11 +1141,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b58c1cc684cc03e449abdb75fd94ccfd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::InitializeManager
-  _mainCamera: {fileID: 876606242}
   _inputManager: {fileID: 915321618}
   _lostChildController: {fileID: 228902425}
-  _fireManager: {fileID: 763775364}
   _stageManager: {fileID: 1958156131}
+  _fireManager: {fileID: 763775364}
+  _cameraManager: {fileID: 1954443731}
   _initialKodama: 100
 --- !u!4 &915321620
 Transform:
@@ -2131,7 +2131,7 @@ GameObject:
   - component: {fileID: 1954443732}
   - component: {fileID: 1954443731}
   m_Layer: 0
-  m_Name: Target Group
+  m_Name: Target Group(CameraManager)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2149,6 +2149,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8ec65688c4c8b0945bc9df02dd479ee1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CameraManager
+  _mainCamera: {fileID: 876606242}
   _cinemachineCamera: {fileID: 982234756}
   _targetGroup: {fileID: 1954443732}
   _lostChildWeight: 1
