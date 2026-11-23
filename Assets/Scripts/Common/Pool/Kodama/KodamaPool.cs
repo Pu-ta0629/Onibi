@@ -50,12 +50,12 @@ public class KodamaPool
     ///<summary>木霊をPoolに戻す。出ていない木霊は、何もしない</summary>
     public void Return(KodamaController kodama)
     {
-        if(kodama == null || _active.Remove(kodama))
+        if(kodama == null || !_active.Remove(kodama))
         {
             return;
         }
 
-        kodama.Despown();
+        kodama.Despawn();
         _stock.Add(kodama);
     }
 }

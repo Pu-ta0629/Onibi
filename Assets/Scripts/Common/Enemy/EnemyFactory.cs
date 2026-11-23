@@ -1,23 +1,21 @@
-using Unity.VisualScripting;
-using UnityEngine;
+ï»¿using UnityEngine;
 using UnityEngine.AI;
 
 
 /// <summary>
-/// PoolManager‚©‚ç‚Ì”­’‚ğó‚¯‚ÄAEnemyController‚ğ1‘Ìì‚Á‚Äo‰×‚·‚é
-/// Œ©‚½–Ú‚ÍSprite‚Ì‚İBPrefab‚Íg‚í‚¸AGameObject‚ğˆê‚©‚ç‘g‚İ—§‚Ä‚é
+/// PoolManagerã‹ã‚‰ã®ç™ºæ³¨ã‚’å—ã‘ã¦ã€EnemyControllerã‚’1ä½“ä½œã£ã¦å‡ºè·ã™ã‚‹
+/// è¦‹ãŸç›®ã¯Spriteã®ã¿ã€‚Prefabã¯ä½¿ã‚ãšã€GameObjectã‚’ä¸€ã‹ã‚‰çµ„ã¿ç«‹ã¦ã‚‹
+/// è¦ªã¯ã€Poolã”ã¨ã«ä½œã£ãŸè¦ªã‚’ã€Createã®æ—…ã«å—ã‘å–ã‚‹
 /// </summary>
 public class EnemyFactory
 {
     private readonly HitWorld _world;
-    private readonly Transform _parent;
-    public EnemyFactory(HitWorld world,Transform parent)
+    public EnemyFactory(HitWorld world)
     {
         _world = world;
-        _parent = parent;
     }
 
-    public EnemyController Create(EnemyData data,SizeClass size)
+    public EnemyController Create(EnemyData data,SizeClass size,Transform parent)
     {
         if (data == null)
         {
@@ -27,15 +25,15 @@ public class EnemyFactory
 
         GameObject obj = !string.IsNullOrWhiteSpace(data.DisplayName) ? new GameObject($"Enemy_{data.DisplayName}") : new GameObject($"Enemy_{data.Type}");
         
-        // æ‚É”ñ•\¦‚É‚µ‚Ä‚©‚çƒRƒ“ƒ|[ƒlƒ“ƒg‚ğ‘«‚·
-        // (—LŒø‚È‚Ü‚Ü‘«‚·‚ÆANavMesh‚ÌŠO‚ÅNavMeshAgent‚ª‹N“®‚µAŒx‚ªo‚é
+        // å…ˆã«éè¡¨ç¤ºã«ã—ã¦ã‹ã‚‰ã‚³ãƒ³ãƒãƒ¼ãƒãƒ³ãƒˆã‚’è¶³ã™
+        // (æœ‰åŠ¹ãªã¾ã¾è¶³ã™ã¨ã€NavMeshã®å¤–ã§NavMeshAgentãŒèµ·å‹•ã—ã€è­¦å‘ŠãŒå‡ºã‚‹
         obj.SetActive(false);
-        obj.transform.SetParent(_parent);
+        obj.transform.SetParent(parent,false);
 
         SpriteRenderer spriteRenderer = obj.AddComponent<SpriteRenderer>();
         spriteRenderer.sprite = data.Sprite;
 
-        //EnemyController‚ÌRequireComponent‚ÅANavMeshAgent‚àˆê‚É•t‚­
+        //EnemyControllerã®RequireComponentã§ã€NavMeshAgentã‚‚ä¸€ç·’ã«ä»˜ã
         EnemyController enemy = obj.AddComponent<EnemyController>();
 
         NavMeshAgent agent = obj.GetComponent<NavMeshAgent>();

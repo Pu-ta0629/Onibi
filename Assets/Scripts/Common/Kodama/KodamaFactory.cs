@@ -1,5 +1,4 @@
 ﻿using UnityEngine;
-using UnityEngine.UIElements;
 
 /// <summary>
 /// 木霊を１つ作って出荷する。
@@ -7,22 +6,20 @@ using UnityEngine.UIElements;
 public class KodamaFactory
 {
     private readonly HitWorld _world;
-    private readonly Transform _parent;
     private int _createdCount;
 
-    public KodamaFactory(HitWorld world,Transform parent)
+    public KodamaFactory(HitWorld world)
     {
-        if(world == null || parent == null)
+        if(world == null)
         {
             Debug.LogError("[KodamaFactory] Reference is NUll!!!!");
         }
 
         _world = world;
-        _parent = parent;
     }
 
     /// <summary>非アクティブの木霊を一つ生成。</summary>
-    public KodamaController Create(KodamaData data)
+    public KodamaController Create(KodamaData data,Transform parent)
     {
         if(data == null || data.Prefab == null)
         {
@@ -32,7 +29,7 @@ public class KodamaFactory
 
         GameObject gameObject = new GameObject($"Kodama_{_createdCount++}");
         gameObject.SetActive(false);
-        gameObject.transform.SetParent(_parent, false);
+        gameObject.transform.SetParent(parent, false);
 
         // 見た目のParticleを、子として付ける
         GameObject visual = Object.Instantiate(data.Prefab, gameObject.transform, false);

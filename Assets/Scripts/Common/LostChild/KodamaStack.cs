@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using UnityEngine;
 
 /// <summary>
 /// 迷子が取得した木霊数。通常の木霊と、特殊木霊の種類ごとに、べつべつに積む
@@ -24,6 +25,7 @@ public class KodamaStack
     ///<summary>木霊を一つ積む</summary>
     public void Add(KodamaData data)
     {
+
         if(data == null)
         {
             return;
@@ -38,6 +40,7 @@ public class KodamaStack
             _normalCount++;
         }
 
+        Debug.Log($"[KodamaStack] CurrentKodama : {_normalCount}");
         Changed?.Invoke();
     }
 

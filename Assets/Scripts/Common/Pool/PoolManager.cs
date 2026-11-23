@@ -36,6 +36,9 @@ public class PoolManager : MonoBehaviour
     private KodamaData _normalKodamaData;
     private KodamaFactory _kodamaFactory;
 
+    private Transform _enemyParent;
+    private Transform _kodamaParent;
+
     /// <summary>在庫が再開閾値まで戻ったPoolのIDを通知する</summary>
     public event Action<int> Restocked;
 
@@ -64,7 +67,8 @@ public class PoolManager : MonoBehaviour
             return;
         }
 
-        _factory = new EnemyFactory(world, parent);
+        _factory = new EnemyFactory(world);
+        _enemyParent = CreateChild(parent, "EnemyPoolParent");
 
         // 敵スポットのリスト、スポットID、EnemyDataのList、再開の閾値
         foreach (var spot in stageData.SpawnSpots)
@@ -83,6 +87,8 @@ public class PoolManager : MonoBehaviour
             EnemyPool pool = new EnemyPool(spot.Id, _resumeThreshoId);
             _pools.Add(spot.Id, pool);
 
+            Transform poolRoot = CreateChild(_enemyParent, $"Pool_Enemy_{spot.Id}");
+
             foreach (EnemyCount entry in spot.EnemyList)
             {
                 if (entry == null || entry.EnemyData == null)
@@ -92,7 +98,7 @@ public class PoolManager : MonoBehaviour
 
                 for (int i = 0; i < entry.Count; i++)
                 {
-                    EnemyController enemy = _factory.Create(entry.EnemyData, spot.EnemySize);
+                    EnemyController enemy = _factory.Create(entry.EnemyData, spot.EnemySize,poolRoot);
                     if (enemy == null)
                     {
                         continue;
@@ -105,6 +111,8 @@ public class PoolManager : MonoBehaviour
             }
         }
 
+        Transform otherRoot = CreateChild(_enemyParent, "Pool_Enemy_Other");
+
         // 位置指定で配置する敵：生成して、位置と向きと一緒に記録しておく
         foreach (var placement in stageData.Enemies)
         {
@@ -113,7 +121,7 @@ public class PoolManager : MonoBehaviour
                 continue;
             }
 
-            EnemyController enemy = _factory.Create(placement.Enemy, placement.Size);
+            EnemyController enemy = _factory.Create(placement.Enemy, placement.Size,otherRoot);
             if (enemy == null)
             {
                 continue;
@@ -148,7 +156,8 @@ public class PoolManager : MonoBehaviour
         }
 
         _normalKodamaData = normalKodamaData;
-        _kodamaFactory = new KodamaFactory(world, parent);
+        _kodamaFactory = new KodamaFactory(world);
+        _kodamaParent = CreateChild(parent, "KodamaPoolParent");
 
         foreach(var spot in stageData.SpawnSpots)
         {
@@ -166,12 +175,16 @@ public class PoolManager : MonoBehaviour
             KodamaPool pool = new KodamaPool(spot.Id);
             _kodamaPools.Add(spot.Id, pool);
 
+            Transform poolRoot = CreateChild(_kodamaParent, $"Pool_Kodama_{spot.Id}");
+
             for(int i = 0;i < _maxKodamaPerSpot;i++)
             {
-                pool.Add(_kodamaFactory.Create(normalKodamaData));
+                pool.Add(_kodamaFactory.Create(normalKodamaData,poolRoot));
             }
         }
     }
+
+    
     #endregion
 
     #region Public
@@ -317,7 +330,7 @@ public class PoolManager : MonoBehaviour
 
         foreach(var pool in _kodamaPools.Values)
         {
-            for(int i = 0; i <  pool.Active.Count; i++)
+            for(int i = 0; i <  pool.All.Count; i++)
             {
                 if (pool.All[i] != null)
                 {
@@ -325,6 +338,9 @@ public class PoolManager : MonoBehaviour
                 }
             }
         }
+
+        _enemyParent = null;
+        _kodamaParent = null;
 
         _kodamaPools.Clear();
         _normalKodamaData = null;
@@ -341,6 +357,14 @@ public class PoolManager : MonoBehaviour
     #endregion
 
     #region Private
+
+    private static Transform CreateChild(Transform parent,string name)
+    {
+        GameObject child = new GameObject(name);
+        child.transform.SetParent(parent, false);
+        return child.transform;
+    }
+
     private void DestroyEnemy(EnemyController enemy)
     {
         if (enemy == null)
