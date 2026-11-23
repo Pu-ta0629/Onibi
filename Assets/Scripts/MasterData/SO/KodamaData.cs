@@ -15,7 +15,7 @@ public class KodamaData : MasterData
     [SerializeField] private bool _isSpecial;
 
     [Tooltip("特殊木霊の種類(StageDataの特殊木霊と同じ種類)。")]
-    [SerializeField] private SpecialKodamaKind _specialKind;
+    [SerializeField] private SpecialKodamaKind _specialKind = 0;
 
     [Header("見た目")]
     [Tooltip("木霊のSprite")]

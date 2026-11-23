@@ -15,11 +15,6 @@ public class PoolManager : MonoBehaviour
         public float RotationY;
     }
 
-    [Tooltip("在庫がこの数まで戻ったら、生産再開を通知する")]
-    [SerializeField] private int _resumeThreshoId = 3;
-
-    [Tooltip("木霊の、1つの湧きスポットに同時に出ている上限(Poolの大きさ)")]
-    [SerializeField, Min(1)] private int _maxKodamaPerSpot = 3;
 
     private readonly Dictionary<int, EnemyPool> _pools = new();
     private readonly Dictionary<EnemyController, EnemyPool> _owners = new();
@@ -30,11 +25,12 @@ public class PoolManager : MonoBehaviour
 
     private EnemyFactory _factory;
 
-    private const int KodamaResumeThreshoId = 1;
 
     private readonly Dictionary<int, KodamaPool> _kodamaPools = new();
-    private KodamaData _normalKodamaData;
     private KodamaFactory _kodamaFactory;
+
+    private Transform _enemyParent;
+    private Transform _kodamaParent;
 
     /// <summary>在庫が再開閾値まで戻ったPoolのIDを通知する</summary>
     public event Action<int> Restocked;
@@ -45,11 +41,7 @@ public class PoolManager : MonoBehaviour
     /// <summary>現在ステージに出現している敵の数（位置指定で配置した敵を含む）</summary>
     public int outCount => _outList.Count;
 
-    ///// <param name="resumeThreshold">在庫がこの数まで戻ったら、生産再開を通知する</param>
-    //public PoolManager(int resumeThreshold)
-    //{
-    //    ///_resumeThreshoId = Mathf.Max(1, resumeThreshold);
-    //}
+    
 
     #region Build
     /// <summary>
@@ -64,7 +56,8 @@ public class PoolManager : MonoBehaviour
             return;
         }
 
-        _factory = new EnemyFactory(world, parent);
+        _factory = new EnemyFactory(world);
+        _enemyParent = CreateChild(parent, "EnemyPoolParent");
 
         // 敵スポットのリスト、スポットID、EnemyDataのList、再開の閾値
         foreach (var spot in stageData.SpawnSpots)
@@ -80,8 +73,10 @@ public class PoolManager : MonoBehaviour
                 continue;
             }
 
-            EnemyPool pool = new EnemyPool(spot.Id, _resumeThreshoId);
+            EnemyPool pool = new EnemyPool(spot.Id, spot.ResumeThreshold);
             _pools.Add(spot.Id, pool);
+
+            Transform poolRoot = CreateChild(_enemyParent, $"Pool_Enemy_{spot.Id}");
 
             foreach (EnemyCount entry in spot.EnemyList)
             {
@@ -92,7 +87,7 @@ public class PoolManager : MonoBehaviour
 
                 for (int i = 0; i < entry.Count; i++)
                 {
-                    EnemyController enemy = _factory.Create(entry.EnemyData, spot.EnemySize);
+                    EnemyController enemy = _factory.Create(entry.EnemyData, spot.EnemySize,poolRoot);
                     if (enemy == null)
                     {
                         continue;
@@ -105,6 +100,8 @@ public class PoolManager : MonoBehaviour
             }
         }
 
+        Transform otherRoot = CreateChild(_enemyParent, "Pool_Enemy_Other");
+
         // 位置指定で配置する敵：生成して、位置と向きと一緒に記録しておく
         foreach (var placement in stageData.Enemies)
         {
@@ -113,7 +110,7 @@ public class PoolManager : MonoBehaviour
                 continue;
             }
 
-            EnemyController enemy = _factory.Create(placement.Enemy, placement.Size);
+            EnemyController enemy = _factory.Create(placement.Enemy, placement.Size,otherRoot);
             if (enemy == null)
             {
                 continue;
@@ -133,22 +130,17 @@ public class PoolManager : MonoBehaviour
     /// StageDataを読み取り、木霊のスポットごとにPoolを作って、KodamaFactoryへ生成を発注する
     /// 
     /// </summary>
-    public void BuildKodama(StageData stageData,KodamaData normalKodamaData,HitWorld world,Transform parent)
+    public void BuildKodama(StageData stageData,HitWorld world,Transform parent)
     {
-        if(stageData == null || normalKodamaData == null ||  world == null || parent == null)
+        if(stageData == null ||  world == null || parent == null)
         {
             Debug.LogError("[PoolManager] BuildKodama : Reference is NULL!!!");
             return;
         }
 
-        if(normalKodamaData.IsSpecial)
-        {
-            Debug.LogError($"[PoolManager] BUildKodama : {normalKodamaData.name} is Special. A normal KodamaData is required");
-            return;
-        }
 
-        _normalKodamaData = normalKodamaData;
-        _kodamaFactory = new KodamaFactory(world, parent);
+        _kodamaFactory = new KodamaFactory(world);
+        _kodamaParent = CreateChild(parent, "KodamaPoolParent");
 
         foreach(var spot in stageData.SpawnSpots)
         {
@@ -163,15 +155,32 @@ public class PoolManager : MonoBehaviour
                 continue;
             }
 
-            KodamaPool pool = new KodamaPool(spot.Id);
+            KodamaData data = spot.KodamaData;
+            if(data == null)
+            {
+                Debug.LogError($"[PoolManager] BuildKodama : KodamaData is not set.  SpawnSpot Id = {spot.Id}");
+                continue;
+            }
+
+            if (data.IsSpecial)
+            {
+                Debug.LogError($"[PoolManager] BuildKodama : {data.name} is Special. A normal kodamaData is required. SpawnSpot Id = {spot.Id}");
+                continue;
+            }
+
+            KodamaPool pool = new KodamaPool(spot.Id, spot.ResumeThreshold);
             _kodamaPools.Add(spot.Id, pool);
 
-            for(int i = 0;i < _maxKodamaPerSpot;i++)
+            Transform poolRoot = CreateChild(_kodamaParent, $"Pool_Kodama_{spot.Id}");
+
+            for (int i = 0; i < _kodamaPools.Count; i++)
             {
-                pool.Add(_kodamaFactory.Create(normalKodamaData));
+                pool.Add(_kodamaFactory.Create(data, poolRoot));
             }
         }
     }
+
+    
     #endregion
 
     #region Public
@@ -198,6 +207,8 @@ public class PoolManager : MonoBehaviour
             {
                 Debug.LogWarning($"[PoolManager] SpawnPlacedEnemies : NavMesh is not found near {position} ({placed.Enemy.name})");
             }
+
+            
 
             placed.Enemy.Spawn(position, placed.RotationY);
             _outList.Add(placed.Enemy);
@@ -317,7 +328,7 @@ public class PoolManager : MonoBehaviour
 
         foreach(var pool in _kodamaPools.Values)
         {
-            for(int i = 0; i <  pool.Active.Count; i++)
+            for(int i = 0; i <  pool.All.Count; i++)
             {
                 if (pool.All[i] != null)
                 {
@@ -326,8 +337,10 @@ public class PoolManager : MonoBehaviour
             }
         }
 
+        _enemyParent = null;
+        _kodamaParent = null;
+
         _kodamaPools.Clear();
-        _normalKodamaData = null;
         _kodamaFactory = null;
 
         _pools.Clear();
@@ -341,6 +354,14 @@ public class PoolManager : MonoBehaviour
     #endregion
 
     #region Private
+
+    private static Transform CreateChild(Transform parent,string name)
+    {
+        GameObject child = new GameObject(name);
+        child.transform.SetParent(parent, false);
+        return child.transform;
+    }
+
     private void DestroyEnemy(EnemyController enemy)
     {
         if (enemy == null)
@@ -403,7 +424,7 @@ public class PoolManager : MonoBehaviour
                 pool.Return(kodama);
                 toucher.CollectKodama(data);
 
-                if(pool.IsStopped && pool.Stock >= KodamaResumeThreshoId)
+                if(pool.IsStopped && pool.Stock >= pool.ResumeThreshold)
                 {
                     pool.IsStopped = false;
                     KodamaRestocked?.Invoke(pool.PoolId);

@@ -29,8 +29,6 @@ public class KodamaController : MonoBehaviour
         _touchDefs.Clear();
         data.Colliders.Collect(ColliderRole.Search, _touchDefs);
 
-        _touchDefs.Clear();
-        data.Colliders.Collect(ColliderRole.Search, _touchDefs);
         if(_touchDefs.Count == 0)
         {
             Debug.LogError($"[KodamaController] Initialize : {data.name} has no Search collider!!!");
@@ -59,7 +57,7 @@ public class KodamaController : MonoBehaviour
     }
 
     ///<summary>木霊をステージから外す(取得されたときや、強制回収の時に、PoolManagerが呼ぶ)</summary>
-    public void Despown()
+    public void Despawn()
     {
         IsActive = false;
 

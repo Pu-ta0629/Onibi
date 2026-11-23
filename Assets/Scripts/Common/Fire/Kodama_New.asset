@@ -19,15 +19,15 @@ MonoBehaviour:
   _prefab: {fileID: 4538121305004603481, guid: b6d8cd365cb74844dbf4c8fb584f7e69, type: 3}
   _colliders:
     _colliders:
-    - _key: 
+    - _key: 112
       _role: 2
       _shape:
         _kind: 0
-        _radius: 0.1
+        _radius: 5
         _length: 0
         _width: 0
         _angle: 0
         _innerRange: 0
       _offset: {x: 0, y: 0}
       _yawOffset: 0
-      _targets: 0
+      _targets: 2
