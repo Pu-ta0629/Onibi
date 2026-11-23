@@ -101,6 +101,12 @@ public class SpawnSpotPlacement : RadiusPlacement
 
     [SerializeField] private KodamaData _kodamaData;
 
+    [Tooltip("木霊の生成数")]
+    [SerializeField, Min(1)] private int _kodamaCount = 3;
+
+    [Tooltip("在庫がこの数まで戻ったら、湧きの再開を通知する")]
+    [SerializeField, Min(1)] private int _resumeThreshold = 1;
+
     [SerializeField] private List<SpecialKodamaChance> _specialKodamas = new();
 
     [SerializeField, Min(0.1f)] private float _spawnInterval = 5f;
@@ -108,7 +114,9 @@ public class SpawnSpotPlacement : RadiusPlacement
     public int Id => _id;
     public SpawnKind Kind => _kind;
     public IReadOnlyList<EnemyCount> EnemyList => _enemyList;
-    public KodamaData KodamaDat => _kodamaData;
+    public KodamaData KodamaData => _kodamaData;
+    public int KodamaCount => _kodamaCount;
+    public int ResumeThreshold => _resumeThreshold;
     public SizeClass EnemySize => _enemySize;
     public IReadOnlyList<SpecialKodamaChance> SpecialKodamas => _specialKodamas;
     public float SpawnInterval => _spawnInterval;
@@ -118,6 +126,9 @@ public class SpawnSpotPlacement : RadiusPlacement
     public const string EnemyListField = nameof(_enemyList);
     public const string EnemySizeField = nameof(_enemySize);
     public const string KodamaDataField = nameof(_kodamaData);
+
+    public const string KodamaCountField = nameof(_kodamaCount);
+    public const string ResumeThresholdField = nameof(_resumeThreshold);
     public const string SpecialKodamasField = nameof(_specialKodamas);
     public const string SpawnIntervalField = nameof(_spawnInterval);
 

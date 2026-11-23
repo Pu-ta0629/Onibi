@@ -35,6 +35,8 @@ MonoBehaviour:
       _count: 3
     _enemySize: 0
     _kodamaData: {fileID: 0}
+    _kodamaCount: 3
+    _resumeThreshold: 1
     _specialKodamas: []
     _spawnInterval: 2
   - _position: {x: 13.5, y: 0, z: 4.5}
@@ -49,6 +51,8 @@ MonoBehaviour:
       _count: 3
     _enemySize: 0
     _kodamaData: {fileID: 0}
+    _kodamaCount: 3
+    _resumeThreshold: 1
     _specialKodamas: []
     _spawnInterval: 2
   - _position: {x: 4.2, y: 0, z: 4.5}
@@ -62,7 +66,9 @@ MonoBehaviour:
     - _enemyData: {fileID: 11400000, guid: 4aabda7de63b643488a0eb9210829cfd, type: 2}
       _count: 3
     _enemySize: 0
-    _kodamaData: {fileID: 0}
+    _kodamaData: {fileID: 11400000, guid: 61e2e5a904b913d4798c001d09736cbc, type: 2}
+    _kodamaCount: 3
+    _resumeThreshold: 1
     _specialKodamas: []
     _spawnInterval: 3.25
   _enemies:

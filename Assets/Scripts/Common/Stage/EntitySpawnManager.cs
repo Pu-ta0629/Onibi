@@ -25,8 +25,6 @@ public class EntitySpawnManager : MonoBehaviour
     [Tooltip("湧く位置を決めるとき、スポットの円の中で通れる場所を探す回数")]
     [SerializeField, Min(1)] private int _pickTryCount = 5;
 
-    [Tooltip("通常の木霊のKodamaData。MasterDataの読み込み先が決まるまでの、仮のInspector設定")]
-    [SerializeField] private KodamaData _normalKodamaData;
 
     private readonly List<SpawnEntry> _entries = new();
     private LostChildController _lostChild;
@@ -52,7 +50,7 @@ public class EntitySpawnManager : MonoBehaviour
 
         // 敵を生成してPoolに仕分ける（これを呼ばないと、敵が1体も作られない）
         _poolManager.Build(context.Stage, context.World, context.Root);
-        _poolManager.BuildKodama(context.Stage,_normalKodamaData,context.World,context.Root);
+        _poolManager.BuildKodama(context.Stage,context.World,context.Root);
 
         foreach (SpawnSpotPlacement spot in context.Stage.SpawnSpots)
         {

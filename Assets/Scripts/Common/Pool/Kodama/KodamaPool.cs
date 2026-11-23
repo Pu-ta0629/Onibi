@@ -1,10 +1,12 @@
 ﻿using System.Collections.Generic;
+using UnityEngine;
 
 /// <summary>
 /// 木霊のPool。湧きスポット1つ分。在庫と、出ている木霊を持つ。追加の生産はしない
 /// </summary>
 public class KodamaPool
 {
+    private readonly int _resumeThreshold;
     private readonly List<KodamaController> _stock = new();
     private readonly List<KodamaController> _active = new();
     private readonly List<KodamaController> _all = new();
@@ -12,12 +14,17 @@ public class KodamaPool
     public int PoolId { get; }
     public bool IsStopped { get; set; }
     public int Stock => _stock.Count;
+    
+    /// <summary>在庫がこの数まで戻ったら、脇の再開を通知</summary>
+    public int ResumeThreshold => Mathf.Clamp(_resumeThreshold, 1, Mathf.Max(1, _all.Count));
+
     public IReadOnlyList<KodamaController> Active => _active;
     public IReadOnlyList<KodamaController> All => _all;
 
-    public KodamaPool(int poolId)
+    public KodamaPool(int poolId,int resumeThreshold)
     {
         PoolId = poolId;
+        _resumeThreshold = resumeThreshold;
     }
 
     /// <summary>Factoryが作った木霊を、在庫に入れる</summary>
