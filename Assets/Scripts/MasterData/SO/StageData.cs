@@ -1,4 +1,4 @@
-using JetBrains.Annotations;
+﻿using JetBrains.Annotations;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -55,6 +55,13 @@ public class RadiusPlacement : PlacementData
     public float Radius => _radius;
 
     public const string RadiusField = nameof(_radius);
+
+    public bool Contains(Vector3 point)
+    {
+        float dx = point.x - Position.x;
+        float dz = point.z - Position.z;
+        return dx * dx + dz * dz <= Radius * Radius;
+    }
 }
 
 
@@ -69,45 +76,72 @@ public class SpecialKodamaChance
     public float Probability => _probability;
 }
 
+[System.Serializable]
+public class EnemyCount
+{
+    [SerializeField]private EnemyData _enemyData;
+    [SerializeField,Min(1)]private int _count = 1;
+
+    public EnemyData EnemyData => _enemyData;
+    public int Count => _count;
+
+    public const string EnemyDataField = nameof(_enemyData);
+    public const string CountField = nameof(_count);
+}
 
 [System.Serializable]
 public class SpawnSpotPlacement : RadiusPlacement
 {
+
+    [SerializeField] private int _id;
     [SerializeField] private SpawnKind _kind = SpawnKind.Kodama;
 
-    [SerializeField] private List<EnemyData> _enemyList = new();
+    [SerializeField] private List<EnemyCount> _enemyList = new();
     [SerializeField] private SizeClass _enemySize = SizeClass.Medium;
+
+    [SerializeField] private KodamaData _kodamaData;
+
+    [Tooltip("木霊の生成数")]
+    [SerializeField, Min(1)] private int _kodamaCount = 3;
+
+    [Tooltip("在庫がこの数まで戻ったら、湧きの再開を通知する")]
+    [SerializeField, Min(1)] private int _resumeThreshold = 1;
 
     [SerializeField] private List<SpecialKodamaChance> _specialKodamas = new();
 
     [SerializeField, Min(0.1f)] private float _spawnInterval = 5f;
 
+    public int Id => _id;
     public SpawnKind Kind => _kind;
-    public IReadOnlyList<EnemyData> EnemyList => _enemyList;
+    public IReadOnlyList<EnemyCount> EnemyList => _enemyList;
+    public KodamaData KodamaData => _kodamaData;
+    public int KodamaCount => _kodamaCount;
+    public int ResumeThreshold => _resumeThreshold;
     public SizeClass EnemySize => _enemySize;
     public IReadOnlyList<SpecialKodamaChance> SpecialKodamas => _specialKodamas;
     public float SpawnInterval => _spawnInterval;
 
+    public const string IdField = nameof(_id);
     public const string KindField = nameof(_kind);
     public const string EnemyListField = nameof(_enemyList);
     public const string EnemySizeField = nameof(_enemySize);
+    public const string KodamaDataField = nameof(_kodamaData);
+
+    public const string KodamaCountField = nameof(_kodamaCount);
+    public const string ResumeThresholdField = nameof(_resumeThreshold);
     public const string SpecialKodamasField = nameof(_specialKodamas);
     public const string SpawnIntervalField = nameof(_spawnInterval);
 
-    public bool Contains(Vector3 point)
-    {
-        float dx = point.x - Position.x;
-        float dz = point.z - Position.z;
-        return dx * dx + dz * dz <= Radius * Radius; 
-    }
+
+    
 
     public IEnumerable<MovementProfile> EnemyProfiles
     {
         get
         {
-            foreach(EnemyData enemy in _enemyList)
+            foreach(var enemy in _enemyList)
             {
-                if (enemy != null) yield return new MovementProfile(enemy.MoveType, _enemySize, Faction.Enemy);
+                if (enemy != null && enemy.EnemyData != null) yield return new MovementProfile(enemy.EnemyData.MoveType, _enemySize, Faction.Enemy);
             }
         }
     }
@@ -155,6 +189,7 @@ public class StageData : ScriptableObject
     [SerializeField] List<EnemyPlacement> _enemies = new();
     [SerializeField] WalkableGrid _walkableGrid = new();
 
+
     public int StageId => _stageId;
     public string StageName => _stageName;
 
@@ -172,6 +207,7 @@ public class StageData : ScriptableObject
     public const string SpawnSpotsField = nameof(_spawnSpots);
     public const string EnemiesField = nameof(_enemies);
     public const string WalkableGridField = nameof(_walkableGrid);
+
 
 
 }

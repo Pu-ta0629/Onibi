@@ -1,22 +1,46 @@
-using UnityEngine;
+﻿using UnityEngine;
+using UnityEngine.AI;
+
 
 /// <summary>
-/// EnemyType����A���̎�ނ̃N���X�iEnemy_???���쐬�j
-/// �V������ނ𑫂����Ƃ��́A������class�𑫂�
+/// PoolManagerからの発注を受けて、EnemyControllerを1体作って出荷する
+/// 見た目はSpriteのみ。Prefabは使わず、GameObjectを一から組み立てる
+/// 親は、Poolごとに作った親を、Createの旅に受け取る
 /// </summary>
-public static class EnemyFactory
+public class EnemyFactory
 {
-    public static EnemyController Create(EnemyType type)
+    private readonly HitWorld _world;
+    public EnemyFactory(HitWorld world)
     {
-        switch(type)
-        {
-            case EnemyType.Kappa: return new Enemy_Kappa();
-            case EnemyType.Oni: return new Enemy_Oni();
-            case EnemyType.Dog: return new Enemy_Dog();
-            case EnemyType.Cat: return new Enemy_Cat();
-            default:
-                Debug.LogWarning($"[EnemyController] Create : UnKnown EnemyType = {type}.Enemy_Kappa is used");
-                return new Enemy_Kappa();
-        }
+        _world = world;
     }
+
+    public EnemyController Create(EnemyData data,SizeClass size,Transform parent)
+    {
+        if (data == null)
+        {
+            Debug.LogWarning("[EnemyFactory] Create : EnemyData is Null!!!!!");
+            return null;
+        }
+
+        GameObject obj = !string.IsNullOrWhiteSpace(data.DisplayName) ? new GameObject($"Enemy_{data.DisplayName}") : new GameObject($"Enemy_{data.Type}");
+        
+        // 先に非表示にしてからコンポーネントを足す
+        // (有効なまま足すと、NavMeshの外でNavMeshAgentが起動し、警告が出る
+        obj.SetActive(false);
+        obj.transform.SetParent(parent,false);
+
+        SpriteRenderer spriteRenderer = obj.AddComponent<SpriteRenderer>();
+        spriteRenderer.sprite = data.Sprite;
+
+        //EnemyControllerのRequireComponentで、NavMeshAgentも一緒に付く
+        EnemyController enemy = obj.AddComponent<EnemyController>();
+
+        NavMeshAgent agent = obj.GetComponent<NavMeshAgent>();
+        enemy.Initialize(agent, data,size, _world);
+
+        return enemy;
+    }
+
+   
 }

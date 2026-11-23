@@ -1,0 +1,18 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3b1631125c8de6648b2d2d1dcac2c720, type: 3}
+  m_Name: FireStateCatalog
+  m_EditorClassIdentifier: Assembly-CSharp::FireStateCatalog
+  _states:
+  - {fileID: 11400000, guid: 7c03d3090facca64cad90e98e714ac61, type: 2}
+  - {fileID: 11400000, guid: e36f19f914a580d4c9c783489f6da2d0, type: 2}
+  - {fileID: 11400000, guid: 8c79e016550dc3645a84968b6332e534, type: 2}

@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+using System.Runtime.InteropServices.WindowsRuntime;
 using UnityEngine;
 
 /// <summary>
@@ -7,6 +9,7 @@ using UnityEngine;
 ///   ・FireInputHandler ＝ マウス操作（固定・追従モード・選択中の火の移動）
 ///   ・LostChildFollowLink ＝ 迷子へ追従先を渡す
 ///   ・FireRadialMenuBinder ＝ ラジアルメニューとの連携
+///   ・MorphManager ＝ 木霊量・特殊木霊に応じた、火の進化・退化
 /// Stateの取得・変更はすべてTypeManager経由で行う
 /// </summary>
 public class FireManager : MonoBehaviour
@@ -26,6 +29,14 @@ public class FireManager : MonoBehaviour
     [Tooltip("火に付属するLightを管理する。明るさレベルごとの光量は全ての火で共通で、ここで設定する")]
     [SerializeField] private LightManager _lightManager;
 
+    [Header("Effect")]
+    [Tooltip("FireColorごとのEffectの色。Effect本体は、FireStateDataが持つ")]
+    [SerializeField] private FireEffectCatalog _effectCatalog;
+
+    [Header("Morph")]
+    [Tooltip("全てのFireStateData。木霊量に応じた進化先・退化先の検索に使う")]
+    [SerializeField] private FireStateCatalog _stateCatalog;
+
     [Header("Darkness")]
     [Tooltip("迷子の周りの暗さの判定設定。暗いと迷子は追従しなくなる")]
     [SerializeField] private DarknessConfig _darknessConfig = new DarknessConfig();
@@ -38,7 +49,9 @@ public class FireManager : MonoBehaviour
     private FireInputHandler _inputHandler;
     private LostChildFollowLink _followLink;
     private FireRadialMenuBinder _radialMenuBinder;
+    private MorphManager _morph;
     private DarknessSensor _darkness;
+    private DarkDamageReaction _darkDamage;
     private bool _isInitialized;
 
     /// <summary>ラジアルのMenu項目が選ばれたときに通知する（Menu画面を開く側が購読する）</summary>
@@ -55,9 +68,21 @@ public class FireManager : MonoBehaviour
     /// </summary>
     public void Initialize(TypeManager typeManager, InputManager inputManager, LostChildController lostChild, Camera mainCamera, HitWorld hitWorld, KodamaStock kodamaStock)
     {
-        if (typeManager == null || inputManager == null || lostChild == null || mainCamera == null || hitWorld == null || kodamaStock == null || _radialMenu == null || _lightManager == null)
+        if (typeManager == null || inputManager == null || lostChild == null || mainCamera == null || hitWorld == null || kodamaStock == null
+            || _radialMenu == null || _lightManager == null || _effectCatalog == null || _stateCatalog == null)
         {
-            Debug.LogError("[FireManager] Initialize : Reference is Null!!! ");
+            //どれがNullか分かるようにする（ここで止まると、火は1つも登録されず、出現しない）
+            Debug.LogError("[FireManager] Initialize : Reference is Null!!! 初期化を中止したので火は出ません。Null = "
+                + (typeManager == null ? "typeManager " : "")
+                + (inputManager == null ? "inputManager " : "")
+                + (lostChild == null ? "lostChild " : "")
+                + (mainCamera == null ? "mainCamera " : "")
+                + (hitWorld == null ? "hitWorld " : "")
+                + (kodamaStock == null ? "kodamaStock " : "")
+                + (_radialMenu == null ? "_radialMenu(Inspector) " : "")
+                + (_lightManager == null ? "_lightManager(Inspector) " : "")
+                + (_effectCatalog == null ? "_effectCatalog(Inspector) " : "")
+                + (_stateCatalog == null ? "_stateCatalog(Inspector) " : ""));
             return;
         }
 
@@ -69,14 +94,17 @@ public class FireManager : MonoBehaviour
         _lightManager.Initialize();
         _lightManager.SetDarkThreshold(_darknessConfig.DarkThreshold);
 
-        //迷子の周りの暗さを検知する。暗いときの処理は、ここにAddReactionで足していく
+        //迷子の周りの明るさを検知する。明るいと停止、暗いとダメージ。やりたいことが増えたら、ここにReactionを足す
         _darkness = new DarknessSensor(_lostChild.transform, _lightManager.GetLightLevelAt, _darknessConfig);
-        _darkness.AddReaction(new StopFollowReaction(_lostChild));
+        _darkness.AddBrightReaction(new StopFollowReaction(_lostChild));
+        _darkDamage = new DarkDamageReaction(_lostChild, _darknessConfig);
+        _darkness.AddReaction(_darkDamage);
 
-        _registry = new FireRegistry(_typeManager, _lightManager, mainCamera, hitWorld, _lostChild, kodamaStock);
+        _registry = new FireRegistry(_typeManager, _lightManager, mainCamera, hitWorld, _lostChild, kodamaStock.count, _effectCatalog);   //木霊は火ごとに持つ。kodamaStockの量は「各火が最初に持つ量」として使う
         _stateBinder = new FireStateBinder(_typeManager, _registry, _lightManager);
         _inputHandler = new FireInputHandler(_typeManager, inputManager, _registry);
         _followLink = new LostChildFollowLink(_typeManager, _registry, _lostChild, _darkness);
+        _morph = new MorphManager(_typeManager, _registry, _stateCatalog);
         _isInitialized = true;
 
         RegisterInitialFires();
@@ -97,7 +125,7 @@ public class FireManager : MonoBehaviour
 
         for (int i = 0; i < _sceneFires.Length; i++)
         {
-            if (_sceneFires[i] != null && _fireInventory.Has(_sceneFires[i].color))
+            if (_sceneFires[i] != null && _fireInventory.Has(_sceneFires[i].Color))
             {
                 _registry.Register(_sceneFires[i]);
             }
@@ -126,13 +154,14 @@ public class FireManager : MonoBehaviour
             return false;
         }
 
-        if (!_fireInventory.TryAdd(fire.color))
+        if (!_fireInventory.TryAdd(fire.Color))
         {
-            Debug.LogWarning($"[FireManager] AcquireFire : {fire.color} is already owned!!");
+            Debug.LogWarning($"[FireManager] AcquireFire : {fire.Color} is already owned!!");
             return false;
         }
 
         _registry.Register(fire);
+        _morph.MarkDirty();   //新しい火も、今の木霊量で判定する
         return true;
     }
 
@@ -174,6 +203,40 @@ public class FireManager : MonoBehaviour
         Debug.Log("[FireManager] RequestMenu : Menu is requested");
         OnMenuRequested?.Invoke();
     }
+
+    /// <summary>
+    /// ラジアルで選択中の火が、特殊木霊を取れるか
+    /// 神社のインタラクトできるか・特殊木霊アイテムを拾えるかの判定に使う（すでに持っていれば、false）
+    /// </summary>
+    public bool CanAcquireSpecialKodama()
+    {
+        return _isInitialized
+            && _registry.TryGet(_typeManager.SelectedColor, out FireController fire)
+            && fire.CanAcquireSpecialKodama;
+    }
+
+    /// <summary>
+    /// ラジアルで選択中の火に、特殊木霊を渡す。取れなければfalse
+    /// 成功したら、MorphManagerが次のフレームで進化を判定する
+    /// </summary>
+    public bool TryAcquireSpecialKodama(SpecialKodamaKind type)
+    {
+        if (!_isInitialized
+            || !_registry.TryGet(_typeManager.SelectedColor, out FireController fire)
+            || !fire.TryAcquireSpecialKodama(type))
+        {
+            return false;
+        }
+
+        _morph.MarkDirty();
+        return true;
+    }
+
+    public bool TryGetFire(FireColor color, out FireController fire)
+    {
+        fire = null;
+        return _isInitialized && _registry.TryGet(color, out fire);
+    }
     #endregion
 
     #region UnityLifeCycle
@@ -186,8 +249,10 @@ public class FireManager : MonoBehaviour
 
         _inputHandler.Tick();            //選択中の火のマウス追従
         _darkness.Tick();                //迷子の周りの暗さの判定
+        _darkDamage.Tick(Time.deltaTime);//慈姑間のダメージ
         _followLink.Tick();              //迷子へ追従先を渡す
         _lostChild.UpdateCombat();       //火が迷子の索敵結果を読むので、火のTickより先に更新する
+        _morph.Tick();                   //木霊量・特殊木霊に応じて、進化・退化を判定する
         TickFires();
     }
 
@@ -197,7 +262,28 @@ public class FireManager : MonoBehaviour
         _followLink?.Dispose();
         _inputHandler?.Dispose();
         _stateBinder?.Dispose();
+        _morph?.Dispose();
         _registry?.Dispose();
+    }
+    #endregion
+
+    #region Debug
+    //コンテキストメニュー（FireManagerのコンポーネントの右上「:」）で、特殊木霊の取得をテストする
+    [ContextMenu("GetKitsunebi")] private void DebugGetKitsunebi() => DebugGet(SpecialKodamaKind.KitsuneKodama);
+    [ContextMenu("GetKakurebi")] private void DebugGetKakurebi() => DebugGet(SpecialKodamaKind.KakureKodama);
+    [ContextMenu("GetOnibi")] private void DebugGetOnibi() => DebugGet(SpecialKodamaKind.OniKodama);
+
+    private void DebugGet(SpecialKodamaKind type)
+    {
+        if (!_isInitialized)
+        {
+            Debug.LogWarning("[FireManager] DebugGet : Not initialized (Play mode only)");
+            return;
+        }
+
+        Debug.Log(TryAcquireSpecialKodama(type)
+            ? $"[FireManager] DebugGet : {_typeManager.SelectedColor} got {type}"
+            : $"[FireManager] DebugGet : cannot acquire {type} (no selected fire or already has one)");
     }
     #endregion
 

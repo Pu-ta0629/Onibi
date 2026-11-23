@@ -1,4 +1,21 @@
+using JetBrains.Annotations;
 using UnityEngine;
+
+[System.Serializable]
+public class EnemyMoveConfig
+{
+    [Tooltip("地面のLayer。NavMeshを使わない移動で、地形の高さに合わせるのに使用")]
+    public LayerMask GroundMask;
+
+    [Tooltip("目的地の近くにあるNavMeshを探す距離")]
+    [Range(0.1f, 10f)] public float NavMeshSampleDistance = 2f;
+
+    [Tooltip("追従対象がこの距離以上動いたら経路を更新する")]
+    [Range(0.05f, 5f)] public float RepathDistance = 0.5f;
+
+    [Tooltip("対象にこの距離まで近づいたら停止して、攻撃を始める（攻撃のコライダーは別途調整する）")]
+    [Range(0.1f, 20f)] public float StopDistance = 1.5f;
+}
 
 // 攻撃パターン1つ分(敵が、Attack1 と Attack2 の2つを持つ)
 [System.Serializable]
@@ -42,6 +59,11 @@ public class EnemyData : MasterData
     [Tooltip("種族")]
     [SerializeField] private EnemyTypeData _type;
 
+    [Tooltip("画像")]
+    [SerializeField] private Sprite _sprite;
+
+    [SerializeField] private string _behaviourTypeName;
+
     [Tooltip("HP")]
     [SerializeField] private int _maxHP;
 
@@ -64,6 +86,10 @@ public class EnemyData : MasterData
     [Tooltip("戦闘ロジック(名前。実装を選ぶためのキー)")]
     [SerializeField] private string _battleLogic;
 
+    [Header("移動の設定値")]
+    [Tooltip("地面のLayer、NavMeshの検索距離、経路の更新距離、攻撃を始める距離")]
+    [SerializeField] private EnemyMoveConfig _moveConfig = new();
+
     [Header("コライダー")]
     [Tooltip("体(Hit)、攻撃(Attack)、索敵(Search)など。役割(Role)で、使い道が決まる")]
     [SerializeField] private ColliderSet _colliders = new();
@@ -74,6 +100,7 @@ public class EnemyData : MasterData
 
     public string DisplayName => _displayName;
     public EnemyTypeData Type => _type;
+    public Sprite Sprite => _sprite;
     public int MaxHP => _maxHP;
     public int BaseAttack => _baseAttack;
     public float MoveSpeed => _moveSpeed;
@@ -81,6 +108,7 @@ public class EnemyData : MasterData
     public string SearchType => _searchType;
     public float SearchRange => _searchRange;
     public string BattleLogic => _battleLogic;
+    public EnemyMoveConfig MoveConfig => _moveConfig;
     public ColliderSet Colliders => _colliders;
     public EnemyAttack Attack1 => _attack1;
     public EnemyAttack Attack2 => _attack2;

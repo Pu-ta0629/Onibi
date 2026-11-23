@@ -26,7 +26,7 @@ public sealed class StageContext
 }
 
 /// <summary>
-/// ステージの生成を担当するクラス（FieldSpawner・EntitySpawnerなど）が実装する
+/// ステージの生成を担当するクラス（FieldSpawnManager・EntitySpawnManagerなど）が実装する
 /// StageGeneratorが、StageContextを渡して順番にInitializeを呼ぶ
 /// </summary>
 public interface IStageSpawner

@@ -1,21 +1,22 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 
 /// <summary>
-/// ŠeManager‚Ì¶¬E‰Šú‰»‚ÌŒÄ‚Ño‚µ‚ÆAQÆ‚Ì”z•z‚ğ’S“–‚·‚é
-/// QÆ‚ÍInspector‚Åó‚¯æ‚èAInitialize‚Ìˆø”‚Æ‚µ‚ÄŠeƒXƒNƒŠƒvƒg‚Ö“n‚·iInstance‚Íg‚í‚È‚¢j
-/// ŠeManager‚ÌŒÅ—Lİ’èi‰Î‚Ìî•ñ‚È‚Çj‚ÍA‚»‚ê‚¼‚ê‚ÌManager‚ªInspector‚Å‚Â
+/// å„Managerã®ç”Ÿæˆãƒ»åˆæœŸåŒ–ã®å‘¼ã³å‡ºã—ã¨ã€å‚ç…§ã®é…å¸ƒã‚’æ‹…å½“ã™ã‚‹
+/// å‚ç…§ã¯Inspectorã§å—ã‘å–ã‚Šã€Initializeã®å¼•æ•°ã¨ã—ã¦å„ã‚¹ã‚¯ãƒªãƒ—ãƒˆã¸æ¸¡ã™ï¼ˆInstanceã¯ä½¿ã‚ãªã„ï¼‰
+/// å„Managerã®å›ºæœ‰è¨­å®šï¼ˆç«ã®æ¶ˆè²»é‡ãªã©ï¼‰ã¯ã€ãã‚Œãã‚Œã®Managerã®Inspectorã§æŒã¤
 /// </summary>
 public class InitializeManager : MonoBehaviour
 {
     [Header("SceneReferences")]
-    [SerializeField] private Camera _mainCamera;
     [SerializeField] private InputManager _inputManager;
     [SerializeField] private LostChildController _lostChildController;
+    [SerializeField] private StageManager _stageManager;
     [SerializeField] private FireManager _fireManager;
-    [SerializeField] private StageGenerator _stageGenerator;
+    [SerializeField] private CameraManager _cameraManager;
+
 
     [Header("Battle")]
-    [Tooltip("ƒXƒe[ƒWŠJn‚Ì–Ø—ì‚Ì—ÊB‰Î‚ª“Ëi‚·‚é‚½‚Ñ‚ÉÁ”ï‚·‚é")]
+    [Tooltip("ã‚¹ãƒ†ãƒ¼ã‚¸é–‹å§‹æ™‚ã®æœ¨éœŠã®é‡ã€‚ç«ãŒçªé€²ã™ã‚‹ãŸã³ã«æ¶ˆè²»ã™ã‚‹")]
     [SerializeField, Range(0, 999)] private int _initialKodama = 30;
 
     private TypeManager _typeManager;
@@ -27,31 +28,34 @@ public class InitializeManager : MonoBehaviour
     #region UnityLifeCycle
     private void Awake()
     {
-        if (_inputManager == null || _lostChildController == null || _fireManager == null || _stageGenerator == null)
+        if (_inputManager == null || _lostChildController == null || _fireManager == null || _stageManager == null)
         {
             Debug.LogError("[InitializeManager] Awake : Reference is Null!!! ");
             return;
         }
 
-        //Inspector‚Å–¢İ’è‚È‚çCamera.main‚ğg‚¤BˆÈ~‚Í‚±‚±‚ÅŒˆ‚ß‚½ƒJƒƒ‰‚ğ”z‚é
-        Camera mainCamera = _mainCamera != null ? _mainCamera : Camera.main;
+        //Inspectorã§æœªè¨­å®šãªã‚‰Camera.mainã‚’ä½¿ã†ã€‚ä»¥é™ã¯ã“ã“ã§æ±ºã‚ãŸã‚«ãƒ¡ãƒ©ã‚’æƒ³å®š
+        Camera mainCamera = _cameraManager.MainCamera != null ? _cameraManager.MainCamera : Camera.main;
         if (mainCamera == null)
         {
             Debug.LogError("[InitializeManager] Awake : MainCamera is Null!!! ");
             return;
         }
 
-        //ƒˆ‚ÈC#ƒNƒ‰ƒX‚ğ¶¬‚µ‚Ä‰Šú‰»‚·‚é
+        //ã“ã“ã§C#ã‚¯ãƒ©ã‚¹ã‚’ç”Ÿæˆã—ã¦åˆæœŸåŒ–ã™ã‚‹
         _typeManager = new TypeManager();
         _typeManager.Initialize();
         _hitWorld = new HitWorld();
         _kodamaStock = new KodamaStock(_initialKodama);
 
-        //“ü—Í¨–Àq¨‰Î¨ƒXƒe[ƒWi“G‚È‚Çj‚Ì‡‚Å‰Šú‰»‚·‚éiFireManager‚Í‘¼‚ÌQÆ‚ğg‚¤‚½‚ßAƒXƒe[ƒW‚æ‚è‘Oj
+        //å…¥åŠ›â†’è¿·å­â†’ã‚¹ãƒ†ãƒ¼ã‚¸ï¼ˆåœ°å½¢ãƒ»è¿·å­ã®é…ç½®ãƒ»æ•µï¼‰â†’ç«ã®é †ã§åˆæœŸåŒ–ã™ã‚‹
+        //è¿·å­ã¯ã€ã‚¹ãƒ†ãƒ¼ã‚¸å†…ã§SpawnAtã§ç½®ã‹ã‚Œã‚‹ã®ã§ã€å¿…ãšã‚¹ãƒ†ãƒ¼ã‚¸ã‚ˆã‚Šå‰ã«Initializeã™ã‚‹
+        //ï¼ˆå¾Œã‚ã ã¨SpawnAtãŒå…ˆã«ä½ç½®ã‚’æ±ºã‚ã¦ã—ã¾ã„ã€è¿·å­ãŒStartã«ç½®ã‹ã‚Œãšã€æ•µã®è¿½å¾“å…ˆãŒNavMeshã®å¤–ã«ãªã‚‹ï¼‰
         _inputManager.Initialize(mainCamera);
-        _stageGenerator.Initialize(_hitWorld, _lostChildController, mainCamera);
         _lostChildController.Initialize(_hitWorld);
+        _stageManager.Initialize(_hitWorld, _lostChildController, mainCamera);
         _fireManager.Initialize(_typeManager, _inputManager, _lostChildController, mainCamera, _hitWorld, _kodamaStock);
+        _cameraManager.Initialize(_typeManager, _fireManager, _lostChildController);
     }
     #endregion
 }

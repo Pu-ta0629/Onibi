@@ -41,11 +41,16 @@ public enum SpawnKind : byte
     SpecialKodama = 2,  //特殊木霊
 }
 
+/// <summary>
+/// 特殊木霊の種類。None = 未取得（初期状態）
+/// StageDataの湧き設定・火が持つ特殊木霊・進化の条件で共通に使う
+/// </summary>
 public enum SpecialKodamaKind : byte
 {
-    Oni = 0,
-    Kitsune = 1,
-    Kakure = 2,
+    None = 0,
+    KitsuneKodama,
+    KakureKodama,
+    OniKodama,
 }
 
 /// <summary>迷子の追従先更新モード</summary>
@@ -70,6 +75,7 @@ public struct FireState
     public bool IsSelected;
     public bool IsFixed;
     public FireBrightness Brightness;
+    public FireKind Kind;   //現在の進化段階（進化・退化で変わる）
 }
 
 /// <summary>火のAIが使える行動の許可（false=重み０として扱う）</summary>
@@ -89,9 +95,11 @@ public struct FireAIPermission
 /// Enum・Structの管理と、（Enum|Struct）の取得・ChangeStateを一括で行う純粋なC#Class
 /// 【持つもの】Enum・Structの定義、火ごとのState、選択中・最後に選んだ火、迷子の追従先と追従モード、ラジアルの開閉
 /// 【やること】Stateの取得・変更（変わったときだけイベント通知）、Enum・Structの変換（AIPermission・Color・int→Enum）
+///             MorphManagerからの進化・退化の申請を、遷移可能か判定して許可する
 /// 【やらないこと】Transform・Light・NavMeshなどUnityのオブジェクトを触る、入力を読む、移動・索敵・攻撃をする
 ///   （Stateを見て何をするかは、各スクリプトが通知を受けて行う）
 /// 各スクリプトはStateに関する処理を必ず経由して行う。Stateを別の場所にコピーして持ち続けない
+/// （特殊木霊だけは、火ごとにFireControllerが持つ。ここは種類の宣言と、遷移の認可だけを行う）
 /// </summary>
 public class TypeManager
 {
@@ -122,7 +130,7 @@ public class TypeManager
         {
             //Noneは「火を選択していない」状態なので、Stateを持たない
             if (color == FireColor.None) continue;
-            _fireStates[color] = new FireState { Brightness = FireBrightness.Level2 };
+            _fireStates[color] = new FireState { Brightness = FireBrightness.Level2, Kind = FireKind.Tanebi };
         }
 
         //最初は何も選択していない（最初の火はFireManagerが SelectInitialFire で選択する）
@@ -158,7 +166,8 @@ public class TypeManager
         //値が同じときは何も通知しない
         if (current.IsSelected == newState.IsSelected
             && current.IsFixed == newState.IsFixed
-            && current.Brightness == newState.Brightness)
+            && current.Brightness == newState.Brightness
+            && current.Kind == newState.Kind)
         {
             return;
         }
@@ -168,7 +177,8 @@ public class TypeManager
         Debug.Log($"[TypeManager] ChangeFireState : {color} \n " +
                   $"IsSelected = {newState.IsSelected}, \n" +
                   $"IsFixed = {newState.IsFixed}, \n" +
-                  $"Brightness = {newState.Brightness}");
+                  $"Brightness = {newState.Brightness}, \n" +
+                  $"Kind = {newState.Kind}");
         OnFireStateChanged?.Invoke(color, newState);
     }
     /// <summary>火の明るさを指定した段階にする</summary>
@@ -237,6 +247,30 @@ public class TypeManager
         FireState state = _fireStates[color];
         state.IsSelected = isSelected;
         ChangeFireState(color, state);
+    }
+    #endregion
+
+    #region Morph
+    /// <summary>火の最初の進化段階を設定する（FireRegistry.Registerから）</summary>
+    public void SetInitialKind(FireColor color, FireKind kind)
+    {
+        if (!_fireStates.TryGetValue(color, out FireState state)) return;
+        state.Kind = kind;
+        ChangeFireState(color, state);
+    }
+
+    /// <summary>
+    /// MorphManagerからの遷移申請（進化・退化のどちらも）。遷移可能ならStateを変えてtrueを返す
+    /// special: 申請した火が持っている特殊木霊（FireControllerが持つ）
+    /// </summary>
+    public bool TryMorph(FireColor color, FireKind to, SpecialKodamaKind special)
+    {
+        if (!_fireStates.TryGetValue(color, out FireState state)) return false;
+        if (state.Kind == to || !CanMorph(to, special)) return false;
+
+        state.Kind = to;
+        ChangeFireState(color, state);
+        return true;
     }
     #endregion
 
@@ -319,6 +353,25 @@ public class TypeManager
     public static T ToEnum<T>(int value, T fallback) where T : struct, Enum
     {
         return Enum.IsDefined(typeof(T), value) ? (T)Enum.ToObject(typeof(T), value) : fallback;
+    }
+
+    /// <summary>遷移の認可。特殊な形は、対応する特殊木霊を持っているときだけ許可する（進化・退化で共通）</summary>
+    public static bool CanMorph(FireKind to, SpecialKodamaKind special)
+    {
+        SpecialKodamaKind required = SpecialOf(to);
+        return required == SpecialKodamaKind.None || required == special;
+    }
+
+    /// <summary>その火の形が必要とする特殊木霊（通常の形はNone）</summary>
+    public static SpecialKodamaKind SpecialOf(FireKind kind)
+    {
+        switch (kind)
+        {
+            case FireKind.Kitsunebi: return SpecialKodamaKind.KitsuneKodama;
+            case FireKind.Kakurebi: return SpecialKodamaKind.KakureKodama;
+            case FireKind.Onibi: return SpecialKodamaKind.OniKodama;
+            default: return SpecialKodamaKind.None;
+        }
     }
 
     public Dictionary<FireColor, FireState> CopyFireStates()

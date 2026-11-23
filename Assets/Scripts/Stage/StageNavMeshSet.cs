@@ -1,6 +1,5 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.AI;
 // 修正: UnityEditor.SettingsManagementのusingを削除(ビルド時にエラーになるため)
