@@ -1,7 +1,6 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.LightTransport;
 
 // ゲーム中の、1体分のコライダー。
 // 体の役割(Hit)のコライダーは、HitBody にして、HitWorld に登録する。
