@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
@@ -17,6 +18,9 @@ public class KodamaController : MonoBehaviour
 
     public KodamaData Data => _data;
     public bool IsActive { get; private set; }
+
+    /// <summary>迷子に取得されたときに通知する。</summary>
+    public event Action<KodamaController> Collected;
 
     /// <summary>Factoryから、一度だけ呼ぶ</summary>
     public void Initialize(KodamaData data,GameObject visual,HitWorld world)
@@ -69,10 +73,28 @@ public class KodamaController : MonoBehaviour
         gameObject.SetActive(false);
     }
 
+    /// <summary>出ている間だけ、毎フレーム、迷子が触れていないかを調べる</summary>
+    private void LateUpdate()
+    {
+        if(!TryDetectToucher(out LostChildController toucher))
+        {
+            return;
+        }
+
+        IsActive = false;
+
+        int amount = _data.RollAmount();
+
+        Debug.Log($"[KodamaController] Collected : {name}, amount = {amount}, position = {transform.position}");
+
+        toucher.CollectKodama(_data,amount);
+        Collected?.Invoke(this);
+    }
+
     /// <summary>
     /// 接触の判定に入っている迷子を探す。いれば、その迷子を返す
     /// </summary>
-    public bool TryDetectToucher(out LostChildController toucher)
+    private bool TryDetectToucher(out LostChildController toucher)
     {
         toucher = null;
         if(!IsActive)

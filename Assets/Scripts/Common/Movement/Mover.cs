@@ -1,61 +1,68 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 using UnityEngine.AI;
 
 /// <summary>
-/// ˆÚ“®‚ğ‚Ü‚Æ‚ß‚½ƒˆ‚ÈC#ƒNƒ‰ƒXBˆÚ“®‚É•K—v‚È‘ÎÛiÀ•WE•ûŒüj‚ÍAŒÄ‚Ô‘¤‚ªŠm’è‚³‚¹‚Ä“n‚·
-/// E’¼iŒniMoveStraight / MoveTowards / BeginStraightTojFAgent‚ğg‚í‚¸ˆÊ’u‚ğ’¼Ú“®‚©‚µA’n–Ê‚Ì‚‚³‚É‰ˆ‚í‚¹‚éiŒy‚¢j
-/// E’Ç]iFollowjF‘ÎÛ‚ªŠm’è‚µ‚Ä‚©‚çANavMeshAgent‚ÅŒo˜H‚ğ’T‚µ‚ÄŒü‚©‚¤
-///   ‹ß‚­‚ÉNavMesh‚ª‚È‚¢ŠÔ‚ÍƒGƒ‰[‚É‚¹‚¸ANavMesh‚ª‚ ‚é‚Æ‚±‚ë‚Ü‚Å’¼iŒn‚ÅŒü‚©‚¤
-/// ENavMeshê—p‚Ì’Ç]iFollowOnNavMeshjFNavMesh‚ª‚È‚¢ŠÔ‚ÍA’¼i‚ÉØ‚è‘Ö‚¦‚¸A“®‚©‚È‚¢i–Àq‚È‚Çj
-///   ’Ç]æ‚ªNavMesh‚ÌŠO‚É‚ ‚é‚Æ‚«‚ÍAL‚ß‚É’T‚µ‚½ÅŠñ‚è‚ÌNavMeshã‚Ì“_‚ÖŒü‚©‚¤
-/// NavMeshAgent‚Í•’i‚Í–³Œø‚É‚µ‚Ä‚¨‚«A’Ç]‚Å‚«‚é‚Æ‚«‚¾‚¯—LŒø‚É‚·‚é
-/// ‰Î‚Íi‰»E‘Ş‰»‚ÅˆÚ“®‘¬“x‚È‚Ç‚ª•Ï‚í‚é‚Ì‚ÅAConfigure‚Åİ’è‚ğ“ü‚ê‘Ö‚¦‚ç‚ê‚é
+/// ç§»å‹•ã‚’ã¾ã¨ã‚ãŸç´”ç²‹ãªC#ã‚¯ãƒ©ã‚¹ã€‚ç§»å‹•ã«å¿…è¦ãªå¯¾è±¡ï¼ˆåº§æ¨™ãƒ»æ–¹å‘ï¼‰ã¯ã€å‘¼ã¶å´ãŒç¢ºå®šã•ã›ã¦æ¸¡ã™
+/// ãƒ»ç›´é€²ç³»ï¼ˆMoveStraight / MoveTowards / BeginStraightToï¼‰ï¼šAgentã‚’ä½¿ã‚ãšä½ç½®ã‚’ç›´æ¥å‹•ã‹ã—ã€åœ°é¢ã®é«˜ã•ã«æ²¿ã‚ã›ã‚‹ï¼ˆè»½ã„ï¼‰
+/// ãƒ»è¿½å¾“ï¼ˆFollowï¼‰ï¼šå¯¾è±¡ãŒç¢ºå®šã—ã¦ã‹ã‚‰ã€NavMeshAgentã§çµŒè·¯ã‚’æ¢ã—ã¦å‘ã‹ã†
+///   è¿‘ãã«NavMeshãŒãªã„é–“ã¯ã‚¨ãƒ©ãƒ¼ã«ã›ãšã€NavMeshãŒã‚ã‚‹ã¨ã“ã‚ã¾ã§ç›´é€²ç³»ã§å‘ã‹ã†
+/// ãƒ»NavMeshå°‚ç”¨ã®è¿½å¾“ï¼ˆFollowOnNavMeshï¼‰ï¼šNavMeshãŒãªã„é–“ã¯ã€ç›´é€²ã«åˆ‡ã‚Šæ›¿ãˆãšã€å‹•ã‹ãªã„ï¼ˆè¿·å­ãªã©ï¼‰
+///   è¿½å¾“å…ˆãŒNavMeshã®å¤–ã«ã‚ã‚‹ã¨ãã¯ã€åºƒã‚ã«æ¢ã—ãŸæœ€å¯„ã‚Šã®NavMeshä¸Šã®ç‚¹ã¸å‘ã‹ã†
+/// NavMeshAgentã¯æ™®æ®µã¯ç„¡åŠ¹ã«ã—ã¦ãŠãã€è¿½å¾“ã§ãã‚‹ã¨ãã ã‘æœ‰åŠ¹ã«ã™ã‚‹
+/// ç«ã¯é€²åŒ–ãƒ»é€€åŒ–ã§ç§»å‹•é€Ÿåº¦ãªã©ãŒå¤‰ã‚ã‚‹ã®ã§ã€Configureã§è¨­å®šã‚’å…¥ã‚Œæ›¿ãˆã‚‰ã‚Œã‚‹
 /// </summary>
 public class Mover
 {
     [Header("Const")]
-    private const float RetryInterval = 0.1f;   //NavMesh‚ğ’T‚µ’¼‚·ŠÔŠui•bj
-    private const float RayUp = 2f;             //’n–Ê‚ğ’T‚·Ray‚ÌŠJnˆÊ’ui¡‚Ì‚‚³‚©‚ç‚Ìã•ûŒü‚Ì‹——£j
-    private const float RayLength = 10f;        //Ray‚Ì’·‚³
+    private const float RetryInterval = 0.1f;   //NavMeshã‚’æ¢ã—ç›´ã™é–“éš”ï¼ˆç§’ï¼‰
+    private const float RayUp = 2f;             //åœ°é¢ã‚’æ¢ã™Rayã®é–‹å§‹ä½ç½®ï¼ˆä»Šã®é«˜ã•ã‹ã‚‰ã®ä¸Šæ–¹å‘ã®è·é›¢ï¼‰
+    private const float RayLength = 10f;        //Rayã®é•·ã•
     private const float ArriveDistance = 0.01f;
-    private const float NavOnlyTargetSampleScale = 3f;   //NavMeshê—p‚Ì’Ç]‚ÅA’Ç]æ‚ğ’T‚·”ÍˆÍisampleDistance‚Ì‰½”{‚©j
-    private const float DiagnosticWideDistance = 20f;    //f’f‚ÅAL‚­’T‚·”ÍˆÍ
+    private const float NavOnlyTargetSampleScale = 3f;   //NavMeshå°‚ç”¨ã®è¿½å¾“ã§ã€è¿½å¾“å…ˆã‚’æ¢ã™ç¯„å›²ï¼ˆsampleDistanceã®ä½•å€ã‹ï¼‰
+    private const float DiagnosticWideDistance = 20f;    //è¨ºæ–­ã§ã€åºƒãæ¢ã™ç¯„å›²
 
     [Header("Read Only")]
     private readonly NavMeshAgent _agent;
     private readonly Transform _transform;
-    private readonly float _hoverHeight;      //’n–Ê‚©‚ç²‚Ü‚Å‚Ì‚‚³iAgent‚ÌBaseOffsetj
-    private readonly MovementProfile? _profile;   //if(_profile == null)  {AgentType‚Í‚»‚Ì‚Ü‚Ü}
+    private readonly float _hoverHeight;      //åœ°é¢ã‹ã‚‰è»¸ã¾ã§ã®é«˜ã•ï¼ˆAgentã®BaseOffsetï¼‰
+    private readonly MovementProfile? _profile;   //if(_profile == null)  {AgentTypeã¯ãã®ã¾ã¾}
 
-    //i‰»E‘Ş‰»‚Å“ü‚ê‘Ö‚í‚é’liConfigure‚Å•Ï‚¦‚éj
+    //é€²åŒ–ãƒ»é€€åŒ–ã§å…¥ã‚Œæ›¿ã‚ã‚‹å€¤ï¼ˆConfigureã§å¤‰ãˆã‚‹ï¼‰
     private LayerMask _groundMask;
     private float _speed;
-    private float _followSpeed;      //Follow‚Å’Ç‚¤‚Æ‚«‚Ì‘¬‚³iü‰ñ‚È‚Ç’¼i‚Ì‘¬‚³_speed‚Æ‚Í•Êj
+    private float _followSpeed;      //Followã§è¿½ã†ã¨ãã®é€Ÿã•ï¼ˆå‘¨å›ãªã©ç›´é€²ã®é€Ÿã•_speedã¨ã¯åˆ¥ï¼‰
     private float _acceleration;
-    private float _sampleDistance;   //‚±‚Ì‹——£‚Ì’†‚ÉNavMesh‚ª‚ ‚ê‚Îu‹ß‚­‚É‚ ‚év‚Æ‚İ‚È‚·
+    private float _sampleDistance;   //ã“ã®è·é›¢ã®ä¸­ã«NavMeshãŒã‚ã‚Œã°ã€Œè¿‘ãã«ã‚ã‚‹ã€ã¨ã¿ãªã™
     private float _repathDistance;
 
-    private Vector3 _lastPoint;       //’Ç]‚ÌÅŒã‚Ì–Ú“I’n
-    private Vector3 _straightPoint;   //‘ÎÛ—L‚è‚Ì’¼i‚Ì–Ú•W
-    private float _nextTryTime;       //Ÿ‚ÉNavMesh‚ğ’T‚µ‚Ä‚æ‚¢
-    private int _typeId = int.MinValue;   // ƒvƒƒtƒ@ƒCƒ‹‚©‚çŒˆ‚ß‚½AgentTypeID(Agent‚Ì“Ç‚İæ‚è’l‚É—Š‚ç‚È‚¢)
+    private Vector3 _lastPoint;       //è¿½å¾“ã®æœ€å¾Œã®ç›®çš„åœ°
+    private Vector3 _straightPoint;   //å¯¾è±¡æœ‰ã‚Šã®ç›´é€²ã®ç›®æ¨™
+    private float _nextTryTime;       //æ¬¡ã«NavMeshã‚’æ¢ã—ã¦ã‚ˆã„æ™‚åˆ»
+    private int _typeId = int.MinValue;   // ãƒ—ãƒ­ãƒ•ã‚¡ã‚¤ãƒ«ã‹ã‚‰æ±ºã‚ãŸAgentTypeID(Agentã®èª­ã¿å–ã‚Šå€¤ã«é ¼ã‚‰ãªã„)
     private bool _hasDestination;
     private bool _canMove = true;
-    private StageNavMeshSet _typeSet;    //Agent‚Ìí—Ş‚ğ‡‚í‚¹‚½‚ÌNavMesh‚Ì‘g‚İ‡‚í‚¹
+    private StageNavMeshSet _typeSet;    //Agentã®ç¨®é¡ã‚’åˆã‚ã›ãŸæ™‚ã®NavMeshã®çµ„ã¿åˆã‚ã›
 
     #region Initialize
     /// <summary>
-    /// groundMaskF’n–Ê‚ÌLayeri’nŒ`‚É‰ˆ‚í‚¹‚é‚Ì‚Ég‚¤j^sampleDistanceFNavMesh‚ğ’T‚·”ÍˆÍ
-    /// repathDistanceF’Ç]æ‚ª‚±‚Ì‹——£“®‚¢‚½‚çŒo˜H‚ğXV‚·‚é
+    /// groundMaskï¼šåœ°é¢ã®Layerï¼ˆåœ°å½¢ã«æ²¿ã‚ã›ã‚‹ã®ã«ä½¿ã†ï¼‰ï¼sampleDistanceï¼šNavMeshã‚’æ¢ã™ç¯„å›²
+    /// repathDistanceï¼šè¿½å¾“å…ˆãŒã“ã®è·é›¢å‹•ã„ãŸã‚‰çµŒè·¯ã‚’æ›´æ–°ã™ã‚‹
     /// </summary>
-    /// <param name="agent">“®‚©‚·NavMeshAgent</param>
-    /// <param name="speed">ˆÚ“®‘¬“x</param>
-    /// <param name="groundMask">’n–Ê‚ÌLayer</param>
-    /// <param name="sampleDistance">NavMesh‚ğ’T‚·”ÍˆÍ</param>
-    /// <param name="repathDistance">’Ç]æ‚ª‚±‚Ì‹——£“®‚¢‚½‚çŒo˜H‚ğXV‚·‚é</param>
-    /// <param name="profile">null‚È‚ç‚»‚Ì‚Ü‚Ü‚ÌType</param>>
-    /// <param name="followSpeed">’Ç]iFollowj‚Ì‘¬“xB0ˆÈ‰º‚È‚çspeed‚Æ“¯‚¶</param>
-    public Mover(NavMeshAgent agent, float speed, LayerMask groundMask, float sampleDistance, float repathDistance, MovementProfile? profile = null, float followSpeed = 0f, float acceleration = 8f)
+    /// <param name="agent">å‹•ã‹ã™NavMeshAgent</param>
+    /// <param name="speed">ç§»å‹•é€Ÿåº¦</param>
+    /// <param name="groundMask">åœ°é¢ã®Layer</param>
+    /// <param name="sampleDistance">NavMeshã‚’æ¢ã™ç¯„å›²</param>
+    /// <param name="repathDistance">è¿½å¾“å…ˆãŒã“ã®è·é›¢å‹•ã„ãŸã‚‰çµŒè·¯ã‚’æ›´æ–°ã™ã‚‹</param>
+    /// <param name="profile">nullãªã‚‰ãã®ã¾ã¾ã®Type</param>>
+    /// <param name="followSpeed">è¿½å¾“ï¼ˆFollowï¼‰ã®é€Ÿåº¦ã€‚0ä»¥ä¸‹ãªã‚‰speedã¨åŒã˜</param>
+    public Mover(NavMeshAgent agent,
+        float speed,
+        LayerMask groundMask,
+        float sampleDistance,
+        float repathDistance,
+        MovementProfile? profile = null,
+        float followSpeed = 0f,
+        float acceleration = 8f)
     {
         _profile = profile;
         _agent = agent;
@@ -63,12 +70,12 @@ public class Mover
         _hoverHeight = agent.baseOffset;
 
         Configure(speed, groundMask, sampleDistance, repathDistance, followSpeed, acceleration);
-        _agent.enabled = false;   //’Ç]‚Å‚«‚é‚Æ‚«‚¾‚¯—LŒø‚É‚·‚éiNavMeshŠO‚Å‚Ì—LŒø‰»ƒGƒ‰[‚ğ–h‚®j
+        _agent.enabled = false;   //è¿½å¾“ã§ãã‚‹ã¨ãã ã‘æœ‰åŠ¹ã«ã™ã‚‹ï¼ˆNavMeshå¤–ã§ã®æœ‰åŠ¹åŒ–ã‚¨ãƒ©ãƒ¼ã‚’é˜²ãï¼‰
     }
 
     /// <summary>
-    /// ˆÚ“®‚Ìİ’è‚ğ“ü‚ê‘Ö‚¦‚éi‰Î‚Ìi‰»E‘Ş‰»‚ÅAFireStateData‚ª•Ï‚í‚Á‚½‚Æ‚«‚ÉŒÄ‚Ôj
-    /// ¡‚ÌŒo˜H‚ÍAV‚µ‚¢İ’è‚Åˆø‚«’¼‚·‚½‚ß‚ÉÌ‚Ä‚é
+    /// ç§»å‹•ã®è¨­å®šã‚’å…¥ã‚Œæ›¿ãˆã‚‹ï¼ˆç«ã®é€²åŒ–ãƒ»é€€åŒ–ã§ã€FireStateDataãŒå¤‰ã‚ã£ãŸã¨ãã«å‘¼ã¶ï¼‰
+    /// ä»Šã®çµŒè·¯ã¯ã€æ–°ã—ã„è¨­å®šã§å¼•ãç›´ã™ãŸã‚ã«æ¨ã¦ã‚‹
     /// </summary>
     public void Configure(float speed, LayerMask groundMask, float sampleDistance, float repathDistance, float followSpeed = 0f, float acceleration = 8f)
     {
@@ -78,14 +85,14 @@ public class Mover
         _groundMask = groundMask;
         _sampleDistance = sampleDistance;
         _repathDistance = repathDistance;
-        _agent.speed = _followSpeed;   //Agent‚ğg‚¤‚Ì‚ÍFollow‚Ì‚Æ‚«‚¾‚¯B’¼i‚ÍAgent‚ğ~‚ß‚Ä_speed‚Å“®‚©‚·
+        _agent.speed = _followSpeed;   //Agentã‚’ä½¿ã†ã®ã¯Followã®ã¨ãã ã‘ã€‚ç›´é€²ã¯Agentã‚’æ­¢ã‚ã¦_speedã§å‹•ã‹ã™
         _agent.acceleration = _acceleration;
         _hasDestination = false;
     }
     #endregion
 
     #region Straight
-    /// <summary>‘ÎÛ‚È‚µ‚Ì’¼iBw’è‚µ‚½•ûŒü‚Ö1ƒtƒŒ[ƒ€•ªi‚Şi–ˆƒtƒŒ[ƒ€ŒÄ‚Ôj</summary>
+    /// <summary>å¯¾è±¡ãªã—ã®ç›´é€²ã€‚æŒ‡å®šã—ãŸæ–¹å‘ã¸1ãƒ•ãƒ¬ãƒ¼ãƒ åˆ†é€²ã‚€ï¼ˆæ¯ãƒ•ãƒ¬ãƒ¼ãƒ å‘¼ã¶ï¼‰</summary>
     public void MoveStraight(Vector3 direction)
     {
         direction.y = 0f;
@@ -95,13 +102,13 @@ public class Mover
         }
     }
 
-    /// <summary>w’èÀ•W‚Ö1ƒtƒŒ[ƒ€•ªŒü‚©‚¤i–ˆƒtƒŒ[ƒ€ŒÄ‚ÔjB’…‚¢‚½‚çfalse</summary>
+    /// <summary>æŒ‡å®šåº§æ¨™ã¸1ãƒ•ãƒ¬ãƒ¼ãƒ åˆ†å‘ã‹ã†ï¼ˆæ¯ãƒ•ãƒ¬ãƒ¼ãƒ å‘¼ã¶ï¼‰ã€‚ç€ã„ãŸã‚‰false</summary>
     public bool MoveTowards(Vector3 point)
     {
         return MoveTowards(point, _speed);
     }
 
-    //‘¬‚³‚ğw’è‚µ‚ÄAw’èÀ•W‚Ö1ƒtƒŒ[ƒ€•ªŒü‚©‚¤iFollow‚Ì’¼iƒtƒH[ƒ‹ƒoƒbƒN‚ÍA’Ç]‚Ì‘¬‚³‚Å“®‚©‚·j
+    //é€Ÿã•ã‚’æŒ‡å®šã—ã¦ã€æŒ‡å®šåº§æ¨™ã¸1ãƒ•ãƒ¬ãƒ¼ãƒ åˆ†å‘ã‹ã†ï¼ˆFollowã®ç›´é€²ãƒ•ã‚©ãƒ¼ãƒ«ãƒãƒƒã‚¯ã¯ã€è¿½å¾“ã®é€Ÿã•ã§å‹•ã‹ã™ï¼‰
     private bool MoveTowards(Vector3 point, float speed)
     {
         Vector3 delta = point - _transform.position;
@@ -117,13 +124,13 @@ public class Mover
         return distance > speed * Time.deltaTime;
     }
 
-    /// <summary>‘ÎÛ—L‚è‚Ì’¼i‚ÌŠJnBŒÄ‚ñ‚¾uŠÔ‚Ì‘ÎÛ‚ÌˆÊ’u‚ğ–Ú•W‚É‚·‚éiˆÈ~A‘ÎÛ‚ª“®‚¢‚Ä‚à–Ú•W‚Í•Ï‚¦‚È‚¢j</summary>
+    /// <summary>å¯¾è±¡æœ‰ã‚Šã®ç›´é€²ã®é–‹å§‹ã€‚å‘¼ã‚“ã ç¬é–“ã®å¯¾è±¡ã®ä½ç½®ã‚’ç›®æ¨™ã«ã™ã‚‹ï¼ˆä»¥é™ã€å¯¾è±¡ãŒå‹•ã„ã¦ã‚‚ç›®æ¨™ã¯å¤‰ãˆãªã„ï¼‰</summary>
     public void BeginStraightTo(Vector3 targetPosition)
     {
         _straightPoint = targetPosition;
     }
 
-    /// <summary>BeginStraightTo‚ÅŒˆ‚ß‚½–Ú•W‚Ö’¼i‚·‚éi–ˆƒtƒŒ[ƒ€ŒÄ‚ÔjB’…‚¢‚½‚çfalse</summary>
+    /// <summary>BeginStraightToã§æ±ºã‚ãŸç›®æ¨™ã¸ç›´é€²ã™ã‚‹ï¼ˆæ¯ãƒ•ãƒ¬ãƒ¼ãƒ å‘¼ã¶ï¼‰ã€‚ç€ã„ãŸã‚‰false</summary>
     public bool MoveStraightToTarget()
     {
         return MoveTowards(_straightPoint);
@@ -132,25 +139,25 @@ public class Mover
 
     #region Follow
     /// <summary>
-    /// ‘ÎÛ‚Ì’Ç]i–ˆƒtƒŒ[ƒ€ŒÄ‚ñ‚Å‚æ‚¢jBNavMesh‚ÅŒü‚©‚¦‚Ä‚¢‚ê‚Îtrue
-    /// ‹ß‚­‚ÉNavMesh‚ª‚È‚¢ŠÔ‚ÍAAgent‚ğg‚í‚¸’¼i‚ÅŒü‚©‚¢Afalse‚ğ•Ô‚·
+    /// å¯¾è±¡ã®è¿½å¾“ï¼ˆæ¯ãƒ•ãƒ¬ãƒ¼ãƒ å‘¼ã‚“ã§ã‚ˆã„ï¼‰ã€‚NavMeshã§å‘ã‹ãˆã¦ã„ã‚Œã°true
+    /// è¿‘ãã«NavMeshãŒãªã„é–“ã¯ã€Agentã‚’ä½¿ã‚ãšç›´é€²ã§å‘ã‹ã„ã€falseã‚’è¿”ã™
     /// </summary>
     public bool Follow(Vector3 point)
     {
         if (!TryEnableAgent())
         {
-            MoveTowards(point, _followSpeed);   //‹ß‚­‚ÉNavMesh‚ª‚È‚¢ŠÔ‚àA’Ç]‚Ì‘¬‚³‚ÅŒü‚©‚¤
+            MoveTowards(point, _followSpeed);   //è¿‘ãã«NavMeshãŒãªã„é–“ã‚‚ã€è¿½å¾“ã®é€Ÿã•ã§å‘ã‹ã†
             return false;
         }
 
         return SetAgentDestination(point, _sampleDistance);
     }
 
-    private const float NearestSearchDistance = 100f;   //©•ª‚ÌNavMesh‚Ìã‚ÅA’Ç]æ‚Éˆê”Ô‹ß‚¢“_‚ğ’T‚·”ÍˆÍ
+    private const float NearestSearchDistance = 100f;   //è‡ªåˆ†ã®NavMeshã®ä¸Šã§ã€è¿½å¾“å…ˆã«ä¸€ç•ªè¿‘ã„ç‚¹ã‚’æ¢ã™ç¯„å›²
 
     /// <summary>
-    /// ’Ç]æ‚ª©•ª‚ÌNavMesh‚ÌŠO‚É‚ ‚Á‚Ä‚àA©•ª‚ÌNavMeshã‚Å’Ç]æ‚Éˆê”Ô‹ß‚¢“_‚Ü‚ÅŒü‚©‚¤i–ˆƒtƒŒ[ƒ€ŒÄ‚ñ‚Å‚æ‚¢j
-    /// ©•ª‚Ì‹ß‚­‚ÉNavMesh‚ª‚È‚¢ŠÔ‚ÍAFollow‚Æ“¯‚¶‚­’¼i‚ÅŒü‚©‚¢Afalse‚ğ•Ô‚·
+    /// è¿½å¾“å…ˆãŒè‡ªåˆ†ã®NavMeshã®å¤–ã«ã‚ã£ã¦ã‚‚ã€è‡ªåˆ†ã®NavMeshä¸Šã§è¿½å¾“å…ˆã«ä¸€ç•ªè¿‘ã„ç‚¹ã¾ã§å‘ã‹ã†ï¼ˆæ¯ãƒ•ãƒ¬ãƒ¼ãƒ å‘¼ã‚“ã§ã‚ˆã„ï¼‰
+    /// è‡ªåˆ†ã®è¿‘ãã«NavMeshãŒãªã„é–“ã¯ã€Followã¨åŒã˜ãç›´é€²ã§å‘ã‹ã„ã€falseã‚’è¿”ã™
     /// </summary>
     public bool FollowNearest(Vector3 point)
     {
@@ -164,9 +171,9 @@ public class Mover
     }
 
     /// <summary>
-    /// NavMeshê—p‚Ì’Ç]i–ˆƒtƒŒ[ƒ€ŒÄ‚ñ‚Å‚æ‚¢jBŒ‹‰Ê‚ÅAŒü‚©‚¦‚Ä‚¢‚é‚©A“®‚¯‚È‚¢——R‚ª•ª‚©‚é
-    /// ©•ª‚Ì‹ß‚­‚ÉNavMesh‚ª‚È‚¢ŠÔ‚ÍA’¼i‚É‚àØ‚è‘Ö‚¦‚¸A“®‚©‚È‚¢
-    /// ’Ç]æ‚ªNavMesh‚ÌŠO‚Ì‚Æ‚«‚ÍAL‚ß‚É’T‚µ‚½ÅŠñ‚è‚ÌNavMeshã‚Ì“_‚ÖŒü‚©‚¤i’Ç]æ‚ªA”ò‚×‚é‰Î‚Ì‚æ‚¤‚ÉA•à‚¯‚È‚¢Š‚É‚¢‚éê‡j
+    /// NavMeshå°‚ç”¨ã®è¿½å¾“ï¼ˆæ¯ãƒ•ãƒ¬ãƒ¼ãƒ å‘¼ã‚“ã§ã‚ˆã„ï¼‰ã€‚çµæœã§ã€å‘ã‹ãˆã¦ã„ã‚‹ã‹ã€å‹•ã‘ãªã„ç†ç”±ãŒåˆ†ã‹ã‚‹
+    /// è‡ªåˆ†ã®è¿‘ãã«NavMeshãŒãªã„é–“ã¯ã€ç›´é€²ã«ã‚‚åˆ‡ã‚Šæ›¿ãˆãšã€å‹•ã‹ãªã„
+    /// è¿½å¾“å…ˆãŒNavMeshã®å¤–ã®ã¨ãã¯ã€åºƒã‚ã«æ¢ã—ãŸæœ€å¯„ã‚Šã®NavMeshä¸Šã®ç‚¹ã¸å‘ã‹ã†ï¼ˆè¿½å¾“å…ˆãŒã€é£›ã¹ã‚‹ç«ã®ã‚ˆã†ã«ã€æ­©ã‘ãªã„æ‰€ã«ã„ã‚‹å ´åˆï¼‰
     /// </summary>
     public NavFollowResult FollowOnNavMesh(Vector3 point)
     {
@@ -182,7 +189,7 @@ public class Mover
     #endregion
 
     #region Control
-    /// <summary>¡‚ÌŒo˜H‚ğÌ‚Ä‚Ä~‚Ü‚éi’¼i‚ÍAŒÄ‚Î‚ê‚È‚¯‚ê‚Î~‚Ü‚Á‚Ä‚¢‚éj</summary>
+    /// <summary>ä»Šã®çµŒè·¯ã‚’æ¨ã¦ã¦æ­¢ã¾ã‚‹ï¼ˆç›´é€²ã¯ã€å‘¼ã°ã‚Œãªã‘ã‚Œã°æ­¢ã¾ã£ã¦ã„ã‚‹ï¼‰</summary>
     public void Stop()
     {
         _hasDestination = false;
@@ -193,7 +200,7 @@ public class Mover
         }
     }
 
-    /// <summary>ˆÚ“®‚ğ‹–‰Â‚·‚é^~‚ß‚éB‚»‚ê‚Ü‚Å‚ÌŒo˜H‚ÍÌ‚Ä‚é</summary>
+    /// <summary>ç§»å‹•ã‚’è¨±å¯ã™ã‚‹ï¼æ­¢ã‚ã‚‹ã€‚ãã‚Œã¾ã§ã®çµŒè·¯ã¯æ¨ã¦ã‚‹</summary>
     public void SetCanMove(bool canMove)
     {
         _canMove = canMove;
@@ -207,7 +214,7 @@ public class Mover
 
     public bool TryFindSpawnPosition(Vector3 point, out Vector3 result)
     {
-        if (TrySamplePosition(point, out Vector3 onNavMesh))
+        if (TrySamplePosition(point, out Vector3 onNavMesh, _sampleDistance))
         {
             result = onNavMesh + Vector3.up * _hoverHeight;
             return true;
@@ -216,12 +223,17 @@ public class Mover
         result = point;
         return false;
     }
+
+    public bool TryFindNavMeshPoint(Vector3 point,float maxDistance,out Vector3 result)
+    {
+        return TrySamplePosition(point, out result, maxDistance);
+    }
     #endregion
 
     #region Debug
     /// <summary>
-    /// NavMesh‚Å“®‚¯‚È‚¢‚Æ‚«‚ÌŒ´ˆö’²‚×—p‚Ì•¶ši¸”s‚µ‚½‚Æ‚«‚ÉA1‰ñ‚¾‚¯o‚·—pB•¶š—ñ‚ğì‚é‚Ì‚ÅA–ˆƒtƒŒ[ƒ€‚ÍŒÄ‚Î‚È‚¢j
-    /// Agent‚Ìó‘ÔA©•ª‚Æ’Ç]æ‚Ì‹ß‚­‚ÌNavMeshAƒV[ƒ“‘S‘Ì‚ÌNavMesh‚Ì—L–³‚ğ•Ô‚·
+    /// NavMeshã§å‹•ã‘ãªã„ã¨ãã®åŸå› èª¿ã¹ç”¨ã®æ–‡å­—ï¼ˆå¤±æ•—ã—ãŸã¨ãã«ã€1å›ã ã‘å‡ºã™ç”¨ã€‚æ–‡å­—åˆ—ã‚’ä½œã‚‹ã®ã§ã€æ¯ãƒ•ãƒ¬ãƒ¼ãƒ ã¯å‘¼ã°ãªã„ï¼‰
+    /// Agentã®çŠ¶æ…‹ã€è‡ªåˆ†ã¨è¿½å¾“å…ˆã®è¿‘ãã®NavMeshã€ã‚·ãƒ¼ãƒ³å…¨ä½“ã®NavMeshã®æœ‰ç„¡ã‚’è¿”ã™
     /// </summary>
     public string DescribeNavState(Vector3 target)
     {
@@ -242,8 +254,8 @@ public class Mover
     #endregion
 
     #region Private
-    //Agent‚ª—LŒø‚ÅNavMesh‚Éæ‚Á‚Ä‚¢‚é‘O’ñ‚ÅA–Ú“I’n‚ğİ’è‚·‚éi–Ú“I’n‚ª‚Ù‚Æ‚ñ‚Ç“®‚¢‚Ä‚¢‚È‚¢‚Æ‚«‚ÍAŒo˜H‚ğŒvZ‚µ’¼‚³‚È‚¢j
-    //targetSampleDistance: –Ú“I’n‚Ì‹ß‚­‚ÌNavMesh‚ğ’T‚·”ÍˆÍ
+    //AgentãŒæœ‰åŠ¹ã§NavMeshã«ä¹—ã£ã¦ã„ã‚‹å‰æã§ã€ç›®çš„åœ°ã‚’è¨­å®šã™ã‚‹ï¼ˆç›®çš„åœ°ãŒã»ã¨ã‚“ã©å‹•ã„ã¦ã„ãªã„ã¨ãã¯ã€çµŒè·¯ã‚’è¨ˆç®—ã—ç›´ã•ãªã„ï¼‰
+    //targetSampleDistance: ç›®çš„åœ°ã®è¿‘ãã®NavMeshã‚’æ¢ã™ç¯„å›²
     private bool SetAgentDestination(Vector3 point, float targetSampleDistance)
     {
         if (_hasDestination && (point - _lastPoint).sqrMagnitude < _repathDistance * _repathDistance)
@@ -261,7 +273,7 @@ public class Mover
         return true;
     }
 
-    //Œü‚«‚ÆÅ‘å‹——£‚ğw’è‚µ‚Ä1ƒtƒŒ[ƒ€•ªi‚ŞBAgent‚ğ~‚ß‚ÄAˆÊ’u‚ğ’¼Ú“®‚©‚·
+    //å‘ãã¨æœ€å¤§è·é›¢ã‚’æŒ‡å®šã—ã¦1ãƒ•ãƒ¬ãƒ¼ãƒ åˆ†é€²ã‚€ã€‚Agentã‚’æ­¢ã‚ã¦ã€ä½ç½®ã‚’ç›´æ¥å‹•ã‹ã™
     private void Step(Vector3 direction, float maxDistance)
     {
         Step(direction, maxDistance, _speed);
@@ -281,7 +293,7 @@ public class Mover
         _transform.position = position;
     }
 
-    //^ã‚©‚ç‰º‚ÖRay‚ğ”ò‚Î‚µ‚Ä’n–Ê‚Ì‚‚³‚ğ‹‚ß‚éB’n–Ê‚ª‚È‚¯‚ê‚Î¡‚Ì‚‚³‚Ì‚Ü‚Ü
+    //çœŸä¸Šã‹ã‚‰ä¸‹ã¸Rayã‚’é£›ã°ã—ã¦åœ°é¢ã®é«˜ã•ã‚’æ±‚ã‚ã‚‹ã€‚åœ°é¢ãŒãªã‘ã‚Œã°ä»Šã®é«˜ã•ã®ã¾ã¾
     private float GetGroundY(Vector3 position)
     {
         Vector3 origin = position + Vector3.up * RayUp;
@@ -290,7 +302,7 @@ public class Mover
             : position.y;
     }
 
-    //‹ß‚­‚ÉNavMesh‚ª‚ ‚ê‚ÎAgent‚ğ—LŒø‚É‚µ‚Äæ‚¹‚éB‚È‚¯‚ê‚Îfalsei’T‚µ’¼‚µ‚Íˆê’èŠÔŠu‚ğ‚ ‚¯‚éj
+    //è¿‘ãã«NavMeshãŒã‚ã‚Œã°Agentã‚’æœ‰åŠ¹ã«ã—ã¦ä¹—ã›ã‚‹ã€‚ãªã‘ã‚Œã°falseï¼ˆæ¢ã—ç›´ã—ã¯ä¸€å®šé–“éš”ã‚’ã‚ã‘ã‚‹ï¼‰
     private bool TryEnableAgent()
     {
         if (!EnsureAgentType()) return false;
@@ -304,9 +316,9 @@ public class Mover
             return false;
         }
 
-        if (TrySamplePosition(_transform.position, out Vector3 onNavMesh))
+        if (TrySamplePosition(_transform.position, out Vector3 onNavMesh,_sampleDistance))
         {
-            //Agent‚Ì‘«Œ³i²‚©‚çBaseOffset‚¾‚¯‰ºj‚ªNavMesh‚Éæ‚é‚æ‚¤‚É’u‚¢‚Ä‚©‚ç—LŒø‚É‚·‚é
+            //Agentã®è¶³å…ƒï¼ˆè»¸ã‹ã‚‰BaseOffsetã ã‘ä¸‹ï¼‰ãŒNavMeshã«ä¹—ã‚‹ã‚ˆã†ã«ç½®ã„ã¦ã‹ã‚‰æœ‰åŠ¹ã«ã™ã‚‹
             SetAgentEnabled(false);
             _transform.position = onNavMesh + Vector3.up * _hoverHeight;
             SetAgentEnabled(true);
@@ -331,12 +343,7 @@ public class Mover
         }
     }
 
-    //w’è‚µ‚½À•W‚Ì‹ß‚­‚É‚ ‚éNavMeshã‚Ì“_‚ğ’T‚·i‚±‚ÌAgent‚Ìí—Ş‚Å’T‚·j
-    private bool TrySamplePosition(Vector3 point, out Vector3 result)
-    {
-        return TrySamplePosition(point, out result, _sampleDistance);
-    }
-
+    //æŒ‡å®šã—ãŸåº§æ¨™ã®è¿‘ãã«ã‚ã‚‹NavMeshä¸Šã®ç‚¹ã‚’æ¢ã™ï¼ˆã“ã®Agentã®ç¨®é¡ã§æ¢ã™ï¼‰
     private bool TrySamplePosition(Vector3 point, out Vector3 result, float maxDistance)
     {
         if (!EnsureAgentType())
@@ -355,7 +362,7 @@ public class Mover
         return found;
     }
 
-    //ƒXƒe[ƒW“Ç‚İ‚İŒã‚ÉAAgent‚Ìí—Ş‚ğAƒvƒƒtƒ@ƒCƒ‹‚ÌNavMesh‚É‡‚í‚¹‚é(ƒXƒe[ƒW‚ª‚©‚í‚Á‚½‚ç‡‚í‚¹‚È‚¨‚·)
+    //ã‚¹ãƒ†ãƒ¼ã‚¸èª­ã¿è¾¼ã¿å¾Œã«ã€Agentã®ç¨®é¡ã‚’ã€ãƒ—ãƒ­ãƒ•ã‚¡ã‚¤ãƒ«ã®NavMeshã«åˆã‚ã›ã‚‹(ã‚¹ãƒ†ãƒ¼ã‚¸ãŒã‹ã‚ã£ãŸã‚‰åˆã‚ã›ãªãŠã™)
     private bool EnsureAgentType()
     {
         if (!_profile.HasValue) return true;
@@ -374,10 +381,10 @@ public class Mover
     #endregion
 }
 
-/// <summary>Mover.FollowOnNavMesh‚ÌŒ‹‰Ê</summary>
+/// <summary>Mover.FollowOnNavMeshã®çµæœ</summary>
 public enum NavFollowResult
 {
-    Following,          //NavMesh‚ÅŒü‚©‚¦‚Ä‚¢‚é
-    SelfOffNavMesh,     //©•ª‚Ì‹ß‚­‚ÉNavMesh‚ª‚È‚­A“®‚¯‚È‚¢
-    TargetOffNavMesh,   //’Ç]æ‚Ì‹ß‚­‚ÉAL‚ß‚É’T‚µ‚Ä‚àNavMesh‚ª‚È‚­A“®‚¯‚È‚¢
+    Following,          //NavMeshã§å‘ã‹ãˆã¦ã„ã‚‹
+    SelfOffNavMesh,     //è‡ªåˆ†ã®è¿‘ãã«NavMeshãŒãªãã€å‹•ã‘ãªã„
+    TargetOffNavMesh,   //è¿½å¾“å…ˆã®è¿‘ãã«ã€åºƒã‚ã«æ¢ã—ã¦ã‚‚NavMeshãŒãªãã€å‹•ã‘ãªã„
 }

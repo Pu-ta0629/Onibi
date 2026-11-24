@@ -29,6 +29,8 @@ public class PoolManager : MonoBehaviour
     private readonly Dictionary<int, KodamaPool> _kodamaPools = new();
     private KodamaFactory _kodamaFactory;
 
+    private readonly Dictionary<KodamaController, KodamaPool> _kodamaOwners = new();
+
     private Transform _enemyParent;
     private Transform _kodamaParent;
 
@@ -173,9 +175,17 @@ public class PoolManager : MonoBehaviour
 
             Transform poolRoot = CreateChild(_kodamaParent, $"Pool_Kodama_{spot.Id}");
 
-            for (int i = 0; i < _kodamaPools.Count; i++)
+            for(int i = 0; i < spot.KodamaCount; i++)
             {
-                pool.Add(_kodamaFactory.Create(data, poolRoot));
+                KodamaController kodama = _kodamaFactory.Create(data, poolRoot);
+                if(kodama == null)
+                {
+                    continue;
+                }
+
+                pool.Add(kodama);
+                _kodamaOwners.Add(kodama, pool);
+                kodama.Collected += HandleKodamaCollected;
             }
         }
     }
@@ -273,7 +283,6 @@ public class PoolManager : MonoBehaviour
         }
 
         FlushReturns();
-        CheckKodamaTouch();
     }
 
     /// <summary>
@@ -332,6 +341,7 @@ public class PoolManager : MonoBehaviour
             {
                 if (pool.All[i] != null)
                 {
+                    pool.All[i].Collected -= HandleKodamaCollected;
                     UnityEngine.Object.Destroy(pool.All[i].gameObject);
                 }
             }
@@ -341,6 +351,7 @@ public class PoolManager : MonoBehaviour
         _kodamaParent = null;
 
         _kodamaPools.Clear();
+        _kodamaOwners.Clear();
         _kodamaFactory = null;
 
         _pools.Clear();
@@ -350,6 +361,28 @@ public class PoolManager : MonoBehaviour
         _tickBuffer.Clear();
         _returnQueue.Clear();
         _factory = null;
+    }
+
+    public bool IsKodamaSpaceFree(int poolId,Vector3 point,float extraDistance)
+    {
+        if(!_kodamaPools.TryGetValue(poolId,out KodamaPool pool) || pool.All.Count == 0)
+        {
+            return true;
+        }
+
+        float minDistance = pool.All[0].Data.TouchRadius * 2f + extraDistance;
+        float minSqr = minDistance * minDistance;
+
+        for(int i = 0; i < pool.Active.Count;i++)
+        {
+            Vector3 delta = pool.Active[i].transform.position - point;
+            delta.y = 0f;
+            if(delta.sqrMagnitude < minSqr)
+            {
+                return false;
+            }
+        }
+        return true;
     }
     #endregion
 
@@ -408,28 +441,20 @@ public class PoolManager : MonoBehaviour
         }
     }
 
-    private void CheckKodamaTouch()
+    private void HandleKodamaCollected(KodamaController kodama)
     {
-        foreach(KodamaPool pool in _kodamaPools.Values)
+        if(!_kodamaOwners.TryGetValue(kodama,out KodamaPool pool))
         {
-            for(int i = pool.Active.Count -1;i >= 0; i--)
-            {
-                KodamaController kodama = pool.Active[i]; 
-                if(!kodama.TryDetectToucher(out var toucher))
-                {
-                    continue;
-                }
+            kodama.Despawn();
+            return;
+        }
 
-                var data = kodama.Data;
-                pool.Return(kodama);
-                toucher.CollectKodama(data);
+        pool.Return(kodama);
 
-                if(pool.IsStopped && pool.Stock >= pool.ResumeThreshold)
-                {
-                    pool.IsStopped = false;
-                    KodamaRestocked?.Invoke(pool.PoolId);
-                }
-            }
+        if(pool.IsStopped && pool.Stock >= pool.ResumeThreshold)
+        {
+            pool.IsStopped = false;
+            KodamaRestocked?.Invoke(pool.PoolId);
         }
     }
     #endregion
