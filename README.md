@@ -1,2 +1,5 @@
 # Onibi
 チーム制作「導火鬼」のGitになります
+現在はBuildによる実行ができません
+MainBranchをDownLoadして、Unity6.3以降のバージョンで動作実行してください
+Assets>>Scenes>>SurvivalScene.Unityを開いて実行すると、簡易的な操作をすることができます
