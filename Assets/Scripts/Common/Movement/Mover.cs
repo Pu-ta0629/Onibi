@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using UnityEngine.AI;
+using UnityEngine.UIElements;
 
 /// <summary>
 /// 移動をまとめた純粋なC#クラス。移動に必要な対象（座標・方向）は、呼ぶ側が確定させて渡す
@@ -98,7 +99,7 @@ public class Mover
         direction.y = 0f;
         if (direction.sqrMagnitude > 1e-6f)
         {
-            Step(direction.normalized, float.MaxValue);
+            Step(direction.normalized, float.MaxValue, _speed);
         }
     }
 
@@ -274,11 +275,6 @@ public class Mover
     }
 
     //向きと最大距離を指定して1フレーム分進む。Agentを止めて、位置を直接動かす
-    private void Step(Vector3 direction, float maxDistance)
-    {
-        Step(direction, maxDistance, _speed);
-    }
-
     private void Step(Vector3 direction, float maxDistance, float speed)
     {
         if (!_canMove)
@@ -289,17 +285,21 @@ public class Mover
         SetAgentEnabled(false);
 
         Vector3 position = _transform.position + direction * Mathf.Min(speed * Time.deltaTime, maxDistance);
-        position.y = GetGroundY(position);
+        position.y = ResolveY(position);
         _transform.position = position;
     }
 
-    //真上から下へRayを飛ばして地面の高さを求める。地面がなければ今の高さのまま
-    private float GetGroundY(Vector3 position)
+    // Rayが当たらないときは、Agentと同じ「NavMesh面 + hoverHeight」を使う
+    private float ResolveY(Vector3 position)
     {
         Vector3 origin = position + Vector3.up * RayUp;
-        return Physics.Raycast(origin, Vector3.down, out RaycastHit hit, RayLength, _groundMask)
-            ? hit.point.y + _hoverHeight
-            : position.y;
+        if (Physics.Raycast(origin, Vector3.down, out RaycastHit hit, RayLength, _groundMask))
+            return hit.point.y + _hoverHeight;
+
+        if (TrySamplePosition(position, out Vector3 onMesh, _sampleDistance))
+            return onMesh.y + _hoverHeight;
+
+        return position.y;
     }
 
     //近くにNavMeshがあればAgentを有効にして乗せる。なければfalse（探し直しは一定間隔をあける）

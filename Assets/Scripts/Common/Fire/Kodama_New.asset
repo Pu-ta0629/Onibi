@@ -16,14 +16,16 @@ MonoBehaviour:
   _displayName: 1
   _isSpecial: 0
   _specialKind: 0
-  _prefab: {fileID: 4538121305004603481, guid: b6d8cd365cb74844dbf4c8fb584f7e69, type: 3}
+  _minAmount: 5
+  _maxAmount: 20
+  _prefab: {fileID: 2233030333142793052, guid: 3ba4288e392022a4c894e05bb2231bba, type: 3}
   _colliders:
     _colliders:
     - _key: 112
       _role: 2
       _shape:
         _kind: 0
-        _radius: 5
+        _radius: 0.5
         _length: 0
         _width: 0
         _angle: 0

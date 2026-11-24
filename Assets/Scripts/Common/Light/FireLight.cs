@@ -1,18 +1,18 @@
-using System;
+ï»¿using System;
 using UnityEngine;
 
 /// <summary>
-/// –¾‚é‚³ƒŒƒxƒ‹1‚Â•ª‚Ìİ’èBŠp“x‚Í Light ‚Ì Spot Angle(‘S‘Ì‚ÌŠp“x)‚Æ“¯‚¶ˆÓ–¡
-/// SpotLight‚ÍInner/OuterŠp‚¾‚¯‚ªƒŒƒxƒ‹‚Å•Ï‚í‚éiIntensityERange‚Í‘SƒŒƒxƒ‹‹¤’ÊBF‚Ì‹P“x‚Å”{—¦‚ª‚©‚©‚éj
-/// ”»’è(GetLightLevelAt)‚ÆŒ©‚½–Ú(SpotLight)‚ÍA‚±‚±‚Ì“¯‚¶Šp“x‚ğg‚¤‚Ì‚Åˆê’v‚·‚é
+/// æ˜ã‚‹ã•ãƒ¬ãƒ™ãƒ«1ã¤åˆ†ã®è¨­å®šã€‚è§’åº¦ã¯ Light ã® Spot Angle(å…¨ä½“ã®è§’åº¦)ã¨åŒã˜æ„å‘³
+/// SpotLightã¯Inner/Outerè§’ã ã‘ãŒãƒ¬ãƒ™ãƒ«ã§å¤‰ã‚ã‚‹ï¼ˆIntensityãƒ»Rangeã¯å…¨ãƒ¬ãƒ™ãƒ«å…±é€šã€‚è‰²ã®è¼åº¦ã§å€ç‡ãŒã‹ã‹ã‚‹ï¼‰
+/// åˆ¤å®š(GetLightLevelAt)ã¨è¦‹ãŸç›®(SpotLight)ã¯ã€ã“ã“ã®åŒã˜è§’åº¦ã‚’ä½¿ã†ã®ã§ä¸€è‡´ã™ã‚‹
 /// </summary>
 [Serializable]
 public class FireLightLevel
 {
-    [Tooltip("InnerŠp(“x)B‚±‚Ì“à‘¤‚ÍŒõ—Ê‚ªÅ‘å(15)")]
+    [Tooltip("Innerè§’(åº¦)ã€‚ã“ã®å†…å´ã¯å…‰é‡ãŒæœ€å¤§(15)")]
     [Range(0f, 179f)] public float InnerAngle;
 
-    [Tooltip("OuterŠp(“x)B‚±‚ÌŠO‘¤‚ÍŒõ—Ê‚ª0")]
+    [Tooltip("Outerè§’(åº¦)ã€‚ã“ã®å¤–å´ã¯å…‰é‡ãŒ0")]
     [Range(1f, 179f)] public float OuterAngle = 15f;
 
     public FireLightLevel() { }
@@ -25,47 +25,47 @@ public class FireLightLevel
 }
 
 /// <summary>
-/// ‰Î‚Ìƒ‰ƒCƒgİ’è(Inspector‚Å’²®‚·‚é’l)BLightManager‚ª‚¿A‘S‚Ä‚Ì‰Î‚Å‹¤’Ê‚Ég‚¤
-/// Light‚»‚Ì‚à‚Ì‚ÍAŠe‰Î‚ÌFireController‚ª‚Â(SpotLight‚ÆPointLight‚Ì2‚Â)
+/// ç«ã®ãƒ©ã‚¤ãƒˆè¨­å®š(Inspectorã§èª¿æ•´ã™ã‚‹å€¤)ã€‚LightManagerãŒæŒã¡ã€å…¨ã¦ã®ç«ã§å…±é€šã«ä½¿ã†
+/// Lightãã®ã‚‚ã®ã¯ã€å„ç«ã®FireControllerãŒæŒã¤(SpotLightã¨PointLightã®2ã¤)
 /// </summary>
 [Serializable]
 public class FireLightConfig
 {
-    [Header("SpotLight(ƒŒƒxƒ‹‚Å•Ï‚í‚é‚Ì‚ÍInner/OuterŠp‚¾‚¯)")]
-    [Tooltip("SpotLight‚ğ’u‚­‚‚³(‰Î‚ÌˆÊ’u‚©‚ç‚Ìã•ûŒü)")]
+    [Header("SpotLight(ãƒ¬ãƒ™ãƒ«ã§å¤‰ã‚ã‚‹ã®ã¯Inner/Outerè§’ã ã‘)")]
+    [Tooltip("SpotLightã‚’ç½®ãé«˜ã•(ç«ã®ä½ç½®ã‹ã‚‰ã®ä¸Šæ–¹å‘)")]
     public float YOffset = 10f;
 
-    [Tooltip("SpotLight‚ÌIntensity‚ÌŠî€’l(”’‚Ì‰Î‚Ì‚Æ‚«BF‚Ì‹P“x‚Å”{—¦‚ª‚©‚©‚é)")]
+    [Tooltip("SpotLightã®Intensityã®åŸºæº–å€¤(ç™½ã®ç«ã®ã¨ãã€‚è‰²ã®è¼åº¦ã§å€ç‡ãŒã‹ã‹ã‚‹)")]
     public float Intensity = 250f;
 
-    [Tooltip("SpotLight‚ÌRange‚ÌŠî€’l(”’‚Ì‰Î‚Ì‚Æ‚«BF‚Ì‹P“x‚Å”{—¦‚ª‚©‚©‚é)")]
+    [Tooltip("SpotLightã®Rangeã®åŸºæº–å€¤(ç™½ã®ç«ã®ã¨ãã€‚è‰²ã®è¼åº¦ã§å€ç‡ãŒã‹ã‹ã‚‹)")]
     public float Range = 20f;
 
-    [Header("‹P“x‡‚í‚¹(Spot‚ÌIntensityERange)")]
-    [Tooltip("F‚²‚Æ‚ÌŒ©‚©‚¯‚Ì–¾‚é‚³‚ğ‚»‚ë‚¦‚é(”’‚ğŠî€‚ÉAˆÃ‚­Œ©‚¦‚éF‚Ù‚ÇIntensity‚ÆRange‚ğã‚°‚é)")]
+    [Header("è¼åº¦åˆã‚ã›(Spotã®Intensityãƒ»Range)")]
+    [Tooltip("è‰²ã”ã¨ã®è¦‹ã‹ã‘ã®æ˜ã‚‹ã•ã‚’ãã‚ãˆã‚‹(ç™½ã‚’åŸºæº–ã«ã€æš—ãè¦‹ãˆã‚‹è‰²ã»ã©Intensityã¨Rangeã‚’ä¸Šã’ã‚‹)")]
     public bool MatchLuminance = true;
 
-    [Tooltip("‹P“x‡‚í‚¹‚ÅAIntensity‚ğ‰½”{‚Ü‚Åã‚°‚é‚©(Â‚ª–ñ8.8”{)BRange‚Í‚»‚Ì•½•ûª”{(‹——£‚Ì2æ‚ÅŒõ‚ªã‚Ü‚é‚½‚ß)")]
+    [Tooltip("è¼åº¦åˆã‚ã›ã§ã€Intensityã‚’ä½•å€ã¾ã§ä¸Šã’ã‚‹ã‹(é’ãŒç´„8.8å€)ã€‚Rangeã¯ãã®å¹³æ–¹æ ¹å€(è·é›¢ã®2ä¹—ã§å…‰ãŒå¼±ã¾ã‚‹ãŸã‚)")]
     [Range(1f, 20f)] public float MaxLuminanceScale = 10f;
 
-    [Header("PointLight(–Àq—pBƒŒƒxƒ‹‚²‚Æ‚ÉIntensityERange‚ª•Ï‚í‚é)")]
-    [Tooltip("PointLight‚ğ’u‚­‚‚³(‰Î‚ÌˆÊ’u‚©‚ç‚Ìã•ûŒü)")]
+    [Header("PointLight(è¿·å­ç”¨ã€‚ãƒ¬ãƒ™ãƒ«ã”ã¨ã«Intensityãƒ»RangeãŒå¤‰ã‚ã‚‹)")]
+    [Tooltip("PointLightã‚’ç½®ãé«˜ã•(ç«ã®ä½ç½®ã‹ã‚‰ã®ä¸Šæ–¹å‘)")]
     public float PointYOffset = 2f;
 
-    [Tooltip("PointLight‚ÌIntensity(Element 0 = Level1, 1 = Level2, 2 = Level3)")]
+    [Tooltip("PointLightã®Intensity(Element 0 = Level1, 1 = Level2, 2 = Level3)")]
     public float[] PointIntensities = { 3f, 5f, 10f };
 
-    [Tooltip("PointLight‚ÌRange(Element 0 = Level1, 1 = Level2, 2 = Level3)")]
+    [Tooltip("PointLightã®Range(Element 0 = Level1, 1 = Level2, 2 = Level3)")]
     public float[] PointRanges = { 3f, 5f, 10f };
 
     [Header("Culling Mask")]
-    [Tooltip("SpotLight‚ªÆ‚ç‚·Layer(Œ©‚½–Ú—p)B0(Nothing)‚Ì‚Æ‚«‚ÍAGroundƒŒƒCƒ„[‚Ì‚İ")]
+    [Tooltip("SpotLightãŒç…§ã‚‰ã™Layer(è¦‹ãŸç›®ç”¨)ã€‚0(Nothing)ã®ã¨ãã¯ã€Groundãƒ¬ã‚¤ãƒ¤ãƒ¼ã®ã¿")]
     public LayerMask SpotCullingMask;
 
-    [Tooltip("–Àq—pPointLight‚ªÆ‚ç‚·Layer(–Àq‚ÌLayer)B0(Nothing)‚Ì‚Æ‚«‚ÍAGroundˆÈŠO‚·‚×‚Ä")]
+    [Tooltip("è¿·å­ç”¨PointLightãŒç…§ã‚‰ã™Layer(è¿·å­ã®Layer)ã€‚0(Nothing)ã®ã¨ãã¯ã€Groundä»¥å¤–ã™ã¹ã¦")]
     public LayerMask PointCullingMask;
 
-    [Header("–¾‚é‚³ƒŒƒxƒ‹(Element 0 = Level1, 1 = Level2, 2 = Level3)")]
+    [Header("æ˜ã‚‹ã•ãƒ¬ãƒ™ãƒ«(Element 0 = Level1, 1 = Level2, 2 = Level3)")]
     public FireLightLevel[] Levels =
     {
         new FireLightLevel(0f, 15f),
@@ -74,12 +74,12 @@ public class FireLightConfig
     };
 
     [Header("Debug")]
-    [Tooltip("Sceneƒrƒ…[‚ÉAÆ‚ç‚³‚ê‚é”ÍˆÍ(‰©=ŠO‘¤ / —Î=“à‘¤ / Ô=ˆÃ‚¢‚Æ”»’è‚³‚ê‚é‹«ŠE)‚ğ•\¦‚·‚é")]
+    [Tooltip("Sceneãƒ“ãƒ¥ãƒ¼ã«ã€ç…§ã‚‰ã•ã‚Œã‚‹ç¯„å›²(é»„=å¤–å´ / ç·‘=å†…å´ / èµ¤=æš—ã„ã¨åˆ¤å®šã•ã‚Œã‚‹å¢ƒç•Œ)ã‚’è¡¨ç¤ºã™ã‚‹")]
     public bool ShowGizmo = true;
 
     private static readonly FireLightLevel Fallback = new FireLightLevel();
 
-    /// <summary>ƒŒƒxƒ‹(0 = Level1)‚Ìİ’èB”ÍˆÍŠO‚ÍA’[‚ÌƒŒƒxƒ‹‚Å‘ã—p‚·‚é</summary>
+    /// <summary>ãƒ¬ãƒ™ãƒ«(0 = Level1)ã®è¨­å®šã€‚ç¯„å›²å¤–ã¯ã€ç«¯ã®ãƒ¬ãƒ™ãƒ«ã§ä»£ç”¨ã™ã‚‹</summary>
     public FireLightLevel GetLevel(int index)
     {
         if (Levels == null || Levels.Length == 0)
@@ -90,10 +90,10 @@ public class FireLightConfig
         return Levels[Mathf.Clamp(index, 0, Levels.Length - 1)] ?? Fallback;
     }
 
-    /// <summary>ƒŒƒxƒ‹‚²‚Æ‚ÌPointLight‚ÌIntensityB”ÍˆÍŠO‚Í’[‚Ì’l‚Å‘ã—p‚·‚é</summary>
+    /// <summary>ãƒ¬ãƒ™ãƒ«ã”ã¨ã®PointLightã®Intensityã€‚ç¯„å›²å¤–ã¯ç«¯ã®å€¤ã§ä»£ç”¨ã™ã‚‹</summary>
     public float GetPointIntensity(int index) => GetFromArray(PointIntensities, index, 3f);
 
-    /// <summary>ƒŒƒxƒ‹‚²‚Æ‚ÌPointLight‚ÌRangeB”ÍˆÍŠO‚Í’[‚Ì’l‚Å‘ã—p‚·‚é</summary>
+    /// <summary>ãƒ¬ãƒ™ãƒ«ã”ã¨ã®PointLightã®Rangeã€‚ç¯„å›²å¤–ã¯ç«¯ã®å€¤ã§ä»£ç”¨ã™ã‚‹</summary>
     public float GetPointRange(int index) => GetFromArray(PointRanges, index, 3f);
 
     private static float GetFromArray(float[] array, int index, float fallback)
@@ -106,13 +106,13 @@ public class FireLightConfig
         return array[Mathf.Clamp(index, 0, array.Length - 1)];
     }
 
-    /// <summary>SpotLight‚ÌCulling MaskB–¢İ’è‚È‚çGround‚Ì‚İ</summary>
+    /// <summary>SpotLightã®Culling Maskã€‚æœªè¨­å®šãªã‚‰Groundã®ã¿</summary>
     public int ResolveSpotMask()
     {
         return SpotCullingMask.value != 0 ? SpotCullingMask.value : LayerMask.GetMask("Ground");
     }
 
-    /// <summary>PointLight‚ÌCulling MaskB–¢İ’è‚È‚çGroundˆÈŠO‚·‚×‚Ä</summary>
+    /// <summary>PointLightã®Culling Maskã€‚æœªè¨­å®šãªã‚‰Groundä»¥å¤–ã™ã¹ã¦</summary>
     public int ResolvePointMask()
     {
         return PointCullingMask.value != 0 ? PointCullingMask.value : ~LayerMask.GetMask("Ground");
@@ -120,17 +120,17 @@ public class FireLightConfig
 }
 
 /// <summary>
-/// ‰Î‚ÌŒõ‚ğ’S“–‚·‚éƒˆ‚ÈC#ƒNƒ‰ƒXBFireController‚ª‚ÂSpotLight‚ÆPointLight‚ğA–¾‚é‚³ƒŒƒxƒ‹‚É‡‚í‚¹‚Ä’²®‚µA
-/// u‚ ‚é’n“_‚ÌŒõ—Êv‚ğŒvZ‚·‚é
-///   SpotLight  ... –¾‚é‚³”»’è‚ÆŒ©‚½–Ú—pBCulling Mask‚ÍGround‚Ì‚İBˆÊ’uy=YOffsetAInner/Outer‚ªƒŒƒxƒ‹‚Å•Ï‚í‚é
-///                  IntensityERange‚ÍŠî€’l‚ÉAF‚Ì‹P“x‚É‰‚¶‚½”{—¦‚ğŠ|‚¯‚½’l
-///   PointLight ... –Àq—pB–Àq‚ÌLayer‚¾‚¯‚ğÆ‚ç‚·BˆÊ’uy=PointYOffsetAIntensityERange‚ÍƒŒƒxƒ‹‚²‚Æ
-/// ”»’è‚ÍALight‚ğ^‰º‚ÉŒü‚¯‚½‚Æ‚«‚É’n–Ê‚Éo‚é‰~‚Æ“¯‚¶Œ`‚É‚È‚é
-///   InnerŠp‚Ì“à‘¤ = Å‘å(15)AOuterŠp‚ÌŠO‘¤ = 0A‚»‚ÌŠÔ‚Í’¼ü‚Å‰º‚ª‚é
+/// ç«ã®å…‰ã‚’æ‹…å½“ã™ã‚‹ç´”ç²‹ãªC#ã‚¯ãƒ©ã‚¹ã€‚FireControllerãŒæŒã¤SpotLightã¨PointLightã‚’ã€æ˜ã‚‹ã•ãƒ¬ãƒ™ãƒ«ã«åˆã‚ã›ã¦èª¿æ•´ã—ã€
+/// ã€Œã‚ã‚‹åœ°ç‚¹ã®å…‰é‡ã€ã‚’è¨ˆç®—ã™ã‚‹
+///   SpotLight  ... æ˜ã‚‹ã•åˆ¤å®šã¨è¦‹ãŸç›®ç”¨ã€‚Culling Maskã¯Groundã®ã¿ã€‚ä½ç½®y=YOffsetã€Inner/OuterãŒãƒ¬ãƒ™ãƒ«ã§å¤‰ã‚ã‚‹
+///                  Intensityãƒ»Rangeã¯åŸºæº–å€¤ã«ã€è‰²ã®è¼åº¦ã«å¿œã˜ãŸå€ç‡ã‚’æ›ã‘ãŸå€¤
+///   PointLight ... è¿·å­ç”¨ã€‚è¿·å­ã®Layerã ã‘ã‚’ç…§ã‚‰ã™ã€‚ä½ç½®y=PointYOffsetã€Intensityãƒ»Rangeã¯ãƒ¬ãƒ™ãƒ«ã”ã¨
+/// åˆ¤å®šã¯ã€Lightã‚’çœŸä¸‹ã«å‘ã‘ãŸã¨ãã«åœ°é¢ã«å‡ºã‚‹å††ã¨åŒã˜å½¢ã«ãªã‚‹
+///   Innerè§’ã®å†…å´ = æœ€å¤§(15)ã€Outerè§’ã®å¤–å´ = 0ã€ãã®é–“ã¯ç›´ç·šã§ä¸‹ãŒã‚‹
 /// </summary>
 public class FireLight
 {
-    /// <summary>Œõ—Ê‚ÌÅ‘å’l</summary>
+    /// <summary>å…‰é‡ã®æœ€å¤§å€¤</summary>
     public const int MaxLightLevel = 15;
 
     private readonly Transform _owner;
@@ -139,23 +139,23 @@ public class FireLight
     private readonly Light _point;
     private readonly Color _color;
     private FireBrightness _brightness = FireBrightness.Level1;
-    private bool _isLit;   // ‰Šú‚ÍÁ“”
+    private bool _isLit;   // åˆæœŸã¯æ¶ˆç¯
     private FireLightLevel Level => _config.GetLevel((int)_brightness);
 
-    /// <summary>¡‚ÌƒŒƒxƒ‹‚ÌOuterŠp(“x)B‚±‚ÌŠO‘¤‚ÍŒõ—Ê0</summary>
+    /// <summary>ä»Šã®ãƒ¬ãƒ™ãƒ«ã®Outerè§’(åº¦)ã€‚ã“ã®å¤–å´ã¯å…‰é‡0</summary>
     public float OuterAngle => Level.OuterAngle;
 
-    /// <summary>¡‚ÌƒŒƒxƒ‹‚ÌInnerŠp(“x)B‚±‚Ì“à‘¤‚ÍŒõ—Ê‚ªÅ‘å</summary>
+    /// <summary>ä»Šã®ãƒ¬ãƒ™ãƒ«ã®Innerè§’(åº¦)ã€‚ã“ã®å†…å´ã¯å…‰é‡ãŒæœ€å¤§</summary>
     public float InnerAngle => Mathf.Min(Level.InnerAngle, Level.OuterAngle);
 
-    /// <summary>SpotLight‚ÌIntensity(Šî€’l ~ ‹P“x‚Ì”{—¦)</summary>
+    /// <summary>SpotLightã®Intensity(åŸºæº–å€¤ Ã— è¼åº¦ã®å€ç‡)</summary>
     public float SpotIntensity => _config.Intensity * GetLuminanceScale();
 
-    /// <summary>SpotLight‚ÌRange(Šî€’l ~ ‹P“x‚Ì”{—¦‚Ì•½•ûª)B”»’è‚Ég‚¤‹——£‚ÌãŒÀ‚É‚à‚È‚é</summary>
+    /// <summary>SpotLightã®Range(åŸºæº–å€¤ Ã— è¼åº¦ã®å€ç‡ã®å¹³æ–¹æ ¹)ã€‚åˆ¤å®šã«ä½¿ã†è·é›¢ã®ä¸Šé™ã«ã‚‚ãªã‚‹</summary>
     public float SpotRange => _config.Range * Mathf.Sqrt(GetLuminanceScale());
 
-    /// <param name="spotLight">FireController‚ª‚ÂSpotLight(•K{)</param>
-    /// <param name="pointLight">FireController‚ª‚Â–Àq—pPointLightBnull‚È‚ç‰Î‚Ìq‚Æ‚µ‚Ä©“®‚Åì‚é</param>
+    /// <param name="spotLight">FireControllerãŒæŒã¤SpotLight(å¿…é ˆ)</param>
+    /// <param name="pointLight">FireControllerãŒæŒã¤è¿·å­ç”¨PointLightã€‚nullãªã‚‰ç«ã®å­ã¨ã—ã¦è‡ªå‹•ã§ä½œã‚‹</param>
     public FireLight(Transform owner, FireColor color, FireLightConfig config, Light spotLight, Light pointLight)
     {
         _owner = owner;
@@ -189,25 +189,25 @@ public class FireLight
     }
 
     #region Public
-    /// <summary>–¾‚é‚³ƒŒƒxƒ‹‚ğİ’è‚µ‚ÄALight‚Ì’l‚ğØ‚è‘Ö‚¦‚é</summary>
+    /// <summary>æ˜ã‚‹ã•ãƒ¬ãƒ™ãƒ«ã‚’è¨­å®šã—ã¦ã€Lightã®å€¤ã‚’åˆ‡ã‚Šæ›¿ãˆã‚‹</summary>
     public void SetBrightness(FireBrightness brightness)
     {
         _brightness = brightness;
         Refresh();
     }
 
-    /// <summary>‹¤’Êİ’è‚Æ¡‚ÌƒŒƒxƒ‹‚Ìİ’è‚ğASpotLight‚ÆPointLight‚Ö”½‰f‚·‚é</summary>
+    /// <summary>å…±é€šè¨­å®šã¨ä»Šã®ãƒ¬ãƒ™ãƒ«ã®è¨­å®šã‚’ã€SpotLightã¨PointLightã¸åæ˜ ã™ã‚‹</summary>
     public void Refresh()
     {
         FireLightLevel level = Level;
         int index = (int)_brightness;
 
-        //SpotLight: Type=SpotAInner/Outer‚ÍƒŒƒxƒ‹‚²‚ÆAIntensityERange‚ÍŠî€’l‚É‹P“x‚Ì”{—¦‚ğŠ|‚¯‚½’lBGround‚¾‚¯‚ğÆ‚ç‚·
+        //SpotLight: Type=Spotã€Inner/Outerã¯ãƒ¬ãƒ™ãƒ«ã”ã¨ã€Intensityãƒ»Rangeã¯åŸºæº–å€¤ã«è¼åº¦ã®å€ç‡ã‚’æ›ã‘ãŸå€¤ã€‚Groundã ã‘ã‚’ç…§ã‚‰ã™
         if (_spot != null)
         {
             _spot.type = LightType.Spot;
             _spot.color = _color;
-            _spot.spotAngle = level.OuterAngle;                              //Outer‚ğæ‚Éİ’è‚·‚é(Inner‚ÍAOuterˆÈ‰º‚É§ŒÀ‚³‚ê‚é‚½‚ß)
+            _spot.spotAngle = level.OuterAngle;                              //Outerã‚’å…ˆã«è¨­å®šã™ã‚‹(Innerã¯ã€Outerä»¥ä¸‹ã«åˆ¶é™ã•ã‚Œã‚‹ãŸã‚)
             _spot.innerSpotAngle = Mathf.Min(level.InnerAngle, level.OuterAngle);
             _spot.range = SpotRange;
             _spot.intensity = SpotIntensity;
@@ -216,7 +216,7 @@ public class FireLight
             _spot.enabled = _isLit;
         }
 
-        //PointLight: –Àq—pBType=PointAIntensityERange‚ÍƒŒƒxƒ‹‚²‚Æ
+        //PointLight: è¿·å­ç”¨ã€‚Type=Pointã€Intensityãƒ»Rangeã¯ãƒ¬ãƒ™ãƒ«ã”ã¨
         if (_point != null)
         {
             _point.type = LightType.Point;
@@ -232,8 +232,8 @@ public class FireLight
     }
 
     /// <summary>
-    /// SpotLight‚ğ‰Î‚Ì^ã(YOffset)‚É’u‚¢‚Ä^‰º‚ÖŒü‚¯APointLight‚ğ‰Î‚Ìã(PointYOffset)‚É’u‚­
-    /// ‰Î‚ÍƒJƒƒ‰‚Æ“¯‚¶Œü‚«‚É‰ñ‚é(ƒrƒ‹ƒ{[ƒh)‚Ì‚ÅAq‚Ì‚Ü‚Ü‚¾‚ÆLight‚àŒX‚­B–ˆƒtƒŒ[ƒ€ŒÄ‚Ô
+    /// SpotLightã‚’ç«ã®çœŸä¸Š(YOffset)ã«ç½®ã„ã¦çœŸä¸‹ã¸å‘ã‘ã€PointLightã‚’ç«ã®ä¸Š(PointYOffset)ã«ç½®ã
+    /// ç«ã¯ã‚«ãƒ¡ãƒ©ã¨åŒã˜å‘ãã«å›ã‚‹(ãƒ“ãƒ«ãƒœãƒ¼ãƒ‰)ã®ã§ã€å­ã®ã¾ã¾ã ã¨Lightã‚‚å‚¾ãã€‚æ¯ãƒ•ãƒ¬ãƒ¼ãƒ å‘¼ã¶
     /// </summary>
     public void UpdatePose()
     {
@@ -255,15 +255,15 @@ public class FireLight
     }
 
     /// <summary>
-    /// w’è‚µ‚½’n“_‚ÌA‚±‚Ì‰Î‚É‚æ‚éŒõ—Ê(0 to 15)‚ğ•Ô‚·
-    /// Light‚©‚çŒ©‚ÄA^‰º‚Æ‚ÌŠp“x‚ÅŒˆ‚ß‚éBInnerŠp‚Ì“à‘¤=15AOuterŠp‚ÌŠO‘¤=0A‚»‚ÌŠÔ‚Í’¼ü‚Å‰º‚ª‚é
-    /// ’n“_‚Ì‚‚³‚àg‚¤‚Ì‚ÅA’n–Ê‚ª‹uó‚Å‚àŒ©‚½–Ú‚Æ‡‚¤
+    /// æŒ‡å®šã—ãŸåœ°ç‚¹ã®ã€ã“ã®ç«ã«ã‚ˆã‚‹å…‰é‡(0 to 15)ã‚’è¿”ã™
+    /// Lightã‹ã‚‰è¦‹ã¦ã€çœŸä¸‹ã¨ã®è§’åº¦ã§æ±ºã‚ã‚‹ã€‚Innerè§’ã®å†…å´=15ã€Outerè§’ã®å¤–å´=0ã€ãã®é–“ã¯ç›´ç·šã§ä¸‹ãŒã‚‹
+    /// åœ°ç‚¹ã®é«˜ã•ã‚‚ä½¿ã†ã®ã§ã€åœ°é¢ãŒä¸˜çŠ¶ã§ã‚‚è¦‹ãŸç›®ã¨åˆã†
     /// </summary>
     public float GetLightLevelAt(Vector3 point)
     {
         if (!_isLit) return 0f;
         Vector3 lightPosition = _owner.position + Vector3.up * _config.YOffset;
-        float down = lightPosition.y - point.y;   //Light‚©‚ç’n“_‚Ü‚Å‚ÌA^‰º•ûŒü‚Ì‹——£
+        float down = lightPosition.y - point.y;   //Lightã‹ã‚‰åœ°ç‚¹ã¾ã§ã®ã€çœŸä¸‹æ–¹å‘ã®è·é›¢
         if (down <= 0f)
         {
             return 0f;
@@ -275,7 +275,7 @@ public class FireLight
             return 0f;
         }
 
-        float angle = Mathf.Atan2(horizontal, down) * Mathf.Rad2Deg;   //^‰º‚©‚ç‚ÌŠp“x
+        float angle = Mathf.Atan2(horizontal, down) * Mathf.Rad2Deg;   //çœŸä¸‹ã‹ã‚‰ã®è§’åº¦
         float inner = InnerAngle * 0.5f;
         float outer = OuterAngle * 0.5f;
 
@@ -283,7 +283,7 @@ public class FireLight
         return MaxLightLevel * (1f - t);
     }
 
-    /// <summary>–¾‚é‚³‚ğA‹P“x‚Å‘ª‚é(Stack Overflow‚Ì’è”Ô‚Ì®B0 to 1)</summary>
+    /// <summary>æ˜ã‚‹ã•ã‚’ã€è¼åº¦ã§æ¸¬ã‚‹(Stack Overflowã®å®šç•ªã®å¼ã€‚0 to 1)</summary>
     public static float Luminance(Color color)
     {
         return 0.299f * color.r + 0.587f * color.g + 0.114f * color.b;
@@ -291,9 +291,9 @@ public class FireLight
 
 #if UNITY_EDITOR
     /// <summary>
-    /// Sceneƒrƒ…[‚ÉAÆ‚ç‚³‚ê‚é”ÍˆÍ‚ğ‰~‚Å•`‚­
-    /// ‰©=OuterŠp(Œõ—Ê0‚É‚È‚é‹«ŠE) / —Î=InnerŠp(Å‘å‚Ì”ÍˆÍ) / Ô=darkThresholdˆÈ‰º‚É‚È‚é=ˆÃ‚¢‚Æ”»’è‚³‚ê‚é‹«ŠE
-    /// ‰~‚ÍA‰Î‚Ì‚‚³‚Ì…•½–Ê‚É•`‚­
+    /// Sceneãƒ“ãƒ¥ãƒ¼ã«ã€ç…§ã‚‰ã•ã‚Œã‚‹ç¯„å›²ã‚’å††ã§æã
+    /// é»„=Outerè§’(å…‰é‡0ã«ãªã‚‹å¢ƒç•Œ) / ç·‘=Innerè§’(æœ€å¤§ã®ç¯„å›²) / èµ¤=darkThresholdä»¥ä¸‹ã«ãªã‚‹=æš—ã„ã¨åˆ¤å®šã•ã‚Œã‚‹å¢ƒç•Œ
+    /// å††ã¯ã€ç«ã®é«˜ã•ã®æ°´å¹³é¢ã«æã
     /// </summary>
     public void DrawGizmos(float darkThreshold)
     {
@@ -322,13 +322,13 @@ public class FireLight
     #endregion
 
     #region Private
-    //•Ğ‘¤‚ÌŠp“x(“x)‚©‚çA‰Î‚Ì‚‚³‚Ì…•½–Ê‚Éo‚é‰~‚Ì”¼Œa‚ğ‹‚ß‚é
+    //ç‰‡å´ã®è§’åº¦(åº¦)ã‹ã‚‰ã€ç«ã®é«˜ã•ã®æ°´å¹³é¢ã«å‡ºã‚‹å††ã®åŠå¾„ã‚’æ±‚ã‚ã‚‹
     private float RadiusAt(float halfAngle)
     {
         return _config.YOffset * Mathf.Tan(Mathf.Clamp(halfAngle, 0f, 89f) * Mathf.Deg2Rad);
     }
 
-    //”’(‹P“x1)‚ğŠî€‚ÉAˆÃ‚­Œ©‚¦‚éF‚Ù‚Ç‘å‚«‚­‚È‚é”{—¦(Intensity‚ÉŠ|‚¯‚éBRange‚Í‚±‚Ì•½•ûª)
+    //ç™½(è¼åº¦1)ã‚’åŸºæº–ã«ã€æš—ãè¦‹ãˆã‚‹è‰²ã»ã©å¤§ãããªã‚‹å€ç‡(Intensityã«æ›ã‘ã‚‹ã€‚Rangeã¯ã“ã®å¹³æ–¹æ ¹)
     private float GetLuminanceScale()
     {
         if (!_config.MatchLuminance)

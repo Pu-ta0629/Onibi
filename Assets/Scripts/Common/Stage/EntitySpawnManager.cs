@@ -212,7 +212,6 @@ public class EntitySpawnManager : MonoBehaviour
         }
 
         // 迷子の体の大きさ分、間隔をあける
-        float extraDistance = _lostChild.LostChild != null ? _lostChild.LostChild.Colliders.BodyBoundingRadius * 2f : 0f;
         float radiusSqr = entry.Radius * entry.Radius;
 
         for(int i = 0; i < _kodamaPickTryCount; i++)
@@ -232,7 +231,7 @@ public class EntitySpawnManager : MonoBehaviour
                 continue;
             }
 
-            if (!_poolManager.IsKodamaSpaceFree(entry.PoolId, onNavMesh, extraDistance))
+            if (!_poolManager.IsKodamaSpaceFree(entry.PoolId, onNavMesh))
             {
                 continue;
             }

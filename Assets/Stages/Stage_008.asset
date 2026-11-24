@@ -57,7 +57,7 @@ MonoBehaviour:
     _spawnInterval: 2
   - _position: {x: 4.2, y: 0, z: 4.5}
     _rotationY: 0
-    _radius: 8.04
+    _radius: 5
     _id: 3
     _kind: 0
     _enemyList:
@@ -70,7 +70,7 @@ MonoBehaviour:
     _kodamaCount: 10
     _resumeThreshold: 5
     _specialKodamas: []
-    _spawnInterval: 0.5
+    _spawnInterval: 5
   _enemies:
   - _position: {x: 10.5, y: 0, z: -10.5}
     _rotationY: 0

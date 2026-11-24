@@ -15,14 +15,15 @@ MonoBehaviour:
   _id: 3
   _fireKind: 2
   _rank: 3
-  _moveSpeed: 5
-  _followSpeed: 10
+  _moveSpeed: 7
+  _followSpeed: 15
+  _acceleration: 100
   _lightRadius: 5
   _navMeshSampleDistance: 2
   _destinationUpdateDistance: 0.3
   _groundMask:
     serializedVersion: 2
-    m_Bits: 3904
+    m_Bits: 3840
   _orbitRadius: 3
   _orbitSpeed: 60
   _initialBrightness: 2

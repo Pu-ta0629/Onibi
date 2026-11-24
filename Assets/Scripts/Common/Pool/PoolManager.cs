@@ -363,14 +363,14 @@ public class PoolManager : MonoBehaviour
         _factory = null;
     }
 
-    public bool IsKodamaSpaceFree(int poolId,Vector3 point,float extraDistance)
+    public bool IsKodamaSpaceFree(int poolId,Vector3 point)
     {
         if(!_kodamaPools.TryGetValue(poolId,out KodamaPool pool) || pool.All.Count == 0)
         {
             return true;
         }
 
-        float minDistance = pool.All[0].Data.TouchRadius * 2f + extraDistance;
+        float minDistance = pool.All[0].Data.TouchRadius * 2f;
         float minSqr = minDistance * minDistance;
 
         for(int i = 0; i < pool.Active.Count;i++)

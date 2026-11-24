@@ -613,7 +613,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 33e061f63249e674da0264798eb18d24, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DebugOverlay
-  _isVisible: 0
+  _isVisible: 1
   _fontSize: 10
   _position: {x: 0, y: 0}
   _icons:
@@ -877,7 +877,7 @@ MonoBehaviour:
     DarkExitMargin: 0.5
     DarkDamageInterval: 1
     BrightThreshold: 15
-    BrightExitMargin: 0.5
+    BrightExitMargin: 10
 --- !u!114 &763775365
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -907,7 +907,7 @@ MonoBehaviour:
     - 7
     SpotCullingMask:
       serializedVersion: 2
-      m_Bits: 1911
+      m_Bits: 1847
     PointCullingMask:
       serializedVersion: 2
       m_Bits: 32
@@ -1347,6 +1347,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EntitySpawnManager
   _poolManager: {fileID: 1240344923}
   _pickTryCount: 5
+  _kodamaSampleDistance: 0.1
+  _kodamaPickTryCount: 20
 --- !u!1 &1134866814
 GameObject:
   m_ObjectHideFlags: 0
@@ -2275,6 +2277,14 @@ PrefabInstance:
       propertyPath: m_AgentTypeID
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 592470781979889294, guid: 07331b981818a144799abddc35ed1413, type: 3}
+      propertyPath: m_Name
+      value: Sprite
+      objectReference: {fileID: 0}
+    - target: {fileID: 3533134525211483760, guid: 07331b981818a144799abddc35ed1413, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: bc2977e8cffeee1428215b50a6bbbf3f, type: 2}
     - target: {fileID: 7631574833175427274, guid: 07331b981818a144799abddc35ed1413, type: 3}
       propertyPath: m_LocalPosition.x
       value: -7.5

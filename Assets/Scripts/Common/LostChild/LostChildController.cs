@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using System.Runtime.InteropServices.WindowsRuntime;
+using System.Drawing;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -52,7 +52,7 @@ public class LostChildController : MonoBehaviour, IHittable,IHitTarget
         {
             Debug.LogError("[LostChildController] Initialize : Reference is Null!!! ");
             return;
-        }
+        }   
 
         _mover = new Mover(agent, _data.MoveSpeed, _data.GroundMask, _data.NavMsehSampleDistance, _data.RepathDistance, _data.MovementProfile, acceleration: _data.Acceleration);
 
@@ -191,15 +191,15 @@ public class LostChildController : MonoBehaviour, IHittable,IHitTarget
         _mover.SetCanMove(false);
     }
 
-    public void CollectKodama(KodamaData data,int amount)
+    public void CollectKodama(KodamaData data, int amount)
     {
-        _kodamaStack.Add(data,amount);
+        _kodamaStack.Add(data, amount);
     }
 
-    public bool TryFindWalkablePoint(Vector3 point,float maxDistance,out Vector3 result)
+    public bool TryFindWalkablePoint(Vector3 point, float maxDistance, out Vector3 result)
     {
         result = point;
-        if(!_isInitialized)
+        if (!_isInitialized)
         {
             return false;
         }
