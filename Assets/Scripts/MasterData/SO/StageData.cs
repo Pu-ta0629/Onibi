@@ -1,7 +1,6 @@
-﻿using JetBrains.Annotations;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using Unity.Collections.LowLevel.Unsafe;
 using UnityEngine;
-using UnityEngine.UIElements;
 
 [System.Serializable]
 public class PlacementData
@@ -29,6 +28,9 @@ public class FirePlacement : PlacementData
 
     public FireKind Kind => _kind;
     public FireColor Color => _color;
+
+    public const string KindField = nameof(_kind);
+    public const string ColorField = nameof(_color);
 }
 
 [System.Serializable]
@@ -86,6 +88,7 @@ public class EnemyCount
     public int Count => _count;
 
     public const string EnemyDataField = nameof(_enemyData);
+
     public const string CountField = nameof(_count);
 }
 
@@ -195,6 +198,7 @@ public class StageData : ScriptableObject
 
     public PlacementData Start => _start;
     public IReadOnlyList<GoalPlacement> Goals => _goals;
+    public IReadOnlyList<FirePlacement> Fires => _fires;
     public IReadOnlyList<SpawnSpotPlacement> SpawnSpots => _spawnSpots;
     public IReadOnlyList<EnemyPlacement> Enemies => _enemies;
 
@@ -204,6 +208,7 @@ public class StageData : ScriptableObject
     public const string StageNameField = nameof(_stageName);
     public const string StartField = nameof(_start);
     public const string GoalsField = nameof(_goals);
+    public const string FiresField = nameof(_fires);
     public const string SpawnSpotsField = nameof(_spawnSpots);
     public const string EnemiesField = nameof(_enemies);
     public const string WalkableGridField = nameof(_walkableGrid);

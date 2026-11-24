@@ -54,7 +54,7 @@ public class LostChildController : MonoBehaviour, IHittable,IHitTarget
             return;
         }
 
-        _mover = new Mover(agent, _data.MoveSpeed, _data.GroundMask, _data.NavMsehSampleDistance, _data.RepathDistance, _data.MovementProfile);
+        _mover = new Mover(agent, _data.MoveSpeed, _data.GroundMask, _data.NavMsehSampleDistance, _data.RepathDistance, _data.MovementProfile, acceleration: _data.Acceleration);
 
         //体のコライダーはHitWorldへ登録され、敵の攻撃が当たる。Searchのコライダーで敵を探す
         _hit = new HitDetector(world, this, Faction.LostChild, _data.Colliders);

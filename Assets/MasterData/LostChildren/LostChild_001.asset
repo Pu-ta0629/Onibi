@@ -44,7 +44,8 @@ MonoBehaviour:
     _moveType: 0
     _size: 1
     _faction: 2
-  _moveSpeed: 5
+  _moveSpeed: 10.2
+  _acceleration: 100
   _navMeshSampleDistance: 2
   _groundMask:
     serializedVersion: 2

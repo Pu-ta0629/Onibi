@@ -1,4 +1,4 @@
-using System;
+ï»¿using System;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
@@ -18,11 +18,11 @@ public class RadialMenu : MonoBehaviour
     }
 
     [Header("Design")]
-    [Tooltip("’†S‚ÌŒŠ‚Ì”¼Œa(Canvas’PˆÊ)B0‚ÅŒŠ‚Ì‚È‚¢‰~‚É‚È‚é")]
+    [Tooltip("ä¸­å¿ƒã®ç©´ã®åŠå¾„(Canvaså˜ä½)ã€‚0ã§ç©´ã®ãªã„å††ã«ãªã‚‹")]
     [SerializeField, Range(0f, 500f)] private float _innerRadius = 50f;
-    [Tooltip("‰~‚ÌŠO‘¤‚Ì”¼Œa(Canvas’PˆÊ)")]
+    [Tooltip("å††ã®å¤–å´ã®åŠå¾„(Canvaså˜ä½)")]
     [SerializeField, Range(10f, 1000f)] private float _outerRadius = 180f;
-    [Tooltip("îŒ`‚Ç‚¤‚µ‚ÌŒ„ŠÔ(“x)")]
+    [Tooltip("æ‰‡å½¢ã©ã†ã—ã®éš™é–“(åº¦)")]
     [SerializeField, Range(0f, 30f)] private float _gapAngle = 3f;
     [SerializeField] private Color _normalColor;
     [SerializeField] private Color _highlightColor;
@@ -31,12 +31,12 @@ public class RadialMenu : MonoBehaviour
     [SerializeField] private LabelType _labelType = LabelType.TextMeshPro;
     [SerializeField] private TMP_FontAsset _fontAsset;
     [SerializeField, Range(8f, 100f)] private float _fontSize = 24f;
-    [Tooltip("TextMeshPro—p‚Ì•\¦ƒTƒCƒY(Canvas’PˆÊ)")]
+    [Tooltip("TextMeshProç”¨ã®è¡¨ç¤ºã‚µã‚¤ã‚º(Canvaså˜ä½)")]
     [SerializeField] private Vector2 _labelSize = new Vector2(160f, 60f);
     [SerializeField, Range(8f, 300f)] private float _iconSize = 56f;
 
     [Header("ActiveMenu")]
-    [Tooltip("’†S‚É•\¦‚·‚éTextMeshPro/Image‚Ì‘å‚«‚³(Canvas’PˆÊ)BInner Radius‚Ì“à‘¤‚Éû‚Ü‚é‘å‚«‚³‚É‚·‚é")]
+    [Tooltip("ä¸­å¿ƒã«è¡¨ç¤ºã™ã‚‹TextMeshPro/Imageã®å¤§ãã•(Canvaså˜ä½)ã€‚Inner Radiusã®å†…å´ã«åã¾ã‚‹å¤§ãã•ã«ã™ã‚‹")]
     [SerializeField, Range(8f, 300f)] private float _activeSize = 80f;
 
     private readonly List<Item> _items = new List<Item>();
@@ -44,28 +44,28 @@ public class RadialMenu : MonoBehaviour
     private RectTransform _root;
     private RectTransform _canvasRect;
     private Camera _uiCamera;
-    private GameObject _activeLabel;   // ’†S‚É•\¦‚µ‚Ä‚¢‚éƒ‰ƒxƒ‹
-    private int _selectedIndex = -1;   // ¡ƒ}ƒEƒX‚ªæ‚Á‚Ä‚¢‚é€–Ú
-    private int _activeIndex = -1;     // ’†S‚É•\¦‚·‚é€–ÚB-1‚È‚ç•\¦‚È‚µ
+    private GameObject _activeLabel;   // ä¸­å¿ƒã«è¡¨ç¤ºã—ã¦ã„ã‚‹ãƒ©ãƒ™ãƒ«
+    private int _selectedIndex = -1;   // ä»Šãƒã‚¦ã‚¹ãŒä¹—ã£ã¦ã„ã‚‹é …ç›®
+    private int _activeIndex = -1;     // ä¸­å¿ƒã«è¡¨ç¤ºã™ã‚‹é …ç›®ã€‚-1ãªã‚‰è¡¨ç¤ºãªã—
     private bool _isOpen;
     private bool _ready;
 
-    /// <summary>ŠJ•Â‚µ‚½‚Æ‚«‚É’Ê’m‚·‚é(true‚ÅŠJ‚¢‚½Afalse‚Å•Â‚¶‚½)</summary>
+    /// <summary>é–‹é–‰ã—ãŸã¨ãã«é€šçŸ¥ã™ã‚‹(trueã§é–‹ã„ãŸã€falseã§é–‰ã˜ãŸ)</summary>
     public event Action<bool> OnOpenChanged;
     public bool isOpen => _isOpen;
 
     #region Public
-    /// <summary>€–Ú‚ğ’Ç‰Á‚·‚é</summary>
-    /// <param name="label">TextMeshProƒ‚[ƒh‚Å•\¦‚·‚é•¶š</param>
-    /// <param name="icon">Imageƒ‚[ƒh‚Å•\¦‚·‚éƒXƒvƒ‰ƒCƒg</param>
-    /// <param name="onSelected">‘I‚Î‚ê‚½‚ÉÀs‚·‚éŠÖ”</param>
+    /// <summary>é …ç›®ã‚’è¿½åŠ ã™ã‚‹</summary>
+    /// <param name="label">TextMeshProãƒ¢ãƒ¼ãƒ‰ã§è¡¨ç¤ºã™ã‚‹æ–‡å­—</param>
+    /// <param name="icon">Imageãƒ¢ãƒ¼ãƒ‰ã§è¡¨ç¤ºã™ã‚‹ã‚¹ãƒ—ãƒ©ã‚¤ãƒˆ</param>
+    /// <param name="onSelected">é¸ã°ã‚ŒãŸæ™‚ã«å®Ÿè¡Œã™ã‚‹é–¢æ•°</param>
     public void AddItem(string label, Sprite icon, Action onSelected)
     {
         _items.Add(new Item { Label = label, Icon = icon, OnSelected = onSelected });
         if (_ready) Build();
     }
 
-    /// <summary>’†S‚É•\¦‚·‚é€–Ú‚ğŠO‚©‚çw’è‚·‚éB-1‚Å•\¦‚È‚µ</summary>
+    /// <summary>ä¸­å¿ƒã«è¡¨ç¤ºã™ã‚‹é …ç›®ã‚’å¤–ã‹ã‚‰æŒ‡å®šã™ã‚‹ã€‚-1ã§è¡¨ç¤ºãªã—</summary>
     public void SetActiveItem(int index)
     {
         _activeIndex = (index >= 0 && index < _items.Count) ? index : -1;
@@ -87,7 +87,7 @@ public class RadialMenu : MonoBehaviour
         canvas = canvas.rootCanvas;
         _canvasRect = (RectTransform)canvas.transform;
 
-        // Overlay‚Ínull‚Ì‚Ü‚ÜA‚»‚êˆÈŠO‚ÍRender Camera‚ğg‚¤
+        // Overlayã¯nullã®ã¾ã¾ã€ãã‚Œä»¥å¤–ã¯Render Cameraã‚’ä½¿ã†
         if (canvas.renderMode != RenderMode.ScreenSpaceOverlay)
             _uiCamera = canvas.worldCamera != null ? canvas.worldCamera : Camera.main;
 
@@ -111,7 +111,7 @@ public class RadialMenu : MonoBehaviour
     #endregion
 
     #region Build
-    // ‰~‚ğ€–Ú”‚Å“™•ª‚µ‚½îŒ`‚ğì‚è’¼‚·(^ã‚ª0”Ô–ÚAŒv‰ñ‚è)
+    // å††ã‚’é …ç›®æ•°ã§ç­‰åˆ†ã—ãŸæ‰‡å½¢ã‚’ä½œã‚Šç›´ã™(çœŸä¸ŠãŒ0ç•ªç›®ã€æ™‚è¨ˆå›ã‚Š)
     private void Build()
     {
         foreach (var s in _sectors) Destroy(s.gameObject);
@@ -132,11 +132,11 @@ public class RadialMenu : MonoBehaviour
 
             var sector = go.GetComponent<SectorGraphic>();
             sector.color = _normalColor;
-            sector.raycastTarget = false;   // ƒ}ƒEƒX”»’è‚ÍŠp“x‚Å©‘OŒvZ‚·‚é
+            sector.raycastTarget = false;   // ãƒã‚¦ã‚¹åˆ¤å®šã¯è§’åº¦ã§è‡ªå‰è¨ˆç®—ã™ã‚‹
             sector.Setup(_innerRadius, _outerRadius, center - step * 0.5f + gap * 0.5f, center + step * 0.5f - gap * 0.5f);
             _sectors.Add(sector);
 
-            // ƒ‰ƒxƒ‹‚ÍîŒ`‚Ì’†‰›‚É’u‚­
+            // ãƒ©ãƒ™ãƒ«ã¯æ‰‡å½¢ã®ä¸­å¤®ã«ç½®ã
             float rad = center * Mathf.Deg2Rad;
             var pos = new Vector2(Mathf.Sin(rad), Mathf.Cos(rad)) * labelRadius;
             CreateLabel(go.transform, _items[i], pos, _labelSize, _iconSize);
@@ -147,7 +147,7 @@ public class RadialMenu : MonoBehaviour
         RefreshActiveLabel();
     }
 
-    // LabelType‚É‰‚¶‚Ä•¶š‚©ƒAƒCƒRƒ“‚ğì‚é(ƒAƒCƒRƒ“–¢İ’è‚Ì€–Ú‚Í•¶š‚Å‘ã—p)
+    // LabelTypeã«å¿œã˜ã¦æ–‡å­—ã‹ã‚¢ã‚¤ã‚³ãƒ³ã‚’ä½œã‚‹(ã‚¢ã‚¤ã‚³ãƒ³æœªè¨­å®šã®é …ç›®ã¯æ–‡å­—ã§ä»£ç”¨)
     private GameObject CreateLabel(Transform parent, Item item, Vector2 pos, Vector2 textSize, float iconSize)
     {
         var go = new GameObject("Object_Label", typeof(RectTransform));
@@ -177,10 +177,10 @@ public class RadialMenu : MonoBehaviour
         return go;
     }
 
-    // ’†S‚Ìƒ‰ƒxƒ‹‚ğì‚è’¼‚·BŠJ‚¢‚Ä‚¢‚ÄA€–Ú‚ª‘I‚Î‚ê‚Ä‚¢‚é‚Æ‚«‚¾‚¯•\¦‚·‚é
+    // ä¸­å¿ƒã®ãƒ©ãƒ™ãƒ«ã‚’ä½œã‚Šç›´ã™ã€‚é–‹ã„ã¦ã„ã¦ã€é …ç›®ãŒé¸ã°ã‚Œã¦ã„ã‚‹ã¨ãã ã‘è¡¨ç¤ºã™ã‚‹
     private void RefreshActiveLabel()
     {
-        if (_activeLabel != null) Destroy(_activeLabel);   // Œã‚©‚çì‚é‚Ì‚ÅAîŒ`‚æ‚èè‘O‚É•\¦‚³‚ê‚é
+        if (_activeLabel != null) Destroy(_activeLabel);   // å¾Œã‹ã‚‰ä½œã‚‹ã®ã§ã€æ‰‡å½¢ã‚ˆã‚Šæ‰‹å‰ã«è¡¨ç¤ºã•ã‚Œã‚‹
         if (_isOpen && _activeIndex >= 0 && _activeIndex < _items.Count)
             _activeLabel = CreateLabel(_root, _items[_activeIndex], Vector2.zero, Vector2.one * _activeSize, _activeSize);
     }
@@ -211,7 +211,7 @@ public class RadialMenu : MonoBehaviour
     {
         if (_selectedIndex >= 0)
         {
-            // “o˜^Ï‚İ‚Ì€–Ú‚ğ‚à‚¤ˆê“x‘I‚Ô‚Æ‰ğœA•Ê‚Ì€–Ú‚ğ‘I‚Ô‚ÆØ‚è‘Ö‚¦
+            // ç™»éŒ²æ¸ˆã¿ã®é …ç›®ã‚’ã‚‚ã†ä¸€åº¦é¸ã¶ã¨è§£é™¤ã€åˆ¥ã®é …ç›®ã‚’é¸ã¶ã¨åˆ‡ã‚Šæ›¿ãˆ
             _activeIndex = (_selectedIndex == _activeIndex) ? -1 : _selectedIndex;
             _items[_selectedIndex].OnSelected?.Invoke();
         }
@@ -225,7 +225,7 @@ public class RadialMenu : MonoBehaviour
     #endregion
 
     #region Selection
-    // ƒƒjƒ…[’†S‚©‚çŒ©‚½ƒ}ƒEƒX‚ÌŠp“x‚Å‘I‘ğ‚·‚éBInnerRadius‚Ì“à‘¤‚ÍDeadZone(–¢‘I‘ğ)
+    // ãƒ¡ãƒ‹ãƒ¥ãƒ¼ä¸­å¿ƒã‹ã‚‰è¦‹ãŸãƒã‚¦ã‚¹ã®è§’åº¦ã§é¸æŠã™ã‚‹ã€‚InnerRadiusã®å†…å´ã¯DeadZone(æœªé¸æŠ)
     private void UpdateSelection(Vector2 screenPos)
     {
         if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(_root, screenPos, _uiCamera, out var delta)) return;
@@ -233,7 +233,7 @@ public class RadialMenu : MonoBehaviour
         int index = -1;
         if (delta.magnitude >= _innerRadius)
         {
-            float angle = Mathf.Repeat(Mathf.Atan2(delta.x, delta.y) * Mathf.Rad2Deg, 360f);   // ^ã‚ª0“xAŒv‰ñ‚è
+            float angle = Mathf.Repeat(Mathf.Atan2(delta.x, delta.y) * Mathf.Rad2Deg, 360f);   // çœŸä¸ŠãŒ0åº¦ã€æ™‚è¨ˆå›ã‚Š
             index = Mathf.RoundToInt(angle / (360f / _items.Count)) % _items.Count;
         }
 
@@ -253,430 +253,3 @@ public class RadialMenu : MonoBehaviour
     #endregion
 }
 
-//using System.Collections.Generic;
-//using TMPro;
-//using UnityEngine;
-//using UnityEngine.InputSystem;
-//using UnityEngine.UI;
-
-//[RequireComponent(typeof(SectorGraphic))]
-//public class RadialMenu : MonoBehaviour
-//{
-//    public enum LabelType {TextMeshPro, Image}
-//    private class Item
-//    {
-//        public string Label;
-//        public Sprite Icon;
-//        public System.Action OnSelected;
-//    }
-
-//    [Header("Design")]
-//    [Tooltip("’†S‚ÌŒŠ‚Ì”¼Œa(Canvas’PˆÊ)B0‚ÅŒŠ‚Ì‚È‚¢‰~‚É‚È‚é")]
-//    [SerializeField, Range(0f, 500f)] private float _innerRadius = 50f;
-//    [Tooltip("‰~‚ÌŠO‘¤‚Ì”¼Œa(Canvas’PˆÊ)")]
-//    [SerializeField, Range(10f, 1000f)] private float _outerRadius = 180f;
-//    [Tooltip("îŒ`‚Ç‚¤‚µ‚ÌŒ„ŠÔ(“x)")]
-//    [SerializeField, Range(0f, 30f)] private float _gapAngle = 3f;
-//    [SerializeField] private Color _normalColor;
-//    [SerializeField] private Color _highlightColor;
-
-//    [Header("Label")]
-//    [SerializeField] private LabelType _labelType = LabelType.TextMeshPro;
-//    [SerializeField] private TMP_FontAsset _fontAsset;
-//    [SerializeField, Range(8f, 100f)] private float _fontSize = 24f;
-//    [Tooltip("TextMeshPro—p‚Ì•\¦ƒTƒCƒY(Canvas’PˆÊ)")]
-//    [SerializeField] private Vector2 _labelSize = new Vector2(160f, 60f);
-//    [SerializeField, Range(8f, 300f)] private float _iconSize = 56f;
-
-//    [Header("ActiveMenu")]
-//    [Tooltip("’†S‚É•\¦‚·‚éTextMeshPro/Image‚Ì‘å‚«‚³(Canvas’PˆÊ)BInner Radius‚Ì“à‘¤‚Éû‚Ü‚é‘å‚«‚³‚É‚·‚é")]
-//    [SerializeField, Range(8f, 300f)] private float _activeSize = 80f;
-
-//    private readonly List<Item> _items = new List<Item>();
-//    private readonly List<SectorGraphic> _itemSectors = new List<SectorGraphic>();
-//    private RectTransform _root;
-//    private RectTransform _canvasRect;
-//    private Canvas _rootCanvas;
-//    private Camera _uiCamera;
-//    private int _selectedIndex = -1;   // ¡ƒ}ƒEƒX‚ªæ‚Á‚Ä‚¢‚é€–Ú
-//    private int _activeIndex = -1;     // ’†S(ActiveMenu)‚É•\¦‚µ‚Ä‚¢‚é€–ÚB-1‚È‚ç•\¦‚È‚µ
-//    private GameObject _activeMenuObject;
-//    private TextMeshProUGUI _activeText;
-//    private Image _activeIcon;
-//    private bool _isOpen;
-//    /// <summary><summart>ŠJ•Â‚µ‚½‚Æ‚«‚É’Ê’m‚·‚é(true‚ÅŠJ‚¢‚½Afalse‚Å•Â‚¶‚½)</summart>summary></summary>
-//    public event System.Action<bool> OnOpenChanged;
-//    private bool _isInitialized;
-
-//    public bool isOpen => _isOpen;
-
-//    #region Initialize
-//    //public void Initialize()
-//    public void Start()
-//    {
-//        if (_isInitialized)
-//        {
-//            Debug.LogWarning("[RadialMenu] Initialize : Already Initialized!! ");
-//            return;
-//        }
-
-//        _root = (RectTransform)transform;
-
-//        var parentCanvas = GetComponentInParent<Canvas>();
-//        if (parentCanvas == null)
-//        {
-//            Debug.LogError("[RadialMenu] Initialize : Canvas is Null!!! ");
-//            return;
-//        }
-
-//        _rootCanvas = parentCanvas.rootCanvas;
-//        _canvasRect = (RectTransform)_rootCanvas.transform;
-
-//        // Overlay‚Ínull‚Ì‚Ü‚ÜAScreen Space - Camera‚ÍRender Camera‚ğg‚¤
-//        if (_rootCanvas.renderMode != RenderMode.ScreenSpaceOverlay)
-//        {
-//            _uiCamera = _rootCanvas.worldCamera;
-//            if (_uiCamera == null)
-//            {
-//                Debug.LogWarning("[RadialMenu] Initialize : Render Camera is Not Set!! Camera.main is used");
-//                _uiCamera = Camera.main;
-//            }
-//        }
-
-//        BuildItems();
-//        BuildActiveMenu();   // îŒ`‚æ‚èŒã‚Éì‚Á‚ÄAè‘O‚É•\¦‚·‚é
-//        Close(false);
-//        _isInitialized = true;
-//    }
-//    #endregion
-
-//    #region ItemRegister;
-//    /// <summary>Radial‚Ì€–Ú‚ğ‘‚â‚¹‚éŠÖ”
-//    /// <br/><param name="label">TextMeshProƒ‚[ƒh‚Å•\¦‚·‚é•¶š</param>
-//    /// <br/><param name="icon">Imageƒ‚[ƒh‚Å•\¦‚·‚éƒXƒvƒ‰ƒCƒg</param>
-//    /// <br/><param name="onSelected">‘I‚Î‚ê‚½‚ÉÀs‚·‚éŠÖ”</param>
-//    /// </summary>
-//    public void AddItem(string label, Sprite icon, System.Action onSelected)
-//    {
-//        if (onSelected == null)
-//        {
-//            Debug.LogWarning($"[RadialMenu] AddItem : onSelected is Null!! Label = {label}");
-//        }
-
-//        _items.Add(
-//            new Item
-//            {
-//                Label = label,
-//                Icon = icon,
-//                OnSelected = onSelected
-//            }
-//            );
-
-//#if UNITY_EDITOR
-//        Debug.Log($"[RadialMenu] AddItem : Label = {label}, _items.Count = {_items.Count}");
-//#endif
-
-//        if (_isInitialized) RebuildItems();
-//    }
-//    /// <summary>’†S‚É•\¦‚·‚é€–Ú‚ğŠO‚©‚çw’è‚·‚éB-1‚Å•\¦‚È‚µ</summary>
-//    public void SetActiveItem(int index)
-//    {
-//        _activeIndex = (index >= 0 && index < _items.Count) ? index : -1;
-//        RefreshActiveMenu();
-//    }
-//    #endregion
-
-//    #region UnityEvent
-//    private void Update()
-//    {
-//        if (!_isInitialized) return;
-
-//        var mouse = Mouse.current;
-//        if (mouse == null) return;
-
-//        var right = mouse.rightButton;
-
-//        // click start
-//        if (right.wasPressedThisFrame) Open(mouse.position.ReadValue());
-
-//        if (!_isOpen) return;
-
-//        // holdding
-//        if (right.isPressed) UpdateSelection(mouse.position.ReadValue());
-
-//        // click end
-//        if (right.wasReleasedThisFrame) Close(true);
-//    }
-//    #endregion
-
-//    #region Build
-//    // ‰~‚ğ€–Ú”‚Å“™•ª‚µ‚½îŒ`‚ğ¶¬‚·‚é
-//    private void BuildItems()
-//    {
-//        int count = _items.Count;//€–Ú”
-//        if (count == 0) return;
-
-//        float step = 360f / count;//•ªŠ„”
-//        float gap = count > 1 ? _gapAngle : 0f;//€–Ú“¯m‚ÌŠÔŠu
-//        float labelRadius = (_innerRadius + _outerRadius) * 0.5f;
-
-//        for (int i = 0; i < count; i++)// ^ã‚ª0”Ô–ÚAŒv‰ñ‚è
-//        {
-//            float centerAngle = i * step;
-
-//            // €–Ú–{‘ÌiîŒ`j
-//            var itemObject = new GameObject("Object_Item", typeof(RectTransform), typeof(SectorGraphic));
-//            itemObject.transform.SetParent(_root, false);
-//            var itemRect = (RectTransform)itemObject.transform;
-//            itemRect.anchoredPosition = Vector2.zero;
-//            itemRect.sizeDelta = Vector2.one * _outerRadius * 2f;
-
-//            var itemSector = itemObject.GetComponent<SectorGraphic>();
-//            itemSector.color = _normalColor;
-//            itemSector.raycastTarget = false;   // ƒ}ƒEƒX”»’è‚Í©‘OŒvZ‚·‚é‚Ì‚Å•s—v
-//            itemSector.Setup(_innerRadius, _outerRadius, centerAngle - step * 0.5f + gap * 0.5f, centerAngle + step * 0.5f - gap * 0.5f);
-//            _itemSectors.Add(itemSector);
-
-//            // ƒ‰ƒxƒ‹‚ÍîŒ`‚Ì’†‰›‚É’u‚­
-//            float radian = centerAngle * Mathf.Deg2Rad;
-//            Vector2 labelPosition = new Vector2(Mathf.Sin(radian), Mathf.Cos(radian)) * labelRadius;
-
-//            // ƒ‰ƒxƒ‹B•\¦•û–@‚ÍLabelType‚ÅØ‚è‘Ö‚¦‚é
-//            switch (_labelType)
-//            {
-//                case LabelType.TextMeshPro:
-//                    {
-//                        CreateTextLabel(itemObject.transform, _items[i], labelPosition);
-//                        break;
-//                    }
-//                case LabelType.Image:
-//                    {
-//                        CreateImageLabel(itemObject.transform, _items[i], labelPosition);
-//                        break;
-//                    }
-//            }
-//        }
-//    }
-
-//    // TextMeshProƒ‰ƒxƒ‹‚ğ¶¬
-//    private void CreateTextLabel(Transform parent, Item item, Vector2 position)
-//    {
-//        var labelObject = new GameObject("Object_Label", typeof(RectTransform), typeof(TextMeshProUGUI));
-//        labelObject.transform.SetParent(parent, false);
-//        var labelRect = (RectTransform)labelObject.transform;
-//        labelRect.sizeDelta = _labelSize;
-//        labelRect.anchoredPosition = position;
-
-//        var label = labelObject.GetComponent<TextMeshProUGUI>();
-//        if (_fontAsset != null) label.font = _fontAsset;   //Font“K‰
-//        label.text = item.Label;                           //Text“K‰
-//        label.fontSize = _fontSize;                        //ƒTƒCƒY“K‰
-//        label.alignment = TextAlignmentOptions.Center;
-//        label.color = Color.white;
-//        label.raycastTarget = false;
-//    }
-
-//    //Imageƒ‰ƒxƒ‹¶¬
-//    private void CreateImageLabel(Transform parent, Item item, Vector2 position)
-//    {
-//        //ƒAƒCƒRƒ“‚ª–¢İ’è‚Ì€–ÚiMenu‚È‚Çj‚ÍA‰½‚à•\¦‚³‚ê‚È‚­‚È‚é‚Ì‚ÅA•¶š‚Å‘ã‚í‚è‚É•\¦‚·‚é
-//        if (item.Icon == null)
-//        {
-//            CreateTextLabel(parent, item, position);
-//            return;
-//        }
-
-//        var iconObject = new GameObject("Object_Icon", typeof(RectTransform), typeof(Image));
-//        iconObject.transform.SetParent(parent, false);
-//        var iconRect = (RectTransform)iconObject.transform;
-//        iconRect.sizeDelta = Vector2.one * _iconSize;
-//        iconRect.anchoredPosition = position;   //îŒ`‚Ì’†‰›‚É”z’u
-
-//        var icon = iconObject.GetComponent<Image>();
-//        icon.sprite = item.Icon;
-//        icon.preserveAspect = true;
-//        icon.raycastTarget = false;
-//    }
-
-//    // ’†S(ActiveMenu)‚Ì•\¦—pƒIƒuƒWƒFƒNƒg‚ğ¶¬‚·‚éB•\¦•û–@‚ÍLabelType‚É‡‚í‚¹‚é
-//    private void BuildActiveMenu()
-//    {
-//        switch (_labelType)
-//        {
-//            case LabelType.TextMeshPro:
-//                {
-//                    _activeMenuObject = new GameObject("Object_ActiveText", typeof(RectTransform), typeof(TextMeshProUGUI));
-//                    _activeMenuObject.transform.SetParent(_root, false);
-//                    var textRect = (RectTransform)_activeMenuObject.transform;
-//                    textRect.sizeDelta = Vector2.one * _activeSize;
-//                    textRect.anchoredPosition = Vector2.zero;
-
-//                    _activeText = _activeMenuObject.GetComponent<TextMeshProUGUI>();
-//                    if (_fontAsset != null) _activeText.font = _fontAsset;
-//                    _activeText.fontSize = _fontSize;
-//                    _activeText.alignment = TextAlignmentOptions.Center;
-//                    _activeText.color = Color.white;
-//                    _activeText.raycastTarget = false;
-//                    break;
-//                }
-//            case LabelType.Image:
-//                {
-//                    _activeMenuObject = new GameObject("Object_ActiveIcon", typeof(RectTransform), typeof(Image));
-//                    _activeMenuObject.transform.SetParent(_root, false);
-//                    var iconRect = (RectTransform)_activeMenuObject.transform;
-//                    iconRect.sizeDelta = Vector2.one * _activeSize;
-//                    iconRect.anchoredPosition = Vector2.zero;
-
-//                    _activeIcon = _activeMenuObject.GetComponent<Image>();
-//                    _activeIcon.preserveAspect = true;
-//                    _activeIcon.raycastTarget = false;
-//                    break;
-//                }
-//        }
-//    }
-
-//    // ’†S(ActiveMenu)‚Ì“à—e‚Æ•\¦/”ñ•\¦‚ğA‘I‘ğ’†‚Ì€–Ú‚É‡‚í‚¹‚ÄXV‚·‚é
-//    private void RefreshActiveMenu()
-//    {
-//        if (_activeMenuObject == null) return;
-
-//        bool hasActive = _activeIndex >= 0 && _activeIndex < _items.Count;
-
-//        if (hasActive)
-//        {
-//            var item = _items[_activeIndex];
-//            if (_activeText != null) _activeText.text = item.Label;
-//            if (_activeIcon != null)
-//            {
-//                _activeIcon.sprite = item.Icon;
-//                _activeIcon.enabled = item.Icon != null;
-//            }
-//        }
-
-//        // ŠJ‚¢‚Ä‚¢‚éŠÔ‚¾‚¯A‘I‘ğ’†‚Ì€–Ú‚ª‚ ‚é‚É•\¦‚·‚é
-//        _activeMenuObject.SetActive(_isOpen && hasActive);
-//    }
-
-//    // Šù‘¶‚Ì€–Ú‚ğ”jŠü‚µ‚Äì‚è’¼‚·
-//    private void RebuildItems()
-//    {
-//        foreach (var itemSector in _itemSectors)
-//        {
-//            Destroy(itemSector.gameObject);
-//        }
-//        _itemSectors.Clear();
-
-//        BuildItems();
-
-//        // ì‚è’¼‚µ‚½îŒ`‚æ‚èè‘O‚É•\¦‚·‚é
-//        if (_activeMenuObject != null) _activeMenuObject.transform.SetAsLastSibling();
-
-//        _selectedIndex = -1;
-//        SetActiveAll(_isOpen);   // ŠJ‚¢‚Ä‚¢‚éÅ’†‚È‚ç•\¦‚ğˆÛ‚·‚é
-//        Highlight(-1);
-//        RefreshActiveMenu();
-//    }
-//    #endregion
-
-//    #region OpenClose
-//    private void Open(Vector2 mouseScreenPosition)
-//    {
-//        if (_items.Count == 0)
-//        {
-//            Debug.LogWarning("[RadialMenu] Open : Items is Empty!! ");
-//            return;
-//        }
-
-//        _isOpen = true;
-//        _selectedIndex = -1;   // ŠJ‚¢‚½’¼Œã‚Í–¢‘I‘ğ
-//        OnOpenChanged?.Invoke(true);
-
-//        // ‰æ–Ê’[‚ÅŒ‡‚¯‚È‚¢‚æ‚¤‚É’†S‚ğ•â³iCanvas’PˆÊ ¨ ‰æ–ÊƒsƒNƒZƒ‹j
-//        //float margin = _outerRadius * _rootCanvas.scaleFactor;
-//        //mouseScreenPosition.x = Mathf.Clamp(mouseScreenPosition.x, margin, Screen.width - margin);
-//        //mouseScreenPosition.y = Mathf.Clamp(mouseScreenPosition.y, margin, Screen.height - margin);
-
-//        if (RectTransformUtility.ScreenPointToWorldPointInRectangle(_canvasRect, mouseScreenPosition, _uiCamera, out Vector3 worldPosition))
-//        {
-//            _root.position = worldPosition;
-//        }
-//        else
-//        {
-//            Debug.LogWarning("[RadialMenu] Open : Failed to Convert Mouse Position!! ");
-//        }
-
-//        SetActiveAll(true);
-//        Highlight(-1);
-//        RefreshActiveMenu();   // “o˜^Ï‚İ‚Ì€–Ú‚ğ’†S‚É•\¦
-//    }
-
-//    private void Close(bool execute)
-//    {
-//        bool wasOpen = _isOpen;
-
-//        if (execute && _selectedIndex >= 0 && _selectedIndex < _items.Count)
-//        {
-//            // “o˜^Ï‚İ‚Ì€–Ú‚ğ‚à‚¤ˆê“x‘I‚Ô‚Æ‰ğœA•Ê‚Ì€–Ú‚ğ‘I‚Ô‚ÆØ‚è‘Ö‚¦
-//            _activeIndex = (_selectedIndex == _activeIndex) ? -1 : _selectedIndex;
-
-//#if UNITY_EDITOR
-//            Debug.Log($"[RadialMenu] Close : _selectedIndex = {_selectedIndex}, _activeIndex = {_activeIndex}");
-//#endif
-//            _items[_selectedIndex].OnSelected?.Invoke();
-//        }
-
-//        _isOpen = false;
-//        _selectedIndex = -1;
-//        SetActiveAll(false);
-//        RefreshActiveMenu();
-//        if (wasOpen) OnOpenChanged?.Invoke(false);
-//    }
-
-//    private void SetActiveAll(bool active)
-//    {
-//        foreach (var itemSector in _itemSectors)
-//        {
-//            itemSector.gameObject.SetActive(active);
-//        }
-//    }
-//    #endregion
-
-//    #region Selection
-//    // ƒƒjƒ…[’†S‚©‚çŒ©‚½ƒ}ƒEƒX‚ÌŠp“x‚Å€–Ú‚ğ‘I‘ğ‚·‚éiîŒ`‚Ìã‚Éæ‚Á‚Ä‚¢‚é•K—v‚Í‚È‚¢j
-//    // ’†S‚ÌŒŠiInnerRadius‚Ì“à‘¤j‚ÍDeadZoneB‚»‚±‚Éƒ}ƒEƒX‚ª‚ ‚é‚Æ‚«‚Í‰½‚à‘I‘ğ‚µ‚È‚¢
-//    private void UpdateSelection(Vector2 mouseScreenPosition)
-//    {
-//        int count = _items.Count;
-//        if (count == 0) return;
-
-//        // ƒƒjƒ…[’†S‚©‚ç‚Ì‘Š‘ÎˆÊ’uiCanvas’PˆÊj
-//        if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(_root, mouseScreenPosition, _uiCamera, out Vector2 delta))
-//        {
-//            return;
-//        }
-
-//        int index = -1;   // DeadZone‚Ì’†‚Í–¢‘I‘ğ
-//        if (delta.magnitude >= _innerRadius)
-//        {
-//            // ^ã‚ğ0“xAŒv‰ñ‚è‚É‘‚¦‚éŠp“x
-//            float angle = Mathf.Atan2(delta.x, delta.y) * Mathf.Rad2Deg;
-//            if (angle < 0f) angle += 360f;
-
-//            index = Mathf.RoundToInt(angle / (360f / count)) % count;
-//        }
-
-//        // ‘I‘ğ‚ª•Ï‚í‚Á‚½‚Æ‚«‚¾‚¯•\¦‚ğXV‚·‚é
-//        if (index != _selectedIndex) Highlight(index);
-//    }
-
-//    private void Highlight(int index)
-//    {
-//        _selectedIndex = index;
-//        for (int i = 0; i < _itemSectors.Count; i++)
-//        {
-//            _itemSectors[i].color = (i == index) ? _highlightColor : _normalColor;
-//            _itemSectors[i].rectTransform.localScale = (i == index) ? new Vector2(1.1f, 1.1f) : Vector2.one;
-//        }
-//    }
-//    #endregion
-//}

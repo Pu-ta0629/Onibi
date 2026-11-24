@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 // 迷い子(警護対象)。いまは、名前とコライダーだけを持つ。HP、移動速度などは、項目が決まったら足す
 [CreateAssetMenu(menuName = "Game/MasterData/Lostchild", fileName = "child_new")]
@@ -16,6 +16,7 @@ public class LostChild : MasterData
     [Header("MoveConfig")]
     [Tooltip("移動速度")]
     [SerializeField, Range(0.1f, 20f)] private float _moveSpeed = 5f;
+    [SerializeField, Min(0)] private float _acceleration = 100f;    
     [Tooltip("目的地の近くのNavMeshを探す距離")]
     [SerializeField, Range(0.1f, 10f)] private float _navMeshSampleDistance = 2f;
 
@@ -36,7 +37,8 @@ public class LostChild : MasterData
     public string DisplayName => _displayName;
     public ColliderSet Colliders => _colliders;
     public MovementProfile MovementProfile => _movementProfile;
-    public float MoveSpeed => _moveSpeed;
+    public float MoveSpeed => _moveSpeed; 
+    public float Acceleration => _acceleration;
     public float NavMsehSampleDistance => _navMeshSampleDistance;
     public LayerMask GroundMask => _groundMask;
     public float RepathDistance => _repathDistance;

@@ -1,25 +1,26 @@
+ï»¿using System;
 using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
-/// ‰Î‚É•t‘®‚·‚éLight‚ğ‚Ü‚Æ‚ß‚ÄŠÇ—‚·‚éƒNƒ‰ƒX
-/// –¾‚é‚³ƒŒƒxƒ‹‚²‚Æ‚Ìİ’è(Šp“xERangeEIntensity)‚ÍA‘S‚Ä‚Ì‰Î‚Å‹¤’Ê‚Ì‚à‚Ì‚ğ‚±‚±‚Å‚Â
-/// Light–{‘Ì(SpotLight‚ÆPointLight)‚ÍŠe‰Î‚ÌFireController‚ª‚¿A‚±‚±‚Ö“n‚³‚ê‚é
-/// ‰Î‚ª‚Â‚Ì‚Í–¾‚é‚³‚ÌƒŒƒxƒ‹‚¾‚¯‚ÅAƒŒƒxƒ‹‚ğó‚¯æ‚Á‚ÄLight‚Ì’l‚ğ•Ï‚¦‚é‚Ì‚Í‚±‚±‚ª’S“–‚·‚é
-/// Œõ—Ê‚ÌŒvZi‚ ‚é’n“_‚Ì–¾‚é‚³j‚à‚±‚±‚Ås‚¤
+/// ç«ã«ä»˜å±ã™ã‚‹Lightã‚’ã¾ã¨ã‚ã¦ç®¡ç†ã™ã‚‹ã‚¯ãƒ©ã‚¹
+/// æ˜ã‚‹ã•ãƒ¬ãƒ™ãƒ«ã”ã¨ã®è¨­å®š(è§’åº¦ãƒ»Rangeãƒ»Intensity)ã¯ã€å…¨ã¦ã®ç«ã§å…±é€šã®ã‚‚ã®ã‚’ã“ã“ã§æŒã¤
+/// Lightæœ¬ä½“(SpotLightã¨PointLight)ã¯å„ç«ã®FireControllerãŒæŒã¡ã€ã“ã“ã¸æ¸¡ã•ã‚Œã‚‹
+/// ç«ãŒæŒã¤ã®ã¯æ˜ã‚‹ã•ã®ãƒ¬ãƒ™ãƒ«ã ã‘ã§ã€ãƒ¬ãƒ™ãƒ«ã‚’å—ã‘å–ã£ã¦Lightã®å€¤ã‚’å¤‰ãˆã‚‹ã®ã¯ã“ã“ãŒæ‹…å½“ã™ã‚‹
+/// å…‰é‡ã®è¨ˆç®—ï¼ˆã‚ã‚‹åœ°ç‚¹ã®æ˜ã‚‹ã•ï¼‰ã‚‚ã“ã“ã§è¡Œã†
 /// </summary>
 public class LightManager : MonoBehaviour
 {
-    [Header("‹¤’Ê‚ÌŒõ‚Ìİ’èi‘S‚Ä‚Ì‰Î‚Å‹¤’Êj")]
+    [Header("å…±é€šã®å…‰ã®è¨­å®šï¼ˆå…¨ã¦ã®ç«ã§å…±é€šï¼‰")]
     [SerializeField] private FireLightConfig _config = new FireLightConfig();
 
     private readonly Dictionary<FireColor, FireLight> _lights = new Dictionary<FireColor, FireLight>();
-    private float _darkThreshold;   //Gizmo‚ÅuˆÃ‚¢‚Æ”»’è‚³‚ê‚é‹«ŠEv‚ğ•`‚­‚Ì‚Ég‚¤
+    private float _darkThreshold;   //Gizmoã§ã€Œæš—ã„ã¨åˆ¤å®šã•ã‚Œã‚‹å¢ƒç•Œã€ã‚’æãã®ã«ä½¿ã†
     private bool _isInitialized;
 
     #region Initialize
     /// <summary>
-    /// FireManager‚©‚çˆê“x‚¾‚¯ŒÄ‚Ô
+    /// FireManagerã‹ã‚‰ä¸€åº¦ã ã‘å‘¼ã¶
     /// </summary>
     public void Initialize()
     {
@@ -30,10 +31,10 @@ public class LightManager : MonoBehaviour
 
     #region Public
     /// <summary>
-    /// ‰Î‚ÌLight‚ğ“o˜^‚·‚éBˆÈ~‚ÍSetBrightness‚Å’l‚ğ•Ï‚¦‚é
+    /// ç«ã®Lightã‚’ç™»éŒ²ã™ã‚‹ã€‚ä»¥é™ã¯SetBrightnessã§å€¤ã‚’å¤‰ãˆã‚‹
     /// </summary>
-    /// <param name="spotLight">–¾‚é‚³”»’è{Œ©‚½–Ú—pi•K{j</param>
-    /// <param name="pointLight">–Àq—pBnull‚È‚ç©“®‚Åì‚é</param>
+    /// <param name="spotLight">æ˜ã‚‹ã•åˆ¤å®šï¼‹è¦‹ãŸç›®ç”¨ï¼ˆå¿…é ˆï¼‰</param>
+    /// <param name="pointLight">è¿·å­ç”¨ã€‚nullãªã‚‰è‡ªå‹•ã§ä½œã‚‹</param>
     public bool Register(FireColor color, Transform owner, Light spotLight, Light pointLight, bool isLit)
     {
         if (!_isInitialized || owner == null || color == FireColor.None)
@@ -55,7 +56,7 @@ public class LightManager : MonoBehaviour
     }
 
     /// <summary>
-    /// ‰Î‚Ì–¾‚é‚³ƒŒƒxƒ‹‚ğ”½‰f‚·‚éB‚»‚ÌƒŒƒxƒ‹‚É‘Î‰‚·‚é‹¤’Ê‚Ì’l‚ÅLight‚ª•Ï‚í‚é
+    /// ç«ã®æ˜ã‚‹ã•ãƒ¬ãƒ™ãƒ«ã‚’åæ˜ ã™ã‚‹ã€‚ãã®ãƒ¬ãƒ™ãƒ«ã«å¯¾å¿œã™ã‚‹å…±é€šã®å€¤ã§LightãŒå¤‰ã‚ã‚‹
     /// </summary>
     public void SetBrightness(FireColor color, FireBrightness brightness)
     {
@@ -72,7 +73,7 @@ public class LightManager : MonoBehaviour
         }
     }
     /// <summary>
-    /// w’è‚µ‚½’n“_‚ÌŒõ—ÊB“o˜^‚³‚ê‚Ä‚¢‚é‘S‚Ä‚Ì‰Î‚Ì‚¤‚¿AÅ‚à–¾‚é‚¢’l‚ğ•Ô‚·
+    /// æŒ‡å®šã—ãŸåœ°ç‚¹ã®å…‰é‡ã€‚ç™»éŒ²ã•ã‚Œã¦ã„ã‚‹å…¨ã¦ã®ç«ã®ã†ã¡ã€æœ€ã‚‚æ˜ã‚‹ã„å€¤ã‚’è¿”ã™
     /// </summary>
     public float GetLightLevelAt(Vector3 point)
     {
@@ -86,7 +87,7 @@ public class LightManager : MonoBehaviour
     }
 
     /// <summary>
-    /// uˆÃ‚¢v‚Æ”»’è‚³‚ê‚é‚µ‚«‚¢’l‚ğó‚¯æ‚éiSceneƒrƒ…[‚ÌŠm”F—p‚Ì‰~‚ğ•`‚­‚½‚ß‚¾‚¯‚Ég‚¤B”»’è©‘Ì‚ÍDarknessSensor‚ªs‚¤j
+    /// ã€Œæš—ã„ã€ã¨åˆ¤å®šã•ã‚Œã‚‹ã—ãã„å€¤ã‚’å—ã‘å–ã‚‹ï¼ˆSceneãƒ“ãƒ¥ãƒ¼ã®ç¢ºèªç”¨ã®å††ã‚’æããŸã‚ã ã‘ã«ä½¿ã†ã€‚åˆ¤å®šè‡ªä½“ã¯DarknessSensorãŒè¡Œã†ï¼‰
     /// </summary>
     public void SetDarkThreshold(float darkThreshold)
     {
@@ -95,14 +96,14 @@ public class LightManager : MonoBehaviour
     #endregion
 
     #region UnityLifeCycle
-    //‰Î‚ÍƒJƒƒ‰‚Æ“¯‚¶Œü‚«‚É‰ñ‚é‚Ì‚ÅALight‚ğ–ˆƒtƒŒ[ƒ€^‰º‚ÉŒü‚¯’¼‚·
+    //ç«ã¯ã‚«ãƒ¡ãƒ©ã¨åŒã˜å‘ãã«å›ã‚‹ã®ã§ã€Lightã‚’æ¯ãƒ•ãƒ¬ãƒ¼ãƒ çœŸä¸‹ã«å‘ã‘ç›´ã™
     private void LateUpdate()
     {
         foreach (FireLight light in _lights.Values)
         {
             light.UpdatePose();
 #if UNITY_EDITOR
-            light.Refresh();   //Ä¶’†‚ÉInspector‚Ì‹¤’Êİ’è‚ğG‚Á‚Ä‚àA‚·‚®”½‰f‚·‚é
+            light.Refresh();   //å†ç”Ÿä¸­ã«Inspectorã®å…±é€šè¨­å®šã‚’è§¦ã£ã¦ã‚‚ã€ã™ãåæ˜ ã™ã‚‹
 #endif
         }
     }

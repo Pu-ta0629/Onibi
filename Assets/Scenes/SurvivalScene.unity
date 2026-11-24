@@ -1347,7 +1347,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EntitySpawnManager
   _poolManager: {fileID: 1240344923}
   _pickTryCount: 5
-  _normalKodamaData: {fileID: 11400000, guid: 61e2e5a904b913d4798c001d09736cbc, type: 2}
 --- !u!1 &1134866814
 GameObject:
   m_ObjectHideFlags: 0
@@ -1519,8 +1518,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c7709bc0323f26148908794426a2d5ec, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PoolManager
-  _resumeThreshoId: 3
-  _maxKodamaPerSpot: 3
 --- !u!1 &1267208758
 GameObject:
   m_ObjectHideFlags: 0

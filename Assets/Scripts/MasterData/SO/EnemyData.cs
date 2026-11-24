@@ -1,4 +1,4 @@
-using JetBrains.Annotations;
+﻿using JetBrains.Annotations;
 using UnityEngine;
 
 [System.Serializable]
@@ -72,7 +72,7 @@ public class EnemyData : MasterData
 
     [Tooltip("移動速度")]
     [SerializeField] private float _moveSpeed;
-
+    [SerializeField, Min(0)] private float _acceleration = 8; 
     [Header("行動と索敵")]
     [Tooltip("行動Logic(名前。実装を選ぶためのキー)")]
     [SerializeField] private string _moveLogic;
@@ -104,6 +104,7 @@ public class EnemyData : MasterData
     public int MaxHP => _maxHP;
     public int BaseAttack => _baseAttack;
     public float MoveSpeed => _moveSpeed;
+    public float Acceleration => _acceleration;
     public string MoveLogic => _moveLogic;
     public string SearchType => _searchType;
     public float SearchRange => _searchRange;

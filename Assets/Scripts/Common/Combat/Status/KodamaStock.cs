@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using UnityEngine;
 
 /// <summary>
@@ -46,5 +46,15 @@ public class KodamaStock
         _count -= amount;
         OnChanged?.Invoke(_count);
         return true;
+    }
+
+    /// <summary>木霊の量を直接指定する（Kind指定で進化段階を変えるときなど。）同じ量なら何もしない</summary>
+    /// <param name="amount"></param>
+    public void Set(int amount)
+    {
+        int next = Mathf.Max(0, amount);
+        if (_count == next) return;
+        _count = next;
+        OnChanged?.Invoke(_count);
     }
 }

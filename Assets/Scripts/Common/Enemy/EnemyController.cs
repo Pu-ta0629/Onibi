@@ -69,7 +69,7 @@ public class EnemyController : MonoBehaviour, IHittable, IHitTarget
         _stopDistance = config.StopDistance;
         _movementProfile = new MovementProfile(data.MoveType, size, Faction.Enemy);
 
-        _mover = new Mover(agent, data.MoveSpeed, config.GroundMask, config.NavMeshSampleDistance, config.RepathDistance, _movementProfile);
+        _mover = new Mover(agent, data.MoveSpeed, config.GroundMask, config.NavMeshSampleDistance, config.RepathDistance, _movementProfile, acceleration: _data.Acceleration);
         _hit = new HitDetector(world, this, Faction.Enemy, data.Colliders);
         _hit.SetActive(false);
 
