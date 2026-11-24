@@ -191,9 +191,20 @@ public class LostChildController : MonoBehaviour, IHittable,IHitTarget
         _mover.SetCanMove(false);
     }
 
-    public void CollectKodama(KodamaData data)
+    public void CollectKodama(KodamaData data,int amount)
     {
-        _kodamaStack.Add(data);
+        _kodamaStack.Add(data,amount);
+    }
+
+    public bool TryFindWalkablePoint(Vector3 point,float maxDistance,out Vector3 result)
+    {
+        result = point;
+        if(!_isInitialized)
+        {
+            return false;
+        }
+
+        return _mover.TryFindNavMeshPoint(point, maxDistance, out result);
     }
     #endregion
 

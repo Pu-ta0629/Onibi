@@ -22,25 +22,25 @@ public class KodamaStack
         return _specialCounts.TryGetValue(kind,out int count) ? count : 0;
     }
 
-    ///<summary>木霊を一つ積む</summary>
-    public void Add(KodamaData data)
+    ///<summary>木霊を、指定した量だけ積む</summary>
+    public void Add(KodamaData data,int amount = 1)
     {
 
-        if(data == null)
+        if(data == null || amount <= 0)
         {
             return;
         }
 
         if(data.IsSpecial)
         {
-            _specialCounts[data.SpecialKind] = GetSpecialCount(data.SpecialKind) + 1;
+            _specialCounts[data.SpecialKind] = GetSpecialCount(data.SpecialKind) + amount;
         }
         else
         {
-            _normalCount++;
+            _normalCount += amount;
         }
 
-        Debug.Log($"[KodamaStack] CurrentKodama : {_normalCount}");
+        Debug.Log($"[KodamaStack] Add : {data.name} + {amount} (normal = {_normalCount})");
         Changed?.Invoke();
     }
 
@@ -51,4 +51,5 @@ public class KodamaStack
         _specialCounts.Clear();
         Changed?.Invoke();
     }
+
 }
