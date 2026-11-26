@@ -10,7 +10,7 @@ using UnityEngine.AI;
 /// 攻撃対象は迷子だけ。迷子に近づいたら止まり、Attack1をAttackTimelineの時間どおりに出す
 /// </summary>
 [RequireComponent(typeof(NavMeshAgent))]
-public class EnemyController : MonoBehaviour, IHittable, IHitTarget
+public class EnemyController : MonoBehaviour, IHittable, IHitTarget, IFireTarget
 {
     /// <summary>HPが0になったときに通知する（PoolManagerが受け取って、プールへ戻す）</summary>
     public event Action<EnemyController> OnDead;

@@ -1,13 +1,13 @@
-using System;
+ï»¿using System;
 using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
-/// ‰Î‚Ì‘æ‚PƒXƒLƒ‹i‹ß‹——£UŒ‚“Ëij‚ğ‚Ü‚Æ‚ß‚½ƒˆ‚ÈC#ƒNƒ‰ƒX
-/// ‘Ì‚ÌˆÊ’u‚ÌXVEõ“GE“Ëi‚ÌŠJn‚ÆisE–Ø—ì‚ÌÁ”ïEƒN[ƒ‹ƒ^ƒCƒ€‚ğ’S“–‚·‚é
-/// UŒ‚‘ÎÛ‚ÍA–Àq‚Ìõ“GŒ‹‰Ê‚Æ‰Î©g‚Ìõ“GŒ‹‰Ê‚ğ‡‚í‚¹‚½’†‚ÅAˆê”Ôd‚İ‚ª‘å‚«‚¢“G
-/// ˆÚ“®‚ÍMover‚É”C‚¹‚éBFireController‚ª¶¬‚µ‚ÄA–ˆƒtƒŒ[ƒ€Tick‚ğŒÄ‚Ô
-/// i‰»E‘Ş‰»‚ÅƒRƒ‰ƒCƒ_[‚ª•Ï‚í‚é‚Ì‚ÅAChangeData‚ÅFireStateData‚ÆHitDetector‚ğ“ü‚ê‘Ö‚¦‚é
+/// ç«ã®ç¬¬ï¼‘ã‚¹ã‚­ãƒ«ï¼ˆè¿‘è·é›¢æ”»æ’ƒï¼çªé€²ï¼‰ã‚’ã¾ã¨ã‚ãŸç´”ç²‹ãªC#ã‚¯ãƒ©ã‚¹
+/// ä½“ã®ä½ç½®ã®æ›´æ–°ãƒ»ç´¢æ•µãƒ»çªé€²ã®é–‹å§‹ã¨é€²è¡Œãƒ»æœ¨éœŠã®æ¶ˆè²»ãƒ»ã‚¯ãƒ¼ãƒ«ã‚¿ã‚¤ãƒ ã‚’æ‹…å½“ã™ã‚‹
+/// æ”»æ’ƒå¯¾è±¡ã¯ã€è¿·å­ã®ç´¢æ•µçµæœã¨ç«è‡ªèº«ã®ç´¢æ•µçµæœã‚’åˆã‚ã›ãŸä¸­ã§ã€ä¸€ç•ªé‡ã¿ãŒå¤§ãã„æ•µ
+/// ç§»å‹•ã¯Moverã«ä»»ã›ã‚‹ã€‚FireControllerãŒç”Ÿæˆã—ã¦ã€æ¯ãƒ•ãƒ¬ãƒ¼ãƒ Tickã‚’å‘¼ã¶
+/// é€²åŒ–ãƒ»é€€åŒ–ã§ã‚³ãƒ©ã‚¤ãƒ€ãƒ¼ãŒå¤‰ã‚ã‚‹ã®ã§ã€ChangeDataã§FireStateDataã¨HitDetectorã‚’å…¥ã‚Œæ›¿ãˆã‚‹
 /// </summary>
 public class FireDashAttack : IDisposable
 {
@@ -24,20 +24,20 @@ public class FireDashAttack : IDisposable
     private HitDetector _hit;
     private FireTargetSearch _targetSearch;
 
-    private float _cooldown;      //Ÿ‚Ì“Ëi‚Ü‚Å‚Ìc‚èŠÔi•bj
-    private float _facingYaw;     //“Ëi‚ÌŒü‚«i“xjBUŒ‚‚ÌƒRƒ‰ƒCƒ_[‚ÌŒü‚«‚Ég‚¤
+    private float _cooldown;      //æ¬¡ã®çªé€²ã¾ã§ã®æ®‹ã‚Šæ™‚é–“ï¼ˆç§’ï¼‰
+    private float _facingYaw;     //çªé€²ã®å‘ãï¼ˆåº¦ï¼‰ã€‚æ”»æ’ƒã®ã‚³ãƒ©ã‚¤ãƒ€ãƒ¼ã®å‘ãã«ä½¿ã†
     private bool _isDashing;
 
-    /// <summary>“Ëi’†‚©i“Ëi’†‚ÍA‰Î‚Íü‰ñ‚µ‚È‚¢j</summary>
+    /// <summary>çªé€²ä¸­ã‹ï¼ˆçªé€²ä¸­ã¯ã€ç«ã¯å‘¨å›ã—ãªã„ï¼‰</summary>
     public bool isDashing => _isDashing;
 
-    /// <param name="owner">“–‚½‚è”»’è‚Ì‚¿åiFireControllerj</param>
-    /// <param name="transform">‰Î‚ÌTransform</param>
-    /// <param name="data">‚±‚Ì‰Î‚Ìƒ}ƒXƒ^[ƒf[ƒ^</param>
-    /// <param name="mover">“Ëi‚ÌˆÚ“®‚Ég‚¤Mover</param>
-    /// <param name="world">‘Sˆõ‚Å‹¤—L‚·‚éHitWorld</param>
-    /// <param name="lostChild">õ“GŒ‹‰Ê‚ğØ‚è‚é–Àq</param>
-    /// <param name="kodama">“Ëi‚ÅÁ”ï‚·‚é–Ø—ì</param>
+    /// <param name="owner">å½“ãŸã‚Šåˆ¤å®šã®æŒã¡ä¸»ï¼ˆFireControllerï¼‰</param>
+    /// <param name="transform">ç«ã®Transform</param>
+    /// <param name="data">ã“ã®ç«ã®ãƒã‚¹ã‚¿ãƒ¼ãƒ‡ãƒ¼ã‚¿</param>
+    /// <param name="mover">çªé€²ã®ç§»å‹•ã«ä½¿ã†Mover</param>
+    /// <param name="world">å…¨å“¡ã§å…±æœ‰ã™ã‚‹HitWorld</param>
+    /// <param name="lostChild">ç´¢æ•µçµæœã‚’å€Ÿã‚Šã‚‹è¿·å­</param>
+    /// <param name="kodama">çªé€²ã§æ¶ˆè²»ã™ã‚‹æœ¨éœŠ</param>
     public FireDashAttack(object owner, Transform transform, FireStateData data, Mover mover, HitWorld world, LostChildController lostChild, KodamaStock kodama)
     {
         _owner = owner;
@@ -53,7 +53,7 @@ public class FireDashAttack : IDisposable
 
     #region Public
     /// <summary>
-    /// –ˆƒtƒŒ[ƒ€ŒÄ‚ÔBõ“GE“Ëi‚ÌŠJn‚Æis‚ğs‚¢A“Ëi’†‚È‚çtrue‚ğ•Ô‚·
+    /// æ¯ãƒ•ãƒ¬ãƒ¼ãƒ å‘¼ã¶ã€‚ç´¢æ•µãƒ»çªé€²ã®é–‹å§‹ã¨é€²è¡Œã‚’è¡Œã„ã€çªé€²ä¸­ãªã‚‰trueã‚’è¿”ã™
     /// </summary>
     public bool Tick(FireAIPermission permission)
     {
@@ -80,7 +80,7 @@ public class FireDashAttack : IDisposable
     }
 
     /// <summary>
-    /// i‰»E‘Ş‰»‚ÅAƒf[ƒ^‚ÆƒRƒ‰ƒCƒ_[‚ğ“ü‚ê‘Ö‚¦‚éB“Ëi’†‚È‚ç’†’f‚µ‚ÄAŸ‚ÌTick‚©‚çV‚µ‚¢ƒRƒ‰ƒCƒ_[‚Å”»’è‚·‚é
+    /// é€²åŒ–ãƒ»é€€åŒ–ã§ã€ãƒ‡ãƒ¼ã‚¿ã¨ã‚³ãƒ©ã‚¤ãƒ€ãƒ¼ã‚’å…¥ã‚Œæ›¿ãˆã‚‹ã€‚çªé€²ä¸­ãªã‚‰ä¸­æ–­ã—ã¦ã€æ¬¡ã®Tickã‹ã‚‰æ–°ã—ã„ã‚³ãƒ©ã‚¤ãƒ€ãƒ¼ã§åˆ¤å®šã™ã‚‹
     /// </summary>
     public void ChangeData(FireStateData data)
     {
@@ -96,7 +96,7 @@ public class FireDashAttack : IDisposable
     }
 
     /// <summary>
-    /// “–‚½‚è”»’è‚ğŠO‚·i‰Î‚ªÁ‚¦‚é‚Æ‚«‚É•K‚¸ŒÄ‚Ôj
+    /// å½“ãŸã‚Šåˆ¤å®šã‚’å¤–ã™ï¼ˆç«ãŒæ¶ˆãˆã‚‹ã¨ãã«å¿…ãšå‘¼ã¶ï¼‰
     /// </summary>
     public void Dispose()
     {
@@ -105,14 +105,14 @@ public class FireDashAttack : IDisposable
     #endregion
 
     #region Private
-    //¡‚Ìƒf[ƒ^‚ÌƒRƒ‰ƒCƒ_[‚ÅA“–‚½‚è”»’è‚Æõ“G‚ğì‚é
+    //ä»Šã®ãƒ‡ãƒ¼ã‚¿ã®ã‚³ãƒ©ã‚¤ãƒ€ãƒ¼ã§ã€å½“ãŸã‚Šåˆ¤å®šã¨ç´¢æ•µã‚’ä½œã‚‹
     private void CreateCombat()
     {
         _hit = new HitDetector(_world, _owner, Faction.Fire, _data.Colliders);
-        _targetSearch = new FireTargetSearch(new WeightedSearch<EnemyController>(_hit), _lostChild);
+        _targetSearch = new FireTargetSearch(new WeightedSearch<IFireTarget>(_hit), _lostChild);
     }
 
-    //UŒ‚‘ÎÛ‚ª‚¢‚ÄA–Ø—ì‚ª‘«‚è‚é‚È‚çA“Ëi‚ğn‚ß‚é
+    //æ”»æ’ƒå¯¾è±¡ãŒã„ã¦ã€æœ¨éœŠãŒè¶³ã‚Šã‚‹ãªã‚‰ã€çªé€²ã‚’å§‹ã‚ã‚‹
     private void TryBeginDash()
     {
         if (!_targetSearch.TryGetTarget(out SearchResult target))
@@ -132,12 +132,12 @@ public class FireDashAttack : IDisposable
             _facingYaw = Mathf.Atan2(direction.x, direction.z) * Mathf.Rad2Deg;
         }
 
-        _mover.BeginStraightTo(target.Position);   //“Ëi‚Ì–Ú“I’n‚ÍAn‚ß‚½uŠÔ‚Ì“G‚ÌˆÊ’u
+        _mover.BeginStraightTo(target.Position);   //çªé€²ã®ç›®çš„åœ°ã¯ã€å§‹ã‚ãŸç¬é–“ã®æ•µã®ä½ç½®
         _attackProcessor.Begin();
         _isDashing = true;
     }
 
-    //–Ú“I’n‚Ö’¼i‚µ‚È‚ª‚çAUŒ‚‚ÌƒRƒ‰ƒCƒ_[‚Å“G‚É“–‚½‚Á‚½‚©’²‚×‚éB’…‚¢‚½‚çI‚í‚é
+    //ç›®çš„åœ°ã¸ç›´é€²ã—ãªãŒã‚‰ã€æ”»æ’ƒã®ã‚³ãƒ©ã‚¤ãƒ€ãƒ¼ã§æ•µã«å½“ãŸã£ãŸã‹èª¿ã¹ã‚‹ã€‚ç€ã„ãŸã‚‰çµ‚ã‚ã‚‹
     private void TickDash(FireAIPermission permission)
     {
         if (!permission.CanDash)
@@ -149,7 +149,7 @@ public class FireDashAttack : IDisposable
         bool isMoving = _mover.MoveStraightToTarget();
         _hit.SetTransform(_transform.position, _facingYaw);
 
-        if (_hit.Detect<EnemyController>(_data.NormalAttackKey, _hits))
+        if (_hit.Detect<IFireTarget>(_data.NormalAttackKey, _hits))
         {
             _attackProcessor.Apply(_hits, _data.BurnPotency);
         }

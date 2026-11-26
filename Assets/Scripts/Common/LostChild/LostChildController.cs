@@ -1,5 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Drawing;
+using Unity.AppUI.UI;
+using Unity.VectorGraphics;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -20,11 +22,14 @@ public class LostChildController : MonoBehaviour, IHittable,IHitTarget
     [Space(10)]
     [SerializeField] private int _currentLife;
 
+    [Header("Debug")]
+    [SerializeField] private GameObject _gameOverObj;
+
     private NavMeshAgent _agent;
 
     private Mover _mover;
     private HitDetector _hit;
-    private WeightedSearch<EnemyController> _search;
+    private WeightedSearch<IFireTarget> _search;
     private Health _life;
     private bool _isInitialized;
     private bool _isFrozen;
@@ -58,7 +63,7 @@ public class LostChildController : MonoBehaviour, IHittable,IHitTarget
 
         //体のコライダーはHitWorldへ登録され、敵の攻撃が当たる。Searchのコライダーで敵を探す
         _hit = new HitDetector(world, this, Faction.LostChild, _data.Colliders);
-        _search = new WeightedSearch<EnemyController>(_hit);
+        _search = new WeightedSearch<IFireTarget>(_hit);
 
 
         _agent = agent;
@@ -70,6 +75,10 @@ public class LostChildController : MonoBehaviour, IHittable,IHitTarget
     #endregion
 
     #region UnityLifeCycle
+    private void Start()
+    {
+        _gameOverObj.SetActive(false);
+    }
     private void OnDestroy()
     {
         if (_life != null)
@@ -225,6 +234,8 @@ public class LostChildController : MonoBehaviour, IHittable,IHitTarget
         Debug.Log("[LostChildController] HandleDead : life is 0");
         _mover.SetCanMove(false);
         _hit.SetActive(false);
+
+        _gameOverObj.SetActive(true);
     }
     #endregion
 }

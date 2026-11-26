@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -12,14 +12,14 @@ public class FireTargetSearch
 {
     private static readonly Comparison<SearchResult> CompareByWeight = (a, b) => b.Weight.CompareTo(a.Weight);
 
-    private readonly WeightedSearch<EnemyController> _own;
+    private readonly WeightedSearch<IFireTarget> _own;
     private readonly LostChildController _lostChild;
     private readonly List<SearchResult> _results = new List<SearchResult>();
 
     /// <summary>最後のTickの結果（重みが大きい順）</summary>
     public IReadOnlyList<SearchResult> results => _results;
 
-    public FireTargetSearch(WeightedSearch<EnemyController> own, LostChildController lostChild)
+    public FireTargetSearch(WeightedSearch<IFireTarget> own, LostChildController lostChild)
     {
         _own = own;
         _lostChild = lostChild;

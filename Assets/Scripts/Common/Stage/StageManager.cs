@@ -18,6 +18,10 @@ public class StageManager : MonoBehaviour
     [Tooltip("Entityの生成実行を担当")]
     [SerializeField] private EntitySpawnManager _entitySpawnManager;
 
+
+    [Header("Debug")]
+    [SerializeField] private GameObject _GoalTextObj;
+
     // Stageの生成を実行する Initializeで初期化
     private StageGenerator _stageGenerator;
 
@@ -64,6 +68,10 @@ public class StageManager : MonoBehaviour
     #endregion
 
     #region UnityLifeCycle
+    private void Start()
+    {
+        _GoalTextObj.SetActive(false);
+    }
 
     private void Update()
     {
@@ -99,6 +107,7 @@ public class StageManager : MonoBehaviour
     {
         _lostChild.Freeze();
         _entitySpawnManager.Stop();
+        _GoalTextObj.SetActive(true);
     }
     #endregion
 
