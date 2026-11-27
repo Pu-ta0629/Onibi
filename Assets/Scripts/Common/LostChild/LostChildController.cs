@@ -1,7 +1,5 @@
 ﻿using System.Collections.Generic;
-using System.Drawing;
 using Unity.AppUI.UI;
-using Unity.VectorGraphics;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -31,6 +29,7 @@ public class LostChildController : MonoBehaviour, IHittable,IHitTarget
     private HitDetector _hit;
     private WeightedSearch<IFireTarget> _search;
     private Health _life;
+    private Camera _mainCamera;
     private bool _isInitialized;
     private bool _isFrozen;
     private NavFollowResult _lastResult = NavFollowResult.Following;
@@ -51,7 +50,7 @@ public class LostChildController : MonoBehaviour, IHittable,IHitTarget
     /// <summary>
     /// InitializeManagerから一度だけ呼ぶ。world: 全員で共有するHitWorld
     /// </summary>
-    public void Initialize(HitWorld world)
+    public void Initialize(HitWorld world, Camera mainCamera)
     {
         if (!TryGetComponent(out NavMeshAgent agent) || world == null || _data == null)
         {
@@ -65,7 +64,7 @@ public class LostChildController : MonoBehaviour, IHittable,IHitTarget
         _hit = new HitDetector(world, this, Faction.LostChild, _data.Colliders);
         _search = new WeightedSearch<IFireTarget>(_hit);
 
-
+        _mainCamera = mainCamera;
         _agent = agent;
         _life = new Health(_data.MaxLife);
         _currentLife = _life.current;
@@ -79,6 +78,12 @@ public class LostChildController : MonoBehaviour, IHittable,IHitTarget
     {
         _gameOverObj.SetActive(false);
     }
+    private void Update()
+    {
+        //billbord 
+        transform.localRotation = _mainCamera.transform.localRotation;
+    }
+
     private void OnDestroy()
     {
         if (_life != null)

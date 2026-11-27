@@ -736,7 +736,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 33e061f63249e674da0264798eb18d24, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DebugOverlay
-  _isVisible: 1
+  _isVisible: 0
   _fontSize: 10
   _position: {x: 0, y: 0}
   _icons:
@@ -1018,7 +1018,7 @@ MonoBehaviour:
     Intensity: 200
     Range: 20
     MatchLuminance: 1
-    MaxLuminanceScale: 7.05
+    MaxLuminanceScale: 20
     PointYOffset: 2
     PointIntensities:
     - 3
@@ -3297,9 +3297,45 @@ PrefabInstance:
       value: Sprite
       objectReference: {fileID: 0}
     - target: {fileID: 3533134525211483760, guid: 07331b981818a144799abddc35ed1413, type: 3}
+      propertyPath: m_Size.x
+      value: 1.6875
+      objectReference: {fileID: 0}
+    - target: {fileID: 3533134525211483760, guid: 07331b981818a144799abddc35ed1413, type: 3}
+      propertyPath: m_Size.y
+      value: 2.25
+      objectReference: {fileID: 0}
+    - target: {fileID: 3533134525211483760, guid: 07331b981818a144799abddc35ed1413, type: 3}
+      propertyPath: m_Sprite
+      value: 
+      objectReference: {fileID: 1835159980, guid: 61a25dfec6cf3944f830b6dd7723079c, type: 3}
+    - target: {fileID: 3533134525211483760, guid: 07331b981818a144799abddc35ed1413, type: 3}
+      propertyPath: m_DrawMode
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3533134525211483760, guid: 07331b981818a144799abddc35ed1413, type: 3}
+      propertyPath: m_MaskInteraction
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3533134525211483760, guid: 07331b981818a144799abddc35ed1413, type: 3}
+      propertyPath: m_SpriteSortPoint
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3533134525211483760, guid: 07331b981818a144799abddc35ed1413, type: 3}
+      propertyPath: m_WasSpriteAssigned
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3533134525211483760, guid: 07331b981818a144799abddc35ed1413, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
       objectReference: {fileID: 2100000, guid: bc2977e8cffeee1428215b50a6bbbf3f, type: 2}
+    - target: {fileID: 4845904084134768975, guid: 07331b981818a144799abddc35ed1413, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4845904084134768975, guid: 07331b981818a144799abddc35ed1413, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 1.0000001
+      objectReference: {fileID: 0}
     - target: {fileID: 7631574833175427274, guid: 07331b981818a144799abddc35ed1413, type: 3}
       propertyPath: m_LocalPosition.x
       value: -7.5

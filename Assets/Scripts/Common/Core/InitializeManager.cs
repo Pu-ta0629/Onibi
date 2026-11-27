@@ -52,7 +52,7 @@ public class InitializeManager : MonoBehaviour
         //迷子は、ステージ内でSpawnAtで置かれるので、必ずステージより前にInitializeする
         //（後ろだとSpawnAtが先に位置を決めてしまい、迷子がStartに置かれず、敵の追従先がNavMeshの外になる）
         _inputManager.Initialize(mainCamera);
-        _lostChildController.Initialize(_hitWorld);
+        _lostChildController.Initialize(_hitWorld, mainCamera);
         _stageManager.Initialize(_hitWorld, _lostChildController, mainCamera);
         _fireManager.Initialize(_typeManager, _inputManager, _lostChildController, mainCamera, _hitWorld, _kodamaStock);
         _cameraManager.Initialize(_typeManager, _fireManager, _lostChildController);

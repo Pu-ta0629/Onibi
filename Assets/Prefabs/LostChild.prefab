@@ -86,7 +86,7 @@ SpriteRenderer:
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
-  m_Size: {x: 1, y: 1}
+  m_Size: {x: 1.6875, y: 2.25}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
@@ -139,6 +139,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::LostChildController
   _data: {fileID: 11400000, guid: 97fca0696f38e054fb8b8e3bbfeae00a, type: 2}
   _currentLife: 0
+  _gameOverObj: {fileID: 0}
 --- !u!195 &203880471249191309
 NavMeshAgent:
   m_ObjectHideFlags: 0

@@ -39,18 +39,18 @@ TextureImporter:
     mipBias: 0
     wrapU: 1
     wrapV: 1
-    wrapW: 0
+    wrapW: 1
   nPOTScale: 0
   lightmap: 0
   compressionQuality: 50
   spriteMode: 2
-  spriteExtrude: 1
+  spriteExtrude: 0
   spriteMeshType: 0
   alignment: 0
   spritePivot: {x: 0.5, y: 0.5}
   spritePixelsToUnits: 16
   spriteBorder: {x: 0, y: 0, z: 0, w: 0}
-  spriteGenerateFallbackPhysicsShape: 1
+  spriteGenerateFallbackPhysicsShape: 0
   alphaUsage: 1
   alphaIsTransparency: 1
   spriteTessellationDetail: -1
@@ -84,7 +84,7 @@ TextureImporter:
     buildTarget: Standalone
     maxTextureSize: 2048
     resizeAlgorithm: 0
-    textureFormat: -1
+    textureFormat: 12
     textureCompression: 1
     compressionQuality: 50
     crunchedCompression: 0
@@ -134,12 +134,40 @@ TextureImporter:
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
-      outline: []
+      outline:
+      - - {x: 8.5, y: -17}
+        - {x: 8.5, y: -12}
+        - {x: 9.5, y: -11}
+        - {x: 12.5, y: -11}
+        - {x: 13.5, y: -10}
+        - {x: 13.5, y: -3}
+        - {x: 10.5, y: 0}
+        - {x: 12.5, y: 2}
+        - {x: 13.5, y: 9}
+        - {x: 11.5, y: 11}
+        - {x: 11.5, y: 16}
+        - {x: 9.5, y: 18}
+        - {x: -9.5, y: 18}
+        - {x: -11.5, y: 16}
+        - {x: -11.5, y: 11}
+        - {x: -13.5, y: 9}
+        - {x: -13.5, y: 6}
+        - {x: -12.5, y: 5}
+        - {x: -12.5, y: 2}
+        - {x: -10.5, y: 0}
+        - {x: -13.5, y: -3}
+        - {x: -13.5, y: -10}
+        - {x: -12.5, y: -11}
+        - {x: -9.5, y: -11}
+        - {x: -8.5, y: -12}
+        - {x: -8.5, y: -17}
+        - {x: -7.5, y: -18}
+        - {x: 7.5, y: -18}
       physicsShape: []
-      tessellationDetail: 0
+      tessellationDetail: 1
       bones: []
-      spriteID: fd5cfa25156e0cb42af5a85796ad3b81
-      internalID: 999916209
+      spriteID: e4bb94efd7fd374439ac96dd4aef1b11
+      internalID: 1835159980
       vertices: []
       indices: 
       edges: []
@@ -160,8 +188,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: c404d20e097354546b8a513ce59cbfe8
-      internalID: 587093564
+      spriteID: c45d9f64a9283e548a4ffee8080050cf
+      internalID: 528619310
       vertices: []
       indices: 
       edges: []
@@ -182,8 +210,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 9a36f03f254205047986a6b43ce9bedb
-      internalID: 1493554911
+      spriteID: 3c57a80ec6195114694f908578be7212
+      internalID: 816225883
       vertices: []
       indices: 
       edges: []
@@ -204,8 +232,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 5cce1fdd663070f49a5d773b8ff7f863
-      internalID: -1548957550
+      spriteID: 4e0f5a885e510214a974baedd3a3588f
+      internalID: 1035725370
       vertices: []
       indices: 
       edges: []
@@ -215,7 +243,7 @@ TextureImporter:
     physicsShape: []
     bones: []
     spriteID: 6c47d72819741ac4b8b855b5200239ae
-    internalID: 0
+    internalID: 1201204794
     vertices: []
     indices: 
     edges: []
@@ -228,10 +256,10 @@ TextureImporter:
       - key: SpriteEditor.SliceSettings
         value: '{"sliceOnImport":true,"gridCellCount":{"x":1.0,"y":1.0},"gridSpriteSize":{"x":64.0,"y":64.0},"gridSpriteOffset":{"x":0.0,"y":0.0},"gridSpritePadding":{"x":0.0,"y":0.0},"pivot":{"x":0.5,"y":0.5},"pivotPixels":{"x":0.0,"y":0.0},"autoSlicingMethod":0,"spriteAlignment":0,"pivotUnitMode":0,"slicingType":0,"keepEmptyRects":false,"isAlternate":false}'
     nameFileIdTable:
-      yellow_girl_still_front_0: 999916209
-      yellow_girl_still_front_1: 587093564
-      yellow_girl_still_front_2: 1493554911
-      yellow_girl_still_front_3: -1548957550
+      yellow_girl_still_front_0: 1835159980
+      yellow_girl_still_front_1: 528619310
+      yellow_girl_still_front_2: 816225883
+      yellow_girl_still_front_3: 1035725370
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
